@@ -46,7 +46,9 @@ export default function ChatSessionItem({
           </Badge>
         </div>
         <span className="text-sm text-gray-400">
-          {formatDistanceToNow(new Date(session.lastMessageTime), { addSuffix: true })}
+          {session.lastMessageTime && !isNaN(new Date(session.lastMessageTime).getTime())
+            ? formatDistanceToNow(new Date(session.lastMessageTime), { addSuffix: true })
+            : "N/A"}
         </span>
       </div>
       <p className="text-sm text-gray-300 line-clamp-2">{session.lastMessage}</p>

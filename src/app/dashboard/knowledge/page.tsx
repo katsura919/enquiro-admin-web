@@ -22,7 +22,7 @@ export default function KnowledgePage() {
   const [loading, setLoading] = useState(false)
    console.log(categories)
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  const businessId ='683aaf8198b42e402c77539c' // Assuming user.id is businessId, adjust if needed
+  const businessId = user?.businessId 
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {

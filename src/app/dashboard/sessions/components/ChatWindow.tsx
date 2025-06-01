@@ -1,16 +1,14 @@
+"use client"
+
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Send, Phone, AlertCircle, MessageSquare } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
+import { Button } from "@/components/ui/button"
+import { Send } from "lucide-react"
 
 interface Message {
-  _id: string
-  sessionId: string
+  id: string
   content: string
-  sender: "user" | "bot" | "agent"
+  sender: "user" | "customer"
   timestamp: Date
 }
 
@@ -18,131 +16,90 @@ interface ChatSession {
   _id: string
   businessId: string
   customerName: string
-  status: "active" | "closed" | "escalated"
-  lastMessage: string
   lastMessageTime: Date
-  unreadCount: number
 }
 
 interface ChatWindowProps {
   session: ChatSession | null
   messages: Message[]
   onSendMessage: (content: string) => void
-  onEscalate: () => void
 }
 
-export default function ChatWindow({
-  session,
-  messages,
-  onSendMessage,
-  onEscalate,
-}: ChatWindowProps) {
+export default function ChatWindow({ session, messages, onSendMessage }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState("")
 
   if (!session) {
-    return (
-      <Card className="h-[calc(100vh-2rem)] bg-white/5 border-blue-500/20">
-        <div className="flex flex-col items-center justify-center h-full text-gray-400">
-          <MessageSquare className="h-12 w-12 mb-2" />
-          <p>Select a chat session to view messages</p>
-        </div>
-      </Card>
-    )
+    return null
   }
 
-  const handleSendMessage = () => {
+  const handleSend = () => {
     if (newMessage.trim()) {
       onSendMessage(newMessage.trim())
       setNewMessage("")
     }
   }
 
-  const statusColors = {
-    active: "bg-green-500/20 text-green-400",
-    closed: "bg-gray-500/20 text-gray-400",
-    escalated: "bg-red-500/20 text-red-400",
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
   }
 
   return (
-    <Card className="h-[calc(100vh-2rem)] bg-white/5 border-blue-500/20 flex flex-col">
-      <CardHeader className="border-b border-blue-500/20">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-white">{session.customerName}</CardTitle>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant="secondary" className={statusColors[session.status]}>
-                {session.status}
-              </Badge>
-              <span className="text-sm text-gray-400">
-                Last active {formatDistanceToNow(new Date(session.lastMessageTime), { addSuffix: true })}
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {session.status === "active" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-red-500/20 text-red-400 hover:text-red-300"
-                onClick={onEscalate}
-              >
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Escalate
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-blue-500/20 text-gray-400 hover:text-white"
-            >
-              <Phone className="h-4 w-4" />
-            </Button>
-          </div>
+    <div className="flex flex-col h-screen bg-white/5">
+      {/* Chat Header */}
+      <div className="flex items-center px-6 h-16 border-b border-blue-500/20">
+        <div>
+          <h2 className="text-lg font-semibold text-white">{session.customerName}</h2>
+          <p className="text-sm text-gray-400">
+            Last active: {new Date(session.lastMessageTime).toLocaleString()}
+          </p>
         </div>
-      </CardHeader>
-      
-      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => (
           <div
-            key={message._id}
+            key={message.id}
             className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[70%] rounded-lg p-3 ${
+              className={`max-w-[70%] rounded-lg px-4 py-2 ${
                 message.sender === "user"
                   ? "bg-blue-500 text-white"
-                  : message.sender === "bot"
-                  ? "bg-white/5 text-gray-300"
-                  : "bg-green-500/20 text-green-300"
+                  : "bg-white/10 text-gray-100"
               }`}
             >
-              {message.content}
-              <div className="mt-1 text-xs opacity-70">
-                {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
-              </div>
+              <p>{message.content}</p>
+              <p className="text-xs opacity-70 mt-1">
+                {new Date(message.timestamp).toLocaleTimeString()}
+              </p>
             </div>
           </div>
         ))}
-      </CardContent>
+      </div>
 
+      {/* Message Input */}
       <div className="p-4 border-t border-blue-500/20">
         <div className="flex gap-2">
           <Input
-            placeholder="Type your message..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            className="bg-white/5 text-white border-blue-500/20"
+            onKeyDown={handleKeyPress}
+            placeholder="Type your message..."
+            className="bg-white/5 border-blue-500/20 text-white"
           />
           <Button
-            className="bg-blue-500 hover:bg-blue-600"
-            onClick={handleSendMessage}
+            onClick={handleSend}
             disabled={!newMessage.trim()}
+            className="bg-blue-500 hover:bg-blue-600"
           >
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   )
 } 

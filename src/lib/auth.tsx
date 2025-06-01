@@ -9,6 +9,7 @@ interface User {
   firstName: string;
   lastName: string;
   email: string;
+  businessId: string;
 }
 
 interface AuthContextType {
@@ -38,7 +39,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-
   useEffect(() => {
     // Check for stored token and validate it
     const token = localStorage.getItem('token');
