@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { useAuth } from "@/lib/auth"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
 import ChatSessionList from "./components/ChatSessionList"
 import ChatWindow from "./components/ChatWindow"
 
@@ -148,9 +153,8 @@ export default function SessionsLayout({
   const selectedSession = sessions.find(session => session._id === selectedSessionId)
 
   return (
-    <div className="flex h-screen">
-      {/* Chat Sessions Sidebar */}
-      <div className="w-96 flex-shrink-0">
+    <ResizablePanelGroup direction="horizontal" className="h-screen">
+      <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
         <ChatSessionList
           sessions={sessions.map(session => ({
             _id: session._id,
@@ -161,10 +165,9 @@ export default function SessionsLayout({
           selectedSessionId={selectedSessionId}
           onSelectSession={(session) => setSelectedSessionId(session._id)}
         />
-      </div>
-      
-      {/* Main Content Area */}
-      <div className="flex-grow">
+      </ResizablePanel>
+      <ResizableHandle />
+      <ResizablePanel defaultSize={75}>
         {selectedSession ? (
           <ChatWindow
             session={{
@@ -184,7 +187,7 @@ export default function SessionsLayout({
         ) : (
           children
         )}
-      </div>
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   )
 } 
