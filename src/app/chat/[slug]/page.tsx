@@ -98,7 +98,6 @@ export default function ChatPage() {
   const [copiedToClipboard, setCopiedToClipboard] = useState(false)
   const [escalationResponse, setEscalationResponse] = useState<EscalationResponse | null>(null)
   const [completedMessages, setCompletedMessages] = useState<Set<string>>(new Set())
-  const [isSubmittingTicket, setIsSubmittingTicket] = useState(false)
 
   const [formData, setFormData] = useState({
     customerName: "",
@@ -253,35 +252,29 @@ export default function ChatPage() {
   const handleEscalationSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
-    setIsSubmittingTicket(true)
 
     if (!sessionId) {
       setFormError("No active session. Please start a conversation first.")
-      setIsSubmittingTicket(false)
       return
     }
 
     if (!businessData?._id) {
       setFormError("Business information not available.")
-      setIsSubmittingTicket(false)
       return
     }
 
     if (!formData.customerName || !formData.customerEmail || !formData.concern) {
       setFormError("Name, Email, and Concern are required.")
-      setIsSubmittingTicket(false)
       return
     }
 
     if (!validateEmail(formData.customerEmail)) {
       setFormError("Please enter a valid email address.")
-      setIsSubmittingTicket(false)
       return
     }
 
     if (formData.customerPhone && !validatePhone(formData.customerPhone)) {
       setFormError("Please enter a valid phone number.")
-      setIsSubmittingTicket(false)
       return
     }
 
@@ -300,8 +293,6 @@ export default function ChatPage() {
       setEscalationSuccess(true)
     } catch (error: any) {
       setFormError(error.response?.data?.error || "Failed to submit escalation. Please try again.")
-    } finally {
-      setIsSubmittingTicket(false)
     }
   }
 
@@ -445,26 +436,13 @@ export default function ChatPage() {
               />
               <Button 
                 type="submit" 
-                disabled={loading || businessLoading || !newMessage.trim()}
-                className={`
-                  bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 
-                  rounded-xl p-3 sm:px-6 sm:py-6 shadow-lg transition-all duration-200 
-                  flex-shrink-0 relative
-                  ${loading ? 'cursor-not-allowed opacity-80' : 'hover:scale-105'}
-                `}
-                aria-label={loading ? 'Sending message...' : 'Send message'}
+                disabled={loading || businessLoading}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-xl p-3 sm:px-6 sm:py-6 shadow-lg transition-all duration-200 hover:scale-105 flex-shrink-0"
               >
                 {loading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  </div>
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <SendHorizontal className="h-5 w-5" />
-                )}
-                
-                {/* Add a disabled overlay to prevent any clicks during loading */}
-                {loading && (
-                  <div className="absolute inset-0 bg-transparent" />
                 )}
               </Button>
             </div>
@@ -623,35 +601,15 @@ export default function ChatPage() {
                     variant="ghost"
                     type="button"
                     onClick={() => setEscalationVisible(false)}
-                    disabled={isSubmittingTicket}
                     className="text-gray-400 hover:text-white hover:bg-white/5"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isSubmittingTicket}
-                    className={`
-                      bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
-                      relative
-                      ${isSubmittingTicket ? 'cursor-not-allowed opacity-80' : 'hover:scale-105'}
-                    `}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                   >
-                    <div className="flex items-center gap-2">
-                      {isSubmittingTicket ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Submitting...</span>
-                        </>
-                      ) : (
-                        <span>Submit Ticket</span>
-                      )}
-                    </div>
-                    
-                    {/* Prevent clicks during submission */}
-                    {isSubmittingTicket && (
-                      <div className="absolute inset-0 bg-transparent" />
-                    )}
+                    Submit Ticket
                   </Button>
                 </DialogFooter>
               </form>
