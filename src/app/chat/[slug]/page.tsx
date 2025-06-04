@@ -8,8 +8,7 @@ import { SendHorizontal, Loader2, User, Bot, Copy, CheckCircle2, AlertCircle, Al
 import { useParams } from "next/navigation"
 import axios from "axios"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
+import Markdown from "markdown-to-jsx"
 import {
   Dialog,
   DialogContent,
@@ -183,39 +182,44 @@ export default function ChatPage() {
   const renderContentWithEscalationLink = (content: string) => {
     const replaced = content.replace(/\[([^\]]+)\]\(escalate:\/\/now\)/g, "**@@ESCALATE_LINK@@**")
     return (
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          strong: ({ children }) => {
-            const child = Array.isArray(children) ? children[0] : children;
-            if (child === "@@ESCALATE_LINK@@") {
-              return (
-                <Button
-                  variant="link"
-                  className="text-blue-600 underline hover:text-blue-800 p-0 h-auto"
-                  onClick={() => setEscalationVisible(true)}
+      <Markdown
+        options={{
+          overrides: {
+            strong: {
+              component: ({ children }) => {
+                const child = Array.isArray(children) ? children[0] : children;
+                if (child === "@@ESCALATE_LINK@@") {
+                  return (
+                    <Button
+                      variant="link"
+                      className="text-blue-600 underline hover:text-blue-800 p-0 h-auto"
+                      onClick={() => setEscalationVisible(true)}
+                    >
+                      click here
+                    </Button>
+                  );
+                }
+                return <strong>{children}</strong>;
+              }
+            },
+            a: {
+              component: ({ href, children, ...props }) => (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800"
+                  {...props}
                 >
-                  click here
-                </Button>
-              );
+                  {children}
+                </a>
+              )
             }
-            return <strong>{children}</strong>;
-          },
-          a: ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline hover:text-blue-800"
-              {...props}
-            >
-              {children}
-            </a>
-          ),
+          }
         }}
       >
         {replaced}
-      </ReactMarkdown>
+      </Markdown>
     )
   }
 
