@@ -199,7 +199,7 @@ export default function EscalationsLayout({
   return (
     <div className="h-full flex">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
+        <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
           <EscalationList
             escalations={escalations}
             selectedEscalationId={selectedEscalationId}
@@ -210,7 +210,7 @@ export default function EscalationsLayout({
         
         <ResizableHandle className="w-1 bg-white/10 hover:bg-white/20 transition-colors" />
         
-        <ResizablePanel defaultSize={65}>
+        <ResizablePanel defaultSize={75}>
           {selectedEscalation ? (
             <EscalationDetails
               escalation={selectedEscalation}

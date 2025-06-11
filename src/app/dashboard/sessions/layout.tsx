@@ -165,7 +165,7 @@ export default function SessionsLayout({
           onSelectSession={(session) => setSelectedSessionId(session._id)}
         />
       </ResizablePanel>
-      <ResizableHandle />
+      <ResizableHandle className="w-1 bg-white/10 hover:bg-white/20 transition-colors" />
       <ResizablePanel defaultSize={75}>
         {selectedSession ? (
           <ChatWindow

@@ -234,23 +234,6 @@ export default function EscalationDetails({
             ))}
           </div>
 
-          {/* Send Message */}
-          <div className="flex gap-2">
-            <Textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your response..."
-              className="flex-1 bg-background border-border text-foreground placeholder-muted-foreground resize-none"
-              rows={3}
-            />
-            <Button
-              onClick={handleSendMessage}
-              className="bg-primary hover:bg-primary/90 self-end"
-              disabled={!newMessage.trim()}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
         </Card>
       </div>
     </div>

@@ -78,7 +78,6 @@ export default function SettingsLayout({
       {/* Settings Sidebar */}
       <div className="w-80 border-r border-blue-500/20 bg-white/5">
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-white mb-1">Settings</h2>
           <p className="text-sm text-gray-400 mb-6">
             Manage your account and preferences
           </p>
