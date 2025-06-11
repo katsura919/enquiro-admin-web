@@ -28,19 +28,18 @@ export default function KnowledgeItem({
   category,
   onEdit,
   onDelete,
-}: KnowledgeItemProps) {
-  return (
-    <Card className="bg-white/5 border-blue-500/20">
+}: KnowledgeItemProps) {  return (
+    <Card className="bg-card border-border">
       <CardHeader className="flex flex-row items-start justify-between">
         <div>
-          <CardTitle className="text-white">{item.title}</CardTitle>
-          <p className="text-sm text-gray-400">{category?.name}</p>
+          <CardTitle className="text-foreground">{item.title}</CardTitle>
+          <p className="text-sm text-muted-foreground">{category?.name}</p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             onClick={onEdit}
           >
             <Pencil className="h-4 w-4" />
@@ -48,7 +47,7 @@ export default function KnowledgeItem({
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-400 hover:text-red-400"
+            className="text-muted-foreground hover:text-destructive"
             onClick={onDelete}
           >
             <Trash2 className="h-4 w-4" />
@@ -56,8 +55,8 @@ export default function KnowledgeItem({
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-300">{item.content}</p>
-        <div className="mt-4 flex items-center text-sm text-gray-400">
+        <p className="text-muted-foreground">{item.content}</p>
+        <div className="mt-4 flex items-center text-sm text-muted-foreground">
           <span>Last updated: {new Date(item.updatedAt).toLocaleDateString()}</span>
         </div>
       </CardContent>

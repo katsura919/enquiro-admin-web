@@ -36,20 +36,26 @@ export default function KnowledgeList({
   onDeleteItem,
 }: KnowledgeListProps) {
   return (
-    <div className="md:col-span-3 space-y-6">
+    <div className="h-full flex flex-col space-y-6">
       <SearchBar value={searchQuery} onChange={onSearchChange} />
       
-      <div className="space-y-4">
-        {items.map((item) => (
-          <KnowledgeItem
-            key={item._id}
-            item={item}
-            category={categories.find(c => c._id === item.categoryId)}
-            onEdit={() => onEditItem(item)}
-            onDelete={() => onDeleteItem(item._id)}
-          />
-        ))}
+      <div className="flex-1 overflow-y-auto space-y-4">
+        {items.length === 0 ? (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            <p>No knowledge items found</p>
+          </div>
+        ) : (
+          items.map((item) => (
+            <KnowledgeItem
+              key={item._id}
+              item={item}
+              category={categories.find(c => c._id === item.categoryId)}
+              onEdit={() => onEditItem(item)}
+              onDelete={() => onDeleteItem(item._id)}
+            />
+          ))
+        )}
       </div>
     </div>
   )
-} 
+}

@@ -21,32 +21,32 @@ export function ModeToggle() {
         <Button 
           variant="ghost" 
           size="sm"
-          className="h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-white/10"
+          className="h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent"
         >
-          <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 text-gray-400" />
-          <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 text-gray-400" />
+          <Sun className="h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90 text-muted-foreground" />
+          <Moon className="absolute h-4 w-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0 text-muted-foreground" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
         align="end" 
-        className="bg-white/5 backdrop-blur-lg border-white/20 text-white"
+        className="bg-popover backdrop-blur-lg border-border text-popover-foreground"
       >
         <DropdownMenuItem 
           onClick={() => setTheme("light")}
-          className="hover:bg-white/10 focus:bg-white/10"
+          className="hover:bg-accent focus:bg-accent"
         >
           Light
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("dark")}
-          className="hover:bg-white/10 focus:bg-white/10"
+          className="hover:bg-accent focus:bg-accent"
         >
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("system")}
-          className="hover:bg-white/10 focus:bg-white/10"
+          className="hover:bg-accent focus:bg-accent"
         >
           System
         </DropdownMenuItem>

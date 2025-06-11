@@ -9,12 +9,12 @@ interface SearchBarProps {
 export default function SearchBar({ value, onChange }: SearchBarProps) {
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         placeholder="Search knowledge base..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 bg-white/5 text-white border-blue-500/20"
+        className="pl-10 bg-background text-foreground border-border"
       />
     </div>
   )
