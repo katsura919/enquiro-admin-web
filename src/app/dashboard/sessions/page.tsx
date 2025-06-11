@@ -105,7 +105,6 @@ export default function SessionsPage() {
       // handle error
     }
   }
-
   // Escalate session (placeholder)
   const handleEscalate = () => {
     // TODO: Implement API call for escalation
@@ -115,8 +114,8 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-white/5">
-      <div className="text-center text-gray-400">
+    <div className="flex items-center justify-center h-full bg-card/50">
+      <div className="text-center text-muted-foreground">
         <MessageSquare className="h-16 w-16 mx-auto mb-4" />
         <h2 className="text-xl font-semibold mb-2">Welcome to Chat Sessions</h2>
         <p>Select a chat session from the sidebar to start messaging</p>

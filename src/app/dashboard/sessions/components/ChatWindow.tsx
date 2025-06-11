@@ -45,14 +45,13 @@ export default function ChatWindow({ session, messages, onSendMessage }: ChatWin
       handleSend()
     }
   }
-
   return (
-    <div className="flex flex-col h-screen bg-white/5">
+    <div className="flex flex-col h-screen bg-card">
       {/* Chat Header */}
-      <div className="flex items-center px-6 h-16 border-b border-blue-500/20">
+      <div className="flex items-center px-6 h-16 border-b border-border">
         <div>
-          <h2 className="text-lg font-semibold text-white">{session.customerName}</h2>
-          <p className="text-sm text-gray-400">
+          <h2 className="text-lg font-semibold text-foreground">{session.customerName}</h2>
+          <p className="text-sm text-muted-foreground">
             Last active: {new Date(session.lastMessageTime).toLocaleString()}
           </p>
         </div>
@@ -68,8 +67,8 @@ export default function ChatWindow({ session, messages, onSendMessage }: ChatWin
             <div
               className={`max-w-[70%] rounded-lg px-4 py-2 ${
                 message.sender === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white/10 text-gray-100"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-foreground"
               }`}
             >
               <p>{message.content}</p>
@@ -82,19 +81,19 @@ export default function ChatWindow({ session, messages, onSendMessage }: ChatWin
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-blue-500/20">
+      <div className="p-4 border-t border-border">
         <div className="flex gap-2">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type your message..."
-            className="bg-white/5 border-blue-500/20 text-white"
+            className="bg-background border-border text-foreground"
           />
           <Button
             onClick={handleSend}
             disabled={!newMessage.trim()}
-            className="bg-blue-500 hover:bg-blue-600"
+            className="bg-primary hover:bg-primary/90"
           >
             <Send className="h-4 w-4" />
           </Button>

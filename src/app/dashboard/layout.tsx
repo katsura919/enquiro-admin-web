@@ -13,14 +13,17 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProtectedRoute from '@/components/ProtectedRoute'
+import Topbar from '@/components/Topbar'
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "Knowledge Base", href: "/dashboard/knowledge", icon: FolderKanban },
   { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
+  { name: "Escalations", href: "/dashboard/escalations", icon: AlertTriangle },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
@@ -44,132 +47,136 @@ export default function DashboardLayout({
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-black">
+  return (    <ProtectedRoute>
+      <div className="min-h-screen bg-background">
         {/* Mobile sidebar backdrop */}
         {isMobile && isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/80 z-40"
+            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 transition-all duration-300 ease-out"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
 
-        {/* Sidebar */}
+        {/* Sidebar */}        
         <div
           className={cn(
-            "fixed inset-y-0 z-50 flex flex-col transition-all duration-300",
+            "fixed inset-y-0 z-50 flex flex-col transition-all duration-300 ease-out",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-            isSidebarOpen ? "w-72" : "md:w-20"
+            isSidebarOpen ? "w-80" : "md:w-25"
           )}
         >
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white/5 backdrop-blur-lg px-6 pb-4 border-r border-blue-500/20 h-full">
-            <div className="flex h-16 shrink-0 items-center justify-between">
-              <Link 
+          <div className="flex grow flex-col overflow-y-auto bg-card/50 backdrop-blur-xl px-4 pb-4 border-r border-border h-full shadow-2xl">            {/* Header */}
+            <div className="flex h-20 shrink-0 items-center justify-between px-2">              <Link 
                 href="/dashboard" 
                 className={cn(
-                  "text-xl font-bold text-white transition-all duration-300",
-                  !isSidebarOpen && "md:hidden"
+                  "flex items-center gap-3 text-foreground transition-all duration-300 ease-out group",
+                  !isSidebarOpen && "md:justify-center"
                 )}
               >
-                AI Chatbot
-              </Link>
-              
-              {/* Desktop toggle button */}
+                {/* Logo icon */}
+                <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
+                  <span className="text-primary-foreground font-bold text-sm">E</span>
+                </div>
+                
+                {/* Brand name */}
+                <span 
+                  className={cn(
+                    "text-xl font-bold transition-all duration-300 ease-out whitespace-nowrap",
+                    !isSidebarOpen && "md:opacity-0 md:w-0 md:overflow-hidden"
+                  )}
+                >
+                  Enquiro
+                </span>
+              </Link>              {/* Mobile menu button */}
               <Button
                 variant="ghost"
-                className="hidden md:flex h-8 w-8 p-0 items-center justify-center"
+                className="md:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               >
-                {isSidebarOpen ? (
-                  <ChevronLeft className="h-4 w-4 text-gray-400" />
-                ) : (
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
-                )}
-              </Button>
-
-              {/* Mobile menu button */}
-              <Button
-                variant="ghost"
-                className="md:hidden h-8 w-8 p-0"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              >
-                <Menu className="h-5 w-5 text-gray-400" />
+                <Menu className="h-5 w-5 text-muted-foreground" />
               </Button>
             </div>
 
-            <nav className="flex flex-1 flex-col">
-              <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                <li>
-                  <ul role="list" className="-mx-2 space-y-1">
-                    {navigation.map((item) => {
-                      const isActive = pathname === item.href
-                      return (
-                        <li key={item.name}>
-                          <Link
-                            href={item.href}
-                            className={cn(
-                              "group flex gap-x-3 rounded-md p-2 text-sm leading-6",
-                              isActive
-                                ? "bg-blue-500 text-white"
-                                : "text-gray-400 hover:text-white hover:bg-white/10"
-                            )}
-                            onClick={() => isMobile && setIsSidebarOpen(false)}
-                          >
-                            <item.icon className="h-6 w-6 shrink-0" />
-                            <span className={cn(
-                              "transition-all duration-300",
-                              !isSidebarOpen && "md:hidden"
-                            )}>
-                              {item.name}
-                            </span>
-                          </Link>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </li>
-                <li className="mt-auto">
+            {/* Navigation */}
+            <nav className="flex flex-1 flex-col px-2 py-4">
+              <div className="flex flex-1 flex-col gap-2">                
+                {navigation.map((item, index) => {
+                  const isActive = pathname === item.href
+                  return (                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out",
+                        "hover:bg-accent",
+                        isActive
+                          ? "bg-primary/20 text-foreground shadow-lg"
+                          : "text-muted-foreground hover:text-foreground",
+                        !isSidebarOpen ? "justify-center gap-0" : "gap-3"
+                      )}
+                      onClick={() => isMobile && setIsSidebarOpen(false)}
+                    >
+                      {/* Active indicator */}
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full shadow-lg" />
+                      )}
+                      
+                      <div className="flex-shrink-0">
+                        <item.icon className={cn(
+                          "h-5 w-5 transition-all duration-300",
+                          isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                        )} />
+                      </div>
+                      
+                      <span className={cn(
+                        "transition-all duration-300 ease-out whitespace-nowrap",
+                        !isSidebarOpen && "md:opacity-0 md:w-0 md:overflow-hidden"
+                      )}>
+                        {item.name}
+                      </span>
+                    </Link>
+                  )
+                })}                {/* Sign out button */}                
+                <div className="mt-auto pt-4 border-t border-border">
                   <Link
                     href="/auth"
-                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:text-white hover:bg-white/10"
+                    className={cn(
+                      "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out",
+                      "text-destructive hover:text-destructive hover:bg-destructive/10",
+                      !isSidebarOpen ? "justify-center gap-0" : "gap-3"
+                    )}
                     onClick={() => isMobile && setIsSidebarOpen(false)}
                   >
-                    <LogOut className="h-6 w-6 shrink-0" />
+                    <div className="flex-shrink-0">
+                      <LogOut className="h-5 w-5 transition-all duration-300" />
+                    </div>
+                    
                     <span className={cn(
-                      "transition-all duration-300",
-                      !isSidebarOpen && "md:hidden"
+                      "transition-all duration-300 ease-out whitespace-nowrap",
+                      !isSidebarOpen && "md:opacity-0 md:w-0 md:overflow-hidden"
                     )}>
                       Sign out
                     </span>
                   </Link>
-                </li>
-              </ul>
+                </div>
+              </div>
             </nav>
           </div>
-        </div>
-
-        {/* Main content */}
-        <main className={cn(
-          "transition-all duration-300",
-          isSidebarOpen ? "md:pl-72" : "md:pl-20",
+        </div>        {/* Main content */}        <main className={cn(
+          "transition-all duration-300 h-screen flex flex-col",
+          isSidebarOpen ? "md:pl-80" : "md:pl-20",
           "pl-0" // Default padding for mobile
         )}>
-          <div className="min-h-screen bg-black/95">
-            {/* Mobile header */}
-            <div className="md:hidden flex items-center h-16 px-4 bg-white/5 backdrop-blur-lg border-b border-blue-500/20">
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0"
-                onClick={() => setIsSidebarOpen(true)}
-              >
-                <Menu className="h-5 w-5 text-gray-400" />
-              </Button>
-              <span className="ml-4 text-lg font-semibold text-white">AI Chatbot</span>
-            </div>
+          <div className="bg-background flex flex-col h-full">
+            {/* Topbar - shown on all screen sizes */}
+            <Topbar 
+              onMenuToggle={() => setIsSidebarOpen(true)} 
+              isMobile={isMobile}
+            />
             
-            {children}
+            {/* Page content */}
+            <div className="flex-1 overflow-hidden">
+              {children}
+            </div>
           </div>
         </main>
       </div>

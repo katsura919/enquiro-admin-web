@@ -151,9 +151,8 @@ export default function SessionsLayout({
   }
 
   const selectedSession = sessions.find(session => session._id === selectedSessionId)
-
   return (
-    <ResizablePanelGroup direction="horizontal" className="h-screen">
+    <ResizablePanelGroup direction="horizontal" className="h-full">
       <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
         <ChatSessionList
           sessions={sessions.map(session => ({

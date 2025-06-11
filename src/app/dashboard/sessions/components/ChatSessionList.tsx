@@ -26,26 +26,23 @@ export default function ChatSessionList({
   const filteredSessions = sessions.filter((session) => {
     return (session.customerName?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   })
-
   return (
-    <div className="flex flex-col h-screen bg-white/5 backdrop-blur-lg">
-      <div className="flex h-16 shrink-0 items-center px-6 border-b border-blue-500/20">
-        <h2 className="text-xl font-bold text-white">Chat Sessions</h2>
-      </div>
+    <div className="flex flex-col h-screen bg-card backdrop-blur-lg">
+
       <div className="flex flex-col gap-4 px-6 py-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search sessions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/5 text-white border-blue-500/20"
+            className="pl-10 bg-background text-foreground border-border"
           />
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-6 pb-4">
         {filteredSessions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <MessageSquare className="h-12 w-12 mb-2" />
             <p>No chat sessions found</p>
           </div>
@@ -56,8 +53,8 @@ export default function ChatSessionList({
                 key={session._id}
                 className={`p-4 rounded-lg cursor-pointer transition-colors ${
                   session._id === selectedSessionId
-                    ? "bg-blue-500 text-white"
-                    : "bg-white/5 text-gray-100 hover:bg-white/10"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card text-foreground hover:bg-accent"
                 }`}
                 onClick={() => onSelectSession(session)}
               >

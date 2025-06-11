@@ -122,7 +122,6 @@ export default function KnowledgePage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Knowledge Base</h1>
           <p className="text-gray-400">Manage your chatbot's knowledge</p>
         </div>
         <Button 
