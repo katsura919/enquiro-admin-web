@@ -34,13 +34,11 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [isMobile, setIsMobile] = useState(false)
-
-  // Handle window resize
+  const [isMobile, setIsMobile] = useState(false)  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-      setIsSidebarOpen(window.innerWidth >= 768)
+      setIsMobile(window.innerWidth < 1024)
+      setIsSidebarOpen(window.innerWidth >= 1024)
     }
     
     handleResize()
@@ -57,20 +55,20 @@ export default function DashboardLayout({
           />
         )}
 
-        {/* Sidebar */}        
-        <div
+        {/* Sidebar */}          <div
           className={cn(
             "fixed inset-y-0 z-50 flex flex-col transition-all duration-300 ease-out",
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-            isSidebarOpen ? "w-80" : "md:w-25"
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+            isSidebarOpen ? "w-80" : "lg:w-20"
           )}
         >
-          <div className="flex grow flex-col overflow-y-auto bg-card/50 backdrop-blur-xl px-4 pb-4 border-r border-border h-full shadow-2xl">            {/* Header */}
+          <div className="flex grow flex-col overflow-y-auto bg-card/50 backdrop-blur-xl px-4 pb-4 border-r border-border h-full shadow-2xl">            
+          {/* Header */}
             <div className="flex h-20 shrink-0 items-center justify-between px-2">              <Link 
                 href="/dashboard" 
                 className={cn(
                   "flex items-center gap-3 text-foreground transition-all duration-300 ease-out group",
-                  !isSidebarOpen && "md:justify-center"
+                  !isSidebarOpen && "lg:justify-center"
                 )}
               >
                 {/* Logo icon */}
@@ -78,11 +76,10 @@ export default function DashboardLayout({
                   <span className="text-primary-foreground font-bold text-sm">E</span>
                 </div>
                 
-                {/* Brand name */}
-                <span 
+                {/* Brand name */}                <span 
                   className={cn(
                     "text-xl font-bold transition-all duration-300 ease-out whitespace-nowrap",
-                    !isSidebarOpen && "md:opacity-0 md:w-0 md:overflow-hidden"
+                    !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
                   )}
                 >
                   Enquiro
@@ -90,7 +87,7 @@ export default function DashboardLayout({
               </Link>              {/* Mobile menu button */}
               <Button
                 variant="ghost"
-                className="md:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent"
+                className="lg:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               >
                 <Menu className="h-5 w-5 text-muted-foreground" />
@@ -126,10 +123,9 @@ export default function DashboardLayout({
                           isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                         )} />
                       </div>
-                      
-                      <span className={cn(
+                        <span className={cn(
                         "transition-all duration-300 ease-out whitespace-nowrap",
-                        !isSidebarOpen && "md:opacity-0 md:w-0 md:overflow-hidden"
+                        !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
                       )}>
                         {item.name}
                       </span>
@@ -149,10 +145,9 @@ export default function DashboardLayout({
                     <div className="flex-shrink-0">
                       <LogOut className="h-5 w-5 transition-all duration-300" />
                     </div>
-                    
-                    <span className={cn(
+                      <span className={cn(
                       "transition-all duration-300 ease-out whitespace-nowrap",
-                      !isSidebarOpen && "md:opacity-0 md:w-0 md:overflow-hidden"
+                      !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
                     )}>
                       Sign out
                     </span>
@@ -163,7 +158,7 @@ export default function DashboardLayout({
           </div>
         </div>        {/* Main content */}        <main className={cn(
           "transition-all duration-300 h-screen flex flex-col",
-          isSidebarOpen ? "md:pl-80" : "md:pl-20",
+          isSidebarOpen ? "lg:pl-80" : "lg:pl-20",
           "pl-0" // Default padding for mobile
         )}>
           <div className="bg-background flex flex-col h-full">

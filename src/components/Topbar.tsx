@@ -45,7 +45,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 md:hidden"
+            className="h-8 w-8 p-0 lg:hidden"
             onClick={onMenuToggle}
           >
             <Menu className="h-5 w-5 text-muted-foreground" />
