@@ -15,23 +15,18 @@ interface Escalation {
   _id: string
   sessionId: string
   businessId: string
+  caseNumber: string
   customerDetails: {
     name: string
     email: string
-    phoneNumber: string
+    phoneNumber?: string
   }
-  issue: string
-  priority: "low" | "medium" | "high" | "urgent"
-  status: "pending" | "in-progress" | "resolved" | "closed"
+  concern: string
+  description?: string
+  status: "escalated" | "resolved"
   assignedTo?: string
   createdAt: string
   updatedAt: string
-  messages: Array<{
-    _id: string
-    content: string
-    sender: "user" | "bot" | "agent"
-    timestamp: string
-  }>
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -45,98 +40,9 @@ export default function EscalationsLayout({
   const [escalations, setEscalations] = useState<Escalation[]>([])
   const [selectedEscalationId, setSelectedEscalationId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const businessId = user?.businessId
-
-  // Mock data for now - replace with actual API calls
-  const mockEscalations: Escalation[] = [
-    {
-      _id: "esc_001",
-      sessionId: "session_001",
-      businessId: businessId || "",
-      customerDetails: {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        phoneNumber: "+1234567890"
-      },
-      issue: "Unable to process refund request",
-      priority: "high",
-      status: "pending",
-      assignedTo: "Agent Smith",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      messages: [
-        {
-          _id: "msg_001",
-          content: "I need help with my refund request. The chatbot couldn't process it.",
-          sender: "user",
-          timestamp: new Date().toISOString()
-        },
-        {
-          _id: "msg_002",
-          content: "I apologize for the inconvenience. Let me help you with your refund request.",
-          sender: "bot",
-          timestamp: new Date().toISOString()
-        }
-      ]
-    },
-    {
-      _id: "esc_002",
-      sessionId: "session_002",
-      businessId: businessId || "",
-      customerDetails: {
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        phoneNumber: "+0987654321"
-      },
-      issue: "Product quality complaint",
-      priority: "medium",
-      status: "in-progress",
-      assignedTo: "Agent Johnson",
-      createdAt: new Date(Date.now() - 86400000).toISOString(),
-      updatedAt: new Date().toISOString(),
-      messages: [
-        {
-          _id: "msg_003",
-          content: "The product I received doesn't match the description.",
-          sender: "user",
-          timestamp: new Date(Date.now() - 86400000).toISOString()
-        }
-      ]
-    },
-    {
-      _id: "esc_003",
-      sessionId: "session_003",
-      businessId: businessId || "",
-      customerDetails: {
-        name: "Bob Wilson",
-        email: "bob.wilson@example.com",
-        phoneNumber: "+1122334455"
-      },
-      issue: "Account access issues",
-      priority: "urgent",
-      status: "resolved",
-      assignedTo: "Agent Davis",
-      createdAt: new Date(Date.now() - 172800000).toISOString(),
-      updatedAt: new Date(Date.now() - 3600000).toISOString(),
-      messages: [
-        {
-          _id: "msg_004",
-          content: "I can't access my account and need immediate assistance.",
-          sender: "user",
-          timestamp: new Date(Date.now() - 172800000).toISOString()
-        },
-        {
-          _id: "msg_005",
-          content: "Your account has been restored. Please try logging in again.",
-          sender: "agent",
-          timestamp: new Date(Date.now() - 3600000).toISOString()
-        }
-      ]
-    }
-  ]
-
+  console.log(escalations)
   // Fetch escalations for the business
   useEffect(() => {
     if (!businessId || !token) return
@@ -144,17 +50,33 @@ export default function EscalationsLayout({
     const fetchEscalations = async () => {
       setLoading(true)
       try {
-        // TODO: Replace with actual API call
-        // const response = await axios.get(`${API_URL}/escalations/business/${businessId}`, {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // })
-        // setEscalations(response.data)
+        const response = await axios.get(`${API_URL}/escalation/business/${businessId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
         
-        // For now, use mock data
-        setEscalations(mockEscalations)
+        // Transform the data to match the frontend interface
+        const transformedEscalations = response.data.map((escalation: any) => ({
+          _id: escalation._id,
+          sessionId: escalation.sessionId,
+          businessId: escalation.businessId,
+          caseNumber: escalation.caseNumber,
+          customerDetails: {
+            name: escalation.customerName,
+            email: escalation.customerEmail,
+            phoneNumber: escalation.customerPhone || ''
+          },
+          concern: escalation.concern,
+          description: escalation.description,
+          status: escalation.status, // Default status since backend doesn't have status field
+          assignedTo: undefined, // Backend doesn't have this field
+          createdAt: escalation.createdAt,
+          updatedAt: escalation.updatedAt
+        }))
+        
+        setEscalations(transformedEscalations)
       } catch (error) {
         console.error('Error fetching escalations:', error)
-        setEscalations(mockEscalations) // Fallback to mock data
+        setEscalations([]) // Set empty array on error
       } finally {
         setLoading(false)
       }
@@ -178,28 +100,15 @@ export default function EscalationsLayout({
         esc._id === escalationId 
           ? { ...esc, status: newStatus as any, updatedAt: new Date().toISOString() }
           : esc
-      ))
-    } catch (error) {
+      ))    } catch (error) {
       console.error('Error updating escalation status:', error)
     }
   }
-
-  const handleAssignAgent = async (escalationId: string, agentName: string) => {
-    try {
-      // TODO: Replace with actual API call
-      setEscalations(prev => prev.map(esc => 
-        esc._id === escalationId 
-          ? { ...esc, assignedTo: agentName, updatedAt: new Date().toISOString() }
-          : esc
-      ))
-    } catch (error) {
-      console.error('Error assigning agent:', error)
-    }
-  }
+  
   return (
-    <div className="h-full flex">
+    <div className="h-full flex bg-background">
       <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={25} minSize={20} maxSize={40}>
+        <ResizablePanel defaultSize={30} minSize={25} maxSize={45}>
           <EscalationList
             escalations={escalations}
             selectedEscalationId={selectedEscalationId}
@@ -208,17 +117,37 @@ export default function EscalationsLayout({
           />
         </ResizablePanel>
         
-        <ResizableHandle className="w-1 bg-white/10 hover:bg-white/20 transition-colors" />
+        <ResizableHandle className="w-1 bg-border hover:bg-primary/20 transition-colors" />
         
-        <ResizablePanel defaultSize={75}>
-          {selectedEscalation ? (
+        <ResizablePanel defaultSize={70}>          {selectedEscalation ? (
             <EscalationDetails
               escalation={selectedEscalation}
               onUpdateStatus={handleUpdateStatus}
-              onAssignAgent={handleAssignAgent}
             />
           ) : (
-            children
+            <div className="h-full flex flex-col items-center justify-center bg-background text-center p-8">
+              <div className="mx-auto w-32 h-32 bg-muted/20 rounded-full flex items-center justify-center mb-6">
+                <svg
+                  className="w-16 h-16 text-muted-foreground/50"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">
+                Select an Escalation
+              </h2>
+              <p className="text-muted-foreground max-w-md">
+                Choose an escalation from the list to view its details, conversation history, and manage its status.
+              </p>
+            </div>
           )}
         </ResizablePanel>
       </ResizablePanelGroup>

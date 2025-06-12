@@ -1,241 +1,351 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { 
   AlertTriangle, 
-  Clock, 
   CheckCircle, 
-  XCircle, 
   User, 
   Mail, 
   Phone,
   Calendar,
   MessageSquare,
-  Send
+  Bot,
+  UserCircle,
+  Clock,
+  ExternalLink,
+  RefreshCw
 } from "lucide-react"
 
 interface Escalation {
   _id: string
   sessionId: string
   businessId: string
+  caseNumber: string
   customerDetails: {
     name: string
     email: string
-    phoneNumber: string
+    phoneNumber?: string
   }
-  issue: string
-  priority: "low" | "medium" | "high" | "urgent"
-  status: "pending" | "in-progress" | "resolved" | "closed"
+  concern: string
+  description?: string
+  status: "escalated" | "resolved"
   assignedTo?: string
   createdAt: string
   updatedAt: string
-  messages: Array<{
-    _id: string
-    content: string
-    sender: "user" | "bot" | "agent"
-    timestamp: string
-  }>
+}
+
+interface ChatMessage {
+  _id: string
+  businessId: string
+  sessionId: string
+  query: string
+  response: string
+  isGoodResponse?: boolean | null
+  createdAt: string
+  updatedAt: string
 }
 
 interface EscalationDetailsProps {
   escalation: Escalation
   onUpdateStatus: (escalationId: string, newStatus: string) => void
-  onAssignAgent: (escalationId: string, agentName: string) => void
 }
 
-const priorityColors = {
-  low: "bg-green-500/20 text-green-300 border-green-500/30",
-  medium: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
-  high: "bg-orange-500/20 text-orange-300 border-orange-500/30",
-  urgent: "bg-red-500/20 text-red-300 border-red-500/30"
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const statusIcons = {
-  pending: Clock,
-  "in-progress": AlertTriangle,
-  resolved: CheckCircle,
-  closed: XCircle
+  escalated: AlertTriangle,
+  resolved: CheckCircle
 }
 
 const statusColors = {
-  pending: "text-yellow-400",
-  "in-progress": "text-blue-400",
-  resolved: "text-green-400",
-  closed: "text-gray-400"
+  escalated: "text-orange-400",
+  resolved: "text-green-400"
 }
 
 export default function EscalationDetails({
   escalation,
-  onUpdateStatus,
-  onAssignAgent
+  onUpdateStatus
 }: EscalationDetailsProps) {
-  const [newMessage, setNewMessage] = useState("")
-  const [newAgentName, setNewAgentName] = useState(escalation.assignedTo || "")
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [loadingChats, setLoadingChats] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   const StatusIcon = statusIcons[escalation.status]
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+  // Fetch chat messages for the session
+  useEffect(() => {
+    if (!escalation.sessionId || !token) return
+
+    const fetchChatMessages = async () => {
+      setLoadingChats(true)
+      try {
+        const response = await axios.get(`${API_URL}/chat/session/${escalation.sessionId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        setChatMessages(response.data)
+      } catch (error) {
+        console.error('Error fetching chat messages:', error)
+        setChatMessages([])
+      } finally {
+        setLoadingChats(false)
+      }
+    }
+
+    fetchChatMessages()
+  }, [escalation.sessionId, token])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString()
   }
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) return
-    
-    // TODO: Implement message sending
-    console.log("Sending message:", newMessage)
-    setNewMessage("")
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    })
+  }
+  
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/escalation/${escalation._id}/status`,
+        { status: newStatus },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+      
+      // Call the parent component's update function
+      onUpdateStatus(escalation._id, newStatus)
+    } catch (error) {
+      console.error('Error updating escalation status:', error)
+      // You might want to show a toast notification here
+    }
   }
 
-  const handleStatusChange = (newStatus: string) => {
-    onUpdateStatus(escalation._id, newStatus)
-  }
-  const handleAgentAssignment = () => {
-    if (newAgentName.trim()) {
-      onAssignAgent(escalation._id, newAgentName)
+  const handleRefreshChats = async () => {
+    setRefreshing(true)
+    try {
+      const response = await axios.get(`${API_URL}/chat/session/${escalation.sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setChatMessages(response.data)
+    } catch (error) {
+      console.error('Error refreshing chat messages:', error)
+    } finally {
+      setRefreshing(false)
     }
   }
 
   return (
-    <div className="h-full bg-background flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b border-border">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              Escalation Details
-            </h1>
-            <p className="text-muted-foreground">#{escalation._id}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <StatusIcon className={cn("h-5 w-5", statusColors[escalation.status])} />
-            <Badge className={cn("text-sm", priorityColors[escalation.priority])}>
-              {escalation.priority} priority
-            </Badge>
-          </div>
-        </div>
-
-        {/* Customer Info */}
-        <Card className="bg-card border-border p-4">
-          <h3 className="text-foreground font-semibold mb-3">Customer Information</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <User className="h-4 w-4" />
-              <span>{escalation.customerDetails.name}</span>
+    <div className="h-full bg-background">
+      {/* Header Section */}
+      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="p-6">
+          <div className="flex items-start justify-between mb-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">
+                  Escalation Details
+                </h1>
+                <Badge variant="outline" className="text-xs font-mono">
+                  #{escalation.caseNumber}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground text-sm">
+                Session ID: {escalation.sessionId}
+              </p>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>{escalation.customerDetails.email}</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Phone className="h-4 w-4" />
-              <span>{escalation.customerDetails.phoneNumber}</span>
-            </div>
-          </div>
-        </Card>
-      </div>      {/* Main Content */}
-      <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-        {/* Issue Description */}
-        <Card className="bg-card border-border p-4">
-          <h3 className="text-foreground font-semibold mb-3">Issue Description</h3>
-          <p className="text-muted-foreground">{escalation.issue}</p>
-        </Card>
-
-        {/* Status & Assignment */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-card border-border p-4">
-            <h3 className="text-foreground font-semibold mb-3">Status Management</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm text-muted-foreground mb-2 block">Current Status</label>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <StatusIcon className={cn("h-4 w-4", statusColors[escalation.status])} />
                 <select
                   value={escalation.status}
                   onChange={(e) => handleStatusChange(e.target.value)}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-md text-foreground"
+                  className="px-3 py-2 bg-background border border-input rounded-lg text-sm font-medium capitalize focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
-                  <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
+                  <option value="escalated">Escalated</option>
                   <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
                 </select>
               </div>
-              <div className="text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3 inline mr-1" />
-                Created: {formatDate(escalation.createdAt)}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3 inline mr-1" />
-                Updated: {formatDate(escalation.updatedAt)}
-              </div>
             </div>
-          </Card>
-
-          <Card className="bg-card border-border p-4">
-            <h3 className="text-foreground font-semibold mb-3">Agent Assignment</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm text-muted-foreground mb-2 block">Assigned Agent</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newAgentName}
-                    onChange={(e) => setNewAgentName(e.target.value)}
-                    placeholder="Enter agent name"
-                    className="flex-1 px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder-muted-foreground"
-                  />
-                  <Button
-                    onClick={handleAgentAssignment}
-                    size="sm"
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    Assign
-                  </Button>
-                </div>
-              </div>
-              {escalation.assignedTo && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <User className="h-4 w-4" />
-                  <span>Currently assigned to: {escalation.assignedTo}</span>
-                </div>
-              )}
-            </div>
-          </Card>
-        </div>        {/* Messages */}
-        <Card className="bg-card border-border p-4">
-          <h3 className="text-foreground font-semibold mb-4 flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Conversation History
-          </h3>
-          <div className="space-y-4 mb-4 max-h-60 overflow-y-auto">
-            {escalation.messages.map((message) => (
-              <div
-                key={message._id}
-                className={cn(
-                  "p-3 rounded-lg",
-                  message.sender === "user" && "bg-primary/20 ml-4",
-                  message.sender === "bot" && "bg-muted ml-4",
-                  message.sender === "agent" && "bg-secondary/50 mr-4"
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-foreground capitalize">
-                    {message.sender === "user" ? "Customer" : message.sender}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDate(message.timestamp)}
-                  </span>
-                </div>
-                <p className="text-muted-foreground text-sm">{message.content}</p>
-              </div>
-            ))}
           </div>
 
-        </Card>
+          {/* Customer Info Card */}
+          <Card className="p-4 bg-background/50">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3 text-sm">
+                <div className="h-8 w-8 rounded-md bg-primary/5 flex items-center justify-center">
+                  <UserCircle className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Name</p>
+                  <p className="font-medium">{escalation.customerDetails.name}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="h-8 w-8 rounded-md bg-primary/5 flex items-center justify-center">
+                  <Mail className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Email</p>
+                  <p className="font-medium break-all">{escalation.customerDetails.email}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="h-8 w-8 rounded-md bg-primary/5 flex items-center justify-center">
+                  <Phone className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Phone</p>
+                  <p className="font-medium">{escalation.customerDetails.phoneNumber || 'Not provided'}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
+
+      {/* Main Content */}
+      <ScrollArea className="h-[calc(100vh-280px)]">
+        <div className="p-6 space-y-6">
+          {/* Issue Description */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <h2 className="text-lg font-semibold">Issue Details</h2>
+            </div>
+            <Card className="p-4">
+              <div className="space-y-3">
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Concern</h4>
+                  <p className="text-muted-foreground leading-relaxed">{escalation.concern}</p>
+                </div>
+                {escalation.description && (
+                  <div>
+                    <h4 className="font-medium text-foreground mb-2">Additional Description</h4>
+                    <p className="text-muted-foreground leading-relaxed">{escalation.description}</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+
+          {/* Chat Conversation */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-blue-500" />
+                <h2 className="text-lg font-semibold">Conversation History</h2>
+                <Badge variant="secondary" className="text-xs">
+                  {chatMessages.length} messages
+                </Badge>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefreshChats}
+                disabled={refreshing}
+                className="gap-2"
+              >
+                <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
+                Refresh
+              </Button>
+            </div>
+
+            <Card className="p-0 overflow-hidden">
+              {loadingChats ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading conversation...</p>
+                </div>
+              ) : chatMessages.length === 0 ? (
+                <div className="p-8 text-center">
+                  <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                  <p className="text-muted-foreground">No conversation found for this session</p>
+                </div>
+              ) : (
+                <ScrollArea className="h-96">
+                  <div className="p-4 space-y-4">
+                    {chatMessages.map((message) => (
+                      <div key={message._id} className="space-y-3">
+                        {/* Customer Query */}
+                        <div className="flex gap-3">
+                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <UserCircle className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">Customer</span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {formatTime(message.createdAt)}
+                              </span>
+                            </div>
+                            <div className="bg-gray-800 rounded-lg p-3 border-l-2 ">
+                              <p className="text-sm leading-relaxed">{message.query}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bot Response */}
+                        <div className="flex gap-3 ml-6">
+                          <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <Bot className="h-4 w-4 text-green-600" />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">AI Assistant</span>
+                              {message.isGoodResponse !== null && (
+                                <Badge variant={message.isGoodResponse ? "default" : "destructive"} className="text-xs">
+                                  {message.isGoodResponse ? "Helpful" : "Not Helpful"}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="bg-gray-800 rounded-lg p-3 border-l-2 ">
+                              <p className="text-sm leading-relaxed">{message.response}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </Card>
+          </div>          
+          
+          {/* Timestamps */}
+          <div className="grid grid-cols-1 gap-6">
+            <Card className="p-4">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
+                    <Calendar className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="font-semibold">Timeline</h3>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>Created: {formatDate(escalation.createdAt)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    <span>Updated: {formatDate(escalation.updatedAt)}</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>        </div>
+      </ScrollArea>
     </div>
   )
 }
