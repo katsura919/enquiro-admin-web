@@ -20,6 +20,7 @@ export default function EscalationsPage() {
   const [page, setPage] = React.useState(1)
   const [totalPages, setTotalPages] = React.useState(1)
   const [search, setSearch] = React.useState("")
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([])
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const businessId = user?.businessId
 
@@ -89,8 +90,7 @@ export default function EscalationsPage() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-           
-      <EscalationTable
+             <EscalationTable
         escalations={escalations.filter(e =>
           e.customerName.toLowerCase().includes(search.toLowerCase()) ||
           e.caseNumber.toLowerCase().includes(search.toLowerCase()) ||
@@ -98,6 +98,8 @@ export default function EscalationsPage() {
         )}
         onRowClick={handleRowClick}
         loading={loading}
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
       />
       
       <div className="flex justify-end gap-2 mt-4">

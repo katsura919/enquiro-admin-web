@@ -28,6 +28,7 @@ const getPageTitle = (pathname: string) => {
       return 'Settings'
     case 'business':
       return 'Business Settings'
+    
     default:
       return 'Dashboard'
   }

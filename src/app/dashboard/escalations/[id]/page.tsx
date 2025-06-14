@@ -3,26 +3,24 @@
 import * as React from "react"
 import { useRouter, useParams } from "next/navigation"
 import axios from "axios"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { 
+  ArrowLeft, 
   AlertTriangle, 
-  CheckCircle, 
-  User, 
-  Mail, 
-  Phone,
-  Calendar,
-  MessageSquare,
-  Bot,
-  UserCircle,
-  Clock,
-  ExternalLink,
-  RefreshCw,
-  ArrowLeft
+  Clock, 
+  CheckCircle
 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import {
+  ActivityFeed,
+  CaseNotes,
+  ConversationHistory,
+  CustomerInfoCard,
+  IssueDetails,
+  Timeline
+} from "./components"
 
 interface Escalation {
   _id: string
@@ -51,6 +49,10 @@ interface ChatMessage {
   updatedAt: string
 }
 
+// Import types from our component files
+import type { CaseNote } from './components/CaseNotes'
+import type { ActivityItem as Activity } from './components/ActivityFeed'
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const statusIcons = {
@@ -74,7 +76,90 @@ export default function EscalationDetailsPage() {
   const [loading, setLoading] = React.useState(false)
   const [loadingChats, setLoadingChats] = React.useState(false)
   const [refreshing, setRefreshing] = React.useState(false)
+  const [noteText, setNoteText] = React.useState("")
+  const [caseNotes, setCaseNotes] = React.useState<CaseNote[]>([
+    {
+      id: "note-1",
+      content: "Initial assessment: Customer reported issues with login functionality after the recent update.",
+      author: "Jane Smith",
+      createdAt: "2025-06-13T15:30:00Z"
+    },
+    {
+      id: "note-2",
+      content: "Checked account settings and found no permissions issues. Customer was advised to clear browser cache.",
+      author: "John Doe",
+      createdAt: "2025-06-14T09:15:00Z"
+    }
+  ])
+  const [activities, setActivities] = React.useState<Activity[]>([
+    {
+      id: "act-1",
+      action: "Status Changed",
+      user: "Jane Smith",
+      timestamp: "2025-06-13T16:45:00Z",
+      details: "Status changed from Escalated to Pending"
+    },
+    {
+      id: "act-2",
+      action: "Note Added",
+      user: "Jane Smith",
+      timestamp: "2025-06-13T15:30:00Z"
+    },
+    {
+      id: "act-3",
+      action: "Ticket Created",
+      user: "System",
+      timestamp: "2025-06-13T14:22:00Z",
+      details: "Escalation automatically created from chat session"
+    }
+  ])
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+
+  const addCaseNote = () => {
+    if (!noteText.trim()) return;
+    
+    const newNote: CaseNote = {
+      id: `note-${Date.now()}`,
+      content: noteText,
+      author: "Current User", // In a real app, get the current user's name
+      createdAt: new Date().toISOString()
+    };
+    
+    setCaseNotes([newNote, ...caseNotes]);
+    
+    // Add to activities
+    const newActivity: Activity = {
+      id: `act-${Date.now()}`,
+      action: "Note Added",
+      user: "Current User",
+      timestamp: new Date().toISOString()
+    };
+    
+    setActivities([newActivity, ...activities]);
+    setNoteText("");
+    
+    // In a real app, you would save this to the backend
+    // Example:
+    // axios.post(`${API_URL}/escalation/${id}/notes`, newNote, {
+    //   headers: { Authorization: `Bearer ${token}` }
+    // });
+  };
+
+  const deleteNote = (noteId: string) => {
+    setCaseNotes(caseNotes.filter(note => note.id !== noteId));
+    
+    // Add to activities
+    const newActivity: Activity = {
+      id: `act-${Date.now()}`,
+      action: "Note Deleted",
+      user: "Current User",
+      timestamp: new Date().toISOString()
+    };
+    
+    setActivities([newActivity, ...activities]);
+    
+    // In a real app, you would delete this from the backend
+  };
 
   React.useEffect(() => {
     if (!id || !token) return
@@ -120,7 +205,19 @@ export default function EscalationDetailsPage() {
         }
       )
       
-      setEscalation(prev => prev ? { ...prev, status: newStatus as any, updatedAt: new Date().toISOString() } : null)
+      const newUpdatedAt = new Date().toISOString();
+      
+      // Add status change to activities
+      const newActivity: Activity = {
+        id: `act-${Date.now()}`,
+        action: "Status Changed",
+        user: "Current User", // In a real app, get the current user's name
+        timestamp: newUpdatedAt,
+        details: `Status changed from ${escalation.status} to ${newStatus}`
+      };
+      
+      setActivities([newActivity, ...activities]);
+      setEscalation(prev => prev ? { ...prev, status: newStatus as any, updatedAt: newUpdatedAt } : null)
     } catch (error) {
       console.error('Error updating escalation status:', error)
     }
@@ -200,173 +297,67 @@ export default function EscalationDetailsPage() {
           </div>
 
           {/* Customer Info Card */}
-          <Card className="p-4 bg-background/50">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-3 text-sm">
-                <div className="h-8 w-8 rounded-md bg-primary/5 flex items-center justify-center">
-                  <UserCircle className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Name</p>
-                  <p className="font-medium">{escalation.customerName}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="h-8 w-8 rounded-md bg-primary/5 flex items-center justify-center">
-                  <Mail className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Email</p>
-                  <p className="font-medium break-all">{escalation.customerEmail}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <div className="h-8 w-8 rounded-md bg-primary/5 flex items-center justify-center">
-                  <Phone className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Phone</p>
-                  <p className="font-medium">{escalation.customerPhone || 'Not provided'}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <CustomerInfoCard 
+            customerName={escalation.customerName} 
+            customerEmail={escalation.customerEmail} 
+            customerPhone={escalation.customerPhone} 
+          />
         </div>
       </div>
 
       {/* Main Content */}
-      <ScrollArea className="h-[calc(100vh-280px)]">
-        <div className="p-6 space-y-6">
-          {/* Issue Description */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-              <h2 className="text-lg font-semibold">Issue Details</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
+        {/* Left Column - Issue Details & Conversation History */}
+        <div className="col-span-2">
+          <ScrollArea className="h-full pr-4">
+            <div className="p-6 space-y-6">
+              {/* Issue Details */}
+              <IssueDetails 
+                concern={escalation.concern}
+                description={escalation.description}
+                status={escalation.status}
+              />
+
+              {/* Chat Conversation */}
+              <ConversationHistory
+                chatMessages={chatMessages}
+                loadingChats={loadingChats}
+                refreshing={refreshing}
+                handleRefreshChats={handleRefreshChats}
+                formatTime={formatTime}
+              />
+              
+              {/* Timeline */}
+              <Timeline 
+                createdAt={escalation.createdAt}
+                updatedAt={escalation.updatedAt}
+                formatDate={formatDate}
+              />
             </div>
-            <Card className="p-4">
-              <div className="space-y-3">
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Concern</h4>
-                  <p className="text-muted-foreground leading-relaxed">{escalation.concern}</p>
-                </div>
-                {escalation.description && (
-                  <div>
-                    <h4 className="font-medium text-foreground mb-2">Additional Description</h4>
-                    <p className="text-muted-foreground leading-relaxed">{escalation.description}</p>
-                  </div>
-                )}
-              </div>
-            </Card>
-          </div>
-
-          {/* Chat Conversation */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-blue-500" />
-                <h2 className="text-lg font-semibold">Conversation History</h2>
-                <Badge variant="secondary" className="text-xs">
-                  {chatMessages.length} messages
-                </Badge>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefreshChats}
-                disabled={refreshing}
-                className="gap-2"
-              >
-                <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
-                Refresh
-              </Button>
+          </ScrollArea>
+        </div>
+        
+        {/* Right Column - Case Notes and Activity */}
+        <div className="border-l border-border/40 h-full">
+          <ScrollArea className="h-full">
+            <div className="p-6 space-y-8">
+              {/* Case Notes Section */}
+              <CaseNotes 
+                notes={caseNotes}
+                onAddNote={addCaseNote}
+                onDeleteNote={deleteNote}
+                formatDate={formatDate}
+              />
+              
+              {/* Recent Activity Section */}
+              <ActivityFeed 
+                activities={activities}
+                formatDate={formatDate}
+              />
             </div>
-
-            <Card className="p-0 overflow-hidden">
-              {loadingChats ? (
-                <div className="p-8 text-center">
-                  <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading conversation...</p>
-                </div>
-              ) : chatMessages.length === 0 ? (
-                <div className="p-8 text-center">
-                  <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                  <p className="text-muted-foreground">No conversation found for this session</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-96">
-                  <div className="p-4 space-y-4">
-                    {chatMessages.map((message) => (
-                      <div key={message._id} className="space-y-3">
-                        {/* Customer Query */}
-                        <div className="flex gap-3">
-                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                            <UserCircle className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">Customer</span>
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {formatTime(message.createdAt)}
-                              </span>
-                            </div>
-                            <div className="bg-muted rounded-lg p-3 border-l-2 border-blue-500">
-                              <p className="text-sm leading-relaxed">{message.query}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bot Response */}
-                        <div className="flex gap-3 ml-6">
-                          <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                            <Bot className="h-4 w-4 text-green-600" />
-                          </div>
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">AI Assistant</span>
-                              {message.isGoodResponse !== null && (
-                                <Badge variant={message.isGoodResponse ? "default" : "destructive"} className="text-xs">
-                                  {message.isGoodResponse ? "Helpful" : "Not Helpful"}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="bg-muted rounded-lg p-3 border-l-2 border-green-500">
-                              <p className="text-sm leading-relaxed">{message.response}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </Card>
-          </div>          
-          
-          {/* Timestamps */}
-          <div className="grid grid-cols-1 gap-6">
-            <Card className="p-4">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-primary" />
-                  </div>
-                  <h3 className="font-semibold">Timeline</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>Created: {formatDate(escalation.createdAt)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>Updated: {formatDate(escalation.updatedAt)}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>        </div>
-      </ScrollArea>
+          </ScrollArea>
+        </div>
+      </div>
     </div>
   )
 }
