@@ -1,5 +1,6 @@
 export { CustomerInfoCard } from './CustomerInfoCard';
 export { IssueDetails } from './IssueDetails';
+export { CustomerIssueCard } from './CustomerIssueCard';
 export { ConversationHistory } from './ConversationHistory';
 export { CaseNotes } from './CaseNotes';
 export { ActivityFeed } from './ActivityFeed';

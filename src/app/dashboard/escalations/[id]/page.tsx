@@ -4,12 +4,13 @@ import * as React from "react"
 import { useRouter, useParams } from "next/navigation"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { 
-  ArrowLeft, 
+  ChevronLeft , 
   AlertTriangle, 
   Clock, 
-  CheckCircle
+  Check,
+  ChevronDown,
+  Copy
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -17,10 +18,15 @@ import {
   ActivityFeed,
   CaseNotes,
   ConversationHistory,
-  CustomerInfoCard,
-  IssueDetails,
-  Timeline
+  CustomerIssueCard,
 } from "./components"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from "@/components/ui/dropdown-menu"
+import { useState } from "react"
 
 interface Escalation {
   _id: string
@@ -58,7 +64,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL
 const statusIcons = {
   escalated: AlertTriangle,
   pending: Clock,
-  resolved: CheckCircle
+  resolved: Check
 }
 
 const statusColors = {
@@ -84,12 +90,6 @@ export default function EscalationDetailsPage() {
       author: "Jane Smith",
       createdAt: "2025-06-13T15:30:00Z"
     },
-    {
-      id: "note-2",
-      content: "Checked account settings and found no permissions issues. Customer was advised to clear browser cache.",
-      author: "John Doe",
-      createdAt: "2025-06-14T09:15:00Z"
-    }
   ])
   const [activities, setActivities] = React.useState<Activity[]>([
     {
@@ -114,6 +114,8 @@ export default function EscalationDetailsPage() {
     }
   ])
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  const [copiedCaseNumber, setCopiedCaseNumber] = useState(false);
+  const [copiedSessionId, setCopiedSessionId] = useState(false);
 
   const addCaseNote = () => {
     if (!noteText.trim()) return;
@@ -254,110 +256,133 @@ export default function EscalationDetailsPage() {
   if (!escalation) return <div className="p-8 text-center">Escalation not found.</div>
 
   const StatusIcon = statusIcons[escalation.status]
-
-  return (
-    <div className="h-full bg-background">
-      {/* Header Section */}
-      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="p-6">
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="sm" onClick={() => router.back()}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <div className="space-y-1">
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-foreground tracking-tight">
-                    Escalation Details
-                  </h1>
-                  <Badge variant="outline" className="text-xs font-mono">
-                    #{escalation.caseNumber}
-                  </Badge>
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  Session ID: {escalation.sessionId}
-                </p>
-              </div>
-            </div>
+  
+return (
+  <div className="bg-background min-h-screen flex flex-col">
+    {/* Header Section - Responsive and Compact */}
+    <div className="border-b border-border bg-card/50 w-full">
+      <div className="px-4 py-3 md:px-6 md:py-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <StatusIcon className={cn("h-4 w-4", statusColors[escalation.status])} />
-                <select
-                  value={escalation.status}
-                  onChange={(e) => handleStatusChange(e.target.value)}
-                  className="px-3 py-2 bg-background border border-input rounded-lg text-sm font-medium capitalize focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg md:text-2xl font-bold text-foreground tracking-tight">
+                Case 
+                </h1>
+               <h2 className="text-lg md:text-2xl font-bold text-foreground tracking-tight">
+                  #{escalation.caseNumber}
+                  <button
+                    type="button"
+                    className="ml-1 p-0.5 rounded hover:bg-accent"
+                    title="Copy Case Number"
+                    onClick={() => {
+                      navigator.clipboard.writeText(escalation.caseNumber);
+                      setCopiedCaseNumber(true);
+                      setTimeout(() => setCopiedCaseNumber(false), 1500);
+                    }}
+                  >
+                    <span className="sr-only">Copy Case Number</span>
+                    {copiedCaseNumber ? (
+                      <Check className="h-3.5 w-3.5 text-green-500" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </button>
+                </h2>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground text-xs md:text-sm break-all">
+                Session ID: {escalation.sessionId}
+                </span>
+                <button
+                type="button"
+                className="ml-1 p-0.5 rounded hover:bg-accent"
+                title="Copy Session ID"
+                onClick={() => {
+                  navigator.clipboard.writeText(escalation.sessionId);
+                  setCopiedSessionId(true);
+                  setTimeout(() => setCopiedSessionId(false), 1500);
+                }}
                 >
-                  <option value="escalated">Escalated</option>
-                  <option value="pending">Pending</option>
-                  <option value="resolved">Resolved</option>
-                </select>
+                <span className="sr-only">Copy Session ID</span>
+                {copiedSessionId ? (
+                  <Check className="h-3.5 w-3.5 text-green-500" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+                </button>
+              </div>
               </div>
             </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <StatusIcon className={cn("h-4 w-4", statusColors[escalation.status])} />
+                  <span className="capitalize">{escalation.status}</span>
+                  <ChevronDown className="h-4 w-4 ml-1 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleStatusChange('escalated')}>
+                  <span className={cn("flex items-center gap-2", escalation.status === 'escalated' && 'font-bold')}>Escalated</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange('pending')}>
+                  <span className={cn("flex items-center gap-2", escalation.status === 'pending' && 'font-bold')}>Pending</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange('resolved')}>
+                  <span className={cn("flex items-center gap-2", escalation.status === 'resolved' && 'font-bold')}>Resolved</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-
-          {/* Customer Info Card */}
-          <CustomerInfoCard 
-            customerName={escalation.customerName} 
-            customerEmail={escalation.customerEmail} 
-            customerPhone={escalation.customerPhone} 
-          />
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
-        {/* Left Column - Issue Details & Conversation History */}
-        <div className="col-span-2">
-          <ScrollArea className="h-full pr-4">
-            <div className="p-6 space-y-6">
-              {/* Issue Details */}
-              <IssueDetails 
-                concern={escalation.concern}
-                description={escalation.description}
-                status={escalation.status}
-              />
-
-              {/* Chat Conversation */}
-              <ConversationHistory
-                chatMessages={chatMessages}
-                loadingChats={loadingChats}
-                refreshing={refreshing}
-                handleRefreshChats={handleRefreshChats}
-                formatTime={formatTime}
-              />
-              
-              {/* Timeline */}
-              <Timeline 
-                createdAt={escalation.createdAt}
-                updatedAt={escalation.updatedAt}
-                formatDate={formatDate}
-              />
-            </div>
-          </ScrollArea>
-        </div>
-        
-        {/* Right Column - Case Notes and Activity */}
-        <div className="border-l border-border/40 h-full">
-          <ScrollArea className="h-full">
-            <div className="p-6 space-y-8">
-              {/* Case Notes Section */}
-              <CaseNotes 
-                notes={caseNotes}
-                onAddNote={addCaseNote}
-                onDeleteNote={deleteNote}
-                formatDate={formatDate}
-              />
-              
-              {/* Recent Activity Section */}
-              <ActivityFeed 
-                activities={activities}
-                formatDate={formatDate}
-              />
-            </div>
-          </ScrollArea>
         </div>
       </div>
     </div>
-  )
+
+    {/* Main Content */}
+    <div className="flex-1 overflow-y-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 md:p-6">
+        {/* Left Column */}
+        <div className="col-span-2 space-y-6">
+          <CustomerIssueCard
+            customerName={escalation.customerName}
+            customerEmail={escalation.customerEmail}
+            customerPhone={escalation.customerPhone}
+            concern={escalation.concern}
+            description={escalation.description}
+            status={escalation.status}
+          />
+
+          <ConversationHistory
+            chatMessages={chatMessages}
+            loadingChats={loadingChats}
+            refreshing={refreshing}
+            handleRefreshChats={handleRefreshChats}
+            formatTime={formatTime}
+          />
+
+        </div>
+
+        {/* Right Column */}
+        <div className="md:border-l md:border-border/40">
+          <div className="p-0 md:p-6 space-y-8">
+            <CaseNotes 
+              notes={caseNotes}
+              onAddNote={addCaseNote}
+              onDeleteNote={deleteNote}
+              formatDate={formatDate}
+            />
+
+            <ActivityFeed 
+              activities={activities}
+              formatDate={formatDate}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
 }

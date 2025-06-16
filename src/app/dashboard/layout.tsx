@@ -45,25 +45,18 @@ export default function DashboardLayout({
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-  return (    <ProtectedRoute>
+  return (
+    <ProtectedRoute>
       <div className="min-h-screen bg-background">
-        {/* Mobile sidebar backdrop */}
-        {isMobile && isSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 transition-all duration-300 ease-out"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
-
-        {/* Sidebar */}          <div
+        {/* Sidebar - fixed on the left */}
+        <div
           className={cn(
-            "fixed inset-y-0 z-50 flex flex-col transition-all duration-300 ease-out",
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-            isSidebarOpen ? "w-80" : "lg:w-20"
+            "fixed top-0 left-0 z-40 flex flex-col h-screen transition-all duration-300 ease-out bg-card/50 backdrop-blur-xl border-r border-border shadow-2xl",
+            isSidebarOpen ? "w-80" : "lg:w-20 w-0"
           )}
         >
           <div className="flex grow flex-col overflow-y-auto bg-card/50 backdrop-blur-xl px-4 pb-4 border-r border-border h-full shadow-2xl">            
-          {/* Header */}
+            {/* Header */}
             <div className="flex h-20 shrink-0 items-center justify-between px-2">              <Link 
                 href="/dashboard" 
                 className={cn(
@@ -75,7 +68,6 @@ export default function DashboardLayout({
                 <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
                   <span className="text-primary-foreground font-bold text-sm">E</span>
                 </div>
-                
                 {/* Brand name */}                <span 
                   className={cn(
                     "text-xl font-bold transition-all duration-300 ease-out whitespace-nowrap",
@@ -93,7 +85,6 @@ export default function DashboardLayout({
                 <Menu className="h-5 w-5 text-muted-foreground" />
               </Button>
             </div>
-
             {/* Navigation */}
             <nav className="flex flex-1 flex-col px-2 py-4">
               <div className="flex flex-1 flex-col gap-2">                
@@ -116,7 +107,6 @@ export default function DashboardLayout({
                       {isActive && (
                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full shadow-lg" />
                       )}
-                      
                       <div className="flex-shrink-0">
                         <item.icon className={cn(
                           "h-5 w-5 transition-all duration-300",
@@ -156,25 +146,24 @@ export default function DashboardLayout({
               </div>
             </nav>
           </div>
-        </div>        {/* Main content */}        <main className={cn(
-          "transition-all duration-300 h-screen flex flex-col",
-          isSidebarOpen ? "lg:pl-80" : "lg:pl-20",
-          "pl-0" // Default padding for mobile
-        )}>
-          <div className="bg-background flex flex-col h-full">
-            {/* Topbar - shown on all screen sizes */}
-            <Topbar 
-              onMenuToggle={() => setIsSidebarOpen(true)} 
-              isMobile={isMobile}
-            />
-            
-            {/* Page content */}
-            <div className="flex-1 overflow-hidden">
-              {children}
-            </div>
+        </div>
+        {/* Main content */}
+        <main
+          className={cn(
+            "transition-all duration-300 flex flex-col min-h-screen",
+            isSidebarOpen ? "lg:pl-80" : "lg:pl-20 pl-0"
+          )}
+        >
+          {/* Topbar always at the top of the main content */}
+          <Topbar 
+            onMenuToggle={() => setIsSidebarOpen(true)} 
+            isMobile={isMobile}
+          />
+          <div className="bg-background flex flex-col flex-1 h-full">
+            {children}
           </div>
         </main>
       </div>
     </ProtectedRoute>
   )
-} 
+}

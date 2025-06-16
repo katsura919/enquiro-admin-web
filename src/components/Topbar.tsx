@@ -13,8 +13,11 @@ interface TopbarProps {
 
 const getPageTitle = (pathname: string) => {
   const segments = pathname.split('/').filter(Boolean)
+  // If the path is /dashboard/escalations/[id] or deeper, show 'Escalation Details'
+  if (segments.includes('escalations') && segments.length > 2) {
+    return 'Escalation Details'
+  }
   const page = segments[segments.length - 1]
-  
   switch (page) {
     case 'dashboard':
       return 'Overview'
@@ -38,7 +41,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
   const pathname = usePathname()
   const pageTitle = getPageTitle(pathname)
   return (
-    <header className="h-16 bg-card/50 backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 left-0 w-full z-30 h-16 bg-card/50 backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
       {/* Left section */}
       <div className="flex items-center gap-4">
         {/* Mobile menu button */}
