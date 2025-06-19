@@ -47,7 +47,7 @@ interface EscalationResponse {
 const TypewriterEffect = ({ content, onComplete }: { content: string; onComplete?: () => void }) => {
   const [displayedContent, setDisplayedContent] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
-  const speedRef = useRef(30); // Typing speed in milliseconds
+  const speedRef = useRef(30);
 
   useEffect(() => {
     if (currentIndex < content.length) {
@@ -57,11 +57,11 @@ const TypewriterEffect = ({ content, onComplete }: { content: string; onComplete
         
         // Adjust speed based on punctuation
         if (".!?".includes(content[currentIndex])) {
-          speedRef.current = 500; // Pause longer at sentences
+          speedRef.current = 500; 
         } else if (",;:".includes(content[currentIndex])) {
-          speedRef.current = 200; // Pause at commas and other punctuation
+          speedRef.current = 200; 
         } else {
-          speedRef.current = 30; // Normal typing speed
+          speedRef.current = 30; 
         }
       }, speedRef.current);
 
