@@ -66,60 +66,59 @@ export function ConversationHistory({
             <p className="text-muted-foreground">No conversation found for this session</p>
           </div>
         ) : (
-          <ScrollArea className="h-[450px]">
+          <ScrollArea className="h-[500px]">
             <div className="p-4 space-y-6">
               {chatMessages.map((message) => (
-                <div key={message._id} className="space-y-2">
+                <div key={message._id} className="space-y-6">
                   {/* User Message (right) */}
-                  <div className="flex justify-end">
-                    <div className="flex items-end gap-2 max-w-2xl w-full justify-end">
-                      <div className="flex-1 flex flex-col items-end">
-                        <div className="flex items-center justify-end gap-2">
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatTime(message.createdAt)}
-                          </span>
-                          <span className="text-sm font-medium">Customer</span>
-                        </div>
-                        <div className="bg-blue-500 text-white rounded-lg p-3 border-r-4 border-blue-700 max-w-full">
+                  <div className="flex flex-col items-end space-y-1">
+                    <span className="text-sm font-medium">Customer</span>
+                    <div className="flex justify-end w-full">
+                      <div className="grid grid-cols-[1fr_auto] gap-3 max-w-[80%]">
+                        <div className="bg-blue-500 text-white rounded-lg p-3 justify-self-end">
                           <p className="text-sm leading-relaxed break-words">{message.query}</p>
                         </div>
-                      </div>
-                      <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
-                        <UserCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                          <UserCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
                       </div>
                     </div>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1 mr-12">
+                      <Clock className="h-3 w-3" />
+                      {formatTime(message.createdAt)}
+                    </span>
                   </div>
+
                   {/* AI Message (left) */}
-                  <div className="flex justify-start">
-                    <div className="flex items-end gap-2 max-w-2xl w-full">
+                  <div className="flex flex-col items-start space-y-1">
+                    <span className="text-sm font-medium">AI Assistant</span>
+                    <div className="grid grid-cols-[auto_1fr] gap-3 max-w-[80%]">
                       <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
                         <Bot className="h-4 w-4 text-green-600 dark:text-green-400" />
                       </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">AI Assistant</span>
-                          {message.isGoodResponse !== null && (
-                            <Badge variant={message.isGoodResponse ? "default" : "destructive"} className="text-xs">
-                              {message.isGoodResponse ? "Helpful" : "Not Helpful"}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="bg-muted rounded-lg p-3 border-l-4 border-green-700 max-w-full">
-                          <Markdown
-                            options={{
-                              overrides: {
-                                a: {
-                                  component: ({ children }) => <span className="text-primary underline cursor-pointer">{children}</span>,
-                                },
+                      <div className="bg-muted rounded-lg p-3">
+                        {message.isGoodResponse !== null && (
+                          <Badge variant={message.isGoodResponse ? "default" : "destructive"} className="mb-2 text-xs">
+                            {message.isGoodResponse ? "Helpful" : "Not Helpful"}
+                          </Badge>
+                        )}
+                        <Markdown
+                          options={{
+                            overrides: {
+                              a: {
+                                component: ({ children }) => <span className="text-primary underline cursor-pointer">{children}</span>,
                               },
-                            }}
-                          >
-                            {message.response.replace(/\[([^\]]+)\]\(escalate:\/\/now\)/gi, "click here")}
-                          </Markdown>
-                        </div>
+                            },
+                          }}
+                        >
+                          {message.response.replace(/\[([^\]]+)\]\(escalate:\/\/now\)/gi, "click here")}
+                        </Markdown>
                       </div>
                     </div>
+                    <span className="text-xs text-muted-foreground flex items-center gap-1 ml-12">
+                      <Clock className="h-3 w-3" />
+                      {formatTime(message.updatedAt || message.createdAt)}
+                    </span>
                   </div>
                 </div>
               ))}

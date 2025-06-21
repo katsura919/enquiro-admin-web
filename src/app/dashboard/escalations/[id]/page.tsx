@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useState } from "react"
 import { EscalationHeader } from "./components/EscalationHeader"
+import { PageSpinner } from "@/components/ui/spinner"
 
 interface Escalation {
   _id: string
@@ -251,9 +252,8 @@ export default function EscalationDetailsPage() {
       minute: '2-digit' 
     })
   }
-
-  if (loading) return <div className="p-8 text-center">Loading...</div>
-  if (!escalation) return <div className="p-8 text-center">Escalation not found.</div>
+  if (loading) return <PageSpinner message="Loading escalation details..." />
+  if (!escalation) return <PageSpinner message="Escalation not found" />
 
   const StatusIcon = statusIcons[escalation.status]
   
@@ -272,12 +272,10 @@ return (
       setCopiedCaseNumber={setCopiedCaseNumber}
       setCopiedSessionId={setCopiedSessionId}
       handleStatusChange={handleStatusChange}
-    />
-
+    />    
     {/* Main Content */}
     <div className="flex-1 overflow-y-auto">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 md:p-6">
-        {/* Left Column */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 md:p-6">        {/* Left Column */}
         <div className="col-span-2 space-y-6">
           <CustomerIssueCard
             customerName={escalation.customerName}
@@ -295,12 +293,11 @@ return (
             handleRefreshChats={handleRefreshChats}
             formatTime={formatTime}
           />
-
         </div>
 
         {/* Right Column */}
         <div className="md:border-l md:border-border/40">
-          <div className="p-0 md:p-6 space-y-8">
+          <div className="p-0 md:p-4 space-y-8">
             <CaseNotes 
               notes={caseNotes}
               onAddNote={addCaseNote}

@@ -4,4 +4,5 @@ export { CustomerIssueCard } from './CustomerIssueCard';
 export { ConversationHistory } from './ConversationHistory';
 export { CaseNotes } from './CaseNotes';
 export { ActivityFeed } from './ActivityFeed';
+export { ViewAllActivities } from './ViewAllActivities';
 export { Timeline } from './Timeline';

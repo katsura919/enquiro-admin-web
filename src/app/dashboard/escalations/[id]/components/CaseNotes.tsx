@@ -34,7 +34,7 @@ export function CaseNotes({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 ">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-indigo-500" />
@@ -46,10 +46,6 @@ export function CaseNotes({
       {/* Add Note Form */}
       <Card className="p-4 overflow-hidden shadow-sm border-border/40 relative">
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <PenLine className="h-4 w-4 text-muted-foreground" />
-            <h4 className="font-medium">Add Note</h4>
-          </div>
           <Textarea
             placeholder="Type your note here..."
             value={noteText}

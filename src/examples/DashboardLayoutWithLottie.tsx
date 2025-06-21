@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -11,14 +11,50 @@ import {
   Settings,
   LogOut,
   Menu,
-  ChevronLeft,
-  ChevronRight,
   AlertTriangle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Topbar from '@/components/Topbar'
 import { PageSpinner } from '@/components/ui/spinner'
+
+// Create a custom loading component for your application
+function AppLoading() {
+  const [animationData, setAnimationData] = useState(null);
+
+  useEffect(() => {
+    // Fetch the Lottie animation
+    fetch('/animations/loading-animation.json')
+      .then(response => response.json())
+      .then(data => {
+        setAnimationData(data);
+      })
+      .catch(err => {
+        console.error("Failed to load animation:", err);
+      });
+  }, []);
+
+  return <PageSpinner animationData={animationData} message="Loading content..." />;
+}
+
+/* 
+HOW TO USE THIS DASHBOARD LAYOUT WITH LOTTIE SPINNER:
+
+1. Replace the standard dashboard layout.tsx with this file
+2. Place your Lottie animation file in /public/animations/loading-animation.json
+3. The Lottie animation will display when content is loading
+
+For example:
+
+<main className="...">
+  <Topbar ... />
+  <div className="...">
+    <Suspense fallback={<AppLoading />}>
+      {children}
+    </Suspense>
+  </div>
+</main>
+*/
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -28,7 +64,7 @@ const navigation = [
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
-export default function DashboardLayout({
+export default function DashboardLayoutWithLottie({
   children,
 }: {
   children: React.ReactNode
@@ -36,8 +72,6 @@ export default function DashboardLayout({
   const pathname = usePathname()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [animationData, setAnimationData] = useState(null)
   
   // Handle window resize
   useEffect(() => {
@@ -51,52 +85,6 @@ export default function DashboardLayout({
     return () => window.removeEventListener('resize', handleResize)
   }, [])
   
-  // Load Lottie animation
-  useEffect(() => {
-    fetch('/animations/spinner.json')
-      .then(response => response.json())
-      .then(data => {
-        setAnimationData(data)
-      })
-      .catch(err => {
-        console.error("Failed to load animation:", err)
-      })
-  }, [])
-    // Handle loading state with minimum duration
-  useEffect(() => {
-    // Set minimum loading duration to 2 seconds
-    const minLoadingTime = 1000 // 2 seconds
-    const startTime = Date.now()
-    
-    const timer = setTimeout(() => {
-      // Calculate elapsed time
-      const elapsed = Date.now() - startTime
-      
-      // If less than minimum time has passed, wait the remaining time
-      if (elapsed < minLoadingTime) {
-        setTimeout(() => setIsLoading(false), minLoadingTime - elapsed)
-      } else {
-        setIsLoading(false)
-      }
-    }, 500) // Initial delay to check if content is loaded quickly    
-    return () => clearTimeout(timer)
-  }, [])
-
-  // If loading, show the spinner  
-  if (isLoading) {
-    return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-background">
-          <PageSpinner 
-            animationData={animationData}
-            showProgressBar={true}
-          />
-        </div>
-      </ProtectedRoute>
-    )
-  }
-  
-  // Otherwise, show the full dashboard
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background">
@@ -107,20 +95,22 @@ export default function DashboardLayout({
             isSidebarOpen ? "w-80" : "lg:w-20 -translate-x-full lg:translate-x-0"
           )}
         >
+          {/* Sidebar content (same as in the original layout) */}
           <div className="flex grow flex-col overflow-y-auto px-4 pb-4 h-full">            
             {/* Header */}
-            <div className="flex h-20 shrink-0 items-center justify-between px-2">              <Link 
+            <div className="flex h-20 shrink-0 items-center justify-between px-2">
+              {/* Logo and brand name */}
+              <Link 
                 href="/dashboard" 
                 className={cn(
                   "flex items-center gap-3 text-foreground transition-all duration-300 ease-out group",
                   !isSidebarOpen && "lg:justify-center"
                 )}
               >
-                {/* Logo icon */}
                 <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
                   <span className="text-primary-foreground font-bold text-sm">E</span>
                 </div>
-                {/* Brand name */}                <span 
+                <span 
                   className={cn(
                     "text-xl font-bold transition-all duration-300 ease-out whitespace-nowrap",
                     !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
@@ -128,7 +118,9 @@ export default function DashboardLayout({
                 >
                   Enquiro
                 </span>
-              </Link>              {/* Mobile menu button */}
+              </Link>
+              
+              {/* Mobile menu button */}
               <Button
                 variant="ghost"
                 className="lg:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent"
@@ -137,12 +129,15 @@ export default function DashboardLayout({
                 <Menu className="h-5 w-5 text-muted-foreground" />
               </Button>
             </div>
+            
             {/* Navigation */}
             <nav className="flex flex-1 flex-col px-2 py-4">
               <div className="flex flex-1 flex-col gap-2">                
+                {/* Navigation items (same as in the original layout) */}
                 {navigation.map((item, index) => {
                   const isActive = pathname === item.href
-                  return (                    <Link
+                  return (
+                    <Link
                       key={item.name}
                       href={item.href}
                       className={cn(
@@ -165,7 +160,7 @@ export default function DashboardLayout({
                           isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                         )} />
                       </div>
-                        <span className={cn(
+                      <span className={cn(
                         "transition-all duration-300 ease-out whitespace-nowrap",
                         !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
                       )}>
@@ -173,7 +168,9 @@ export default function DashboardLayout({
                       </span>
                     </Link>
                   )
-                })}                {/* Sign out button */}                
+                })}
+                
+                {/* Sign out button */}
                 <div className="mt-auto pt-4 border-t border-border">
                   <Link
                     href="/auth"
@@ -187,7 +184,7 @@ export default function DashboardLayout({
                     <div className="flex-shrink-0">
                       <LogOut className="h-5 w-5 transition-all duration-300" />
                     </div>
-                      <span className={cn(
+                    <span className={cn(
                       "transition-all duration-300 ease-out whitespace-nowrap",
                       !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
                     )}>
@@ -199,6 +196,7 @@ export default function DashboardLayout({
             </nav>
           </div>
         </div>
+        
         {/* Main content */}
         <main
           className={cn(
@@ -211,8 +209,12 @@ export default function DashboardLayout({
             onMenuToggle={() => setIsSidebarOpen(true)} 
             isMobile={isMobile}
           />
+          
+          {/* Main content with Lottie spinner for loading states */}
           <div className="bg-background flex flex-col flex-1 h-full">
-            {children}
+            <Suspense fallback={<AppLoading />}>
+              {children}
+            </Suspense>
           </div>
         </main>
       </div>
