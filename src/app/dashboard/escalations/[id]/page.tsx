@@ -3,31 +3,19 @@
 import * as React from "react"
 import { useRouter, useParams } from "next/navigation"
 import axios from "axios"
-import { Button } from "@/components/ui/button"
 import { 
   AlertTriangle, 
   Clock, 
   Check,
-  ChevronDown,
-  Copy
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
 import {
   ActivityFeed,
   CaseNotes,
   ConversationHistory,
   CustomerIssueCard,
 } from "./components"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem
-} from "@/components/ui/dropdown-menu"
 import { useState } from "react"
 import { EscalationHeader } from "./components/EscalationHeader"
-import { PageSpinner } from "@/components/ui/spinner"
 
 interface Escalation {
   _id: string
@@ -89,35 +77,14 @@ export default function EscalationDetailsPage() {
       id: "note-1",
       content: "Initial assessment: Customer reported issues with login functionality after the recent update.",
       author: "Jane Smith",
-      createdAt: "2025-06-13T15:30:00Z"
-    },
-  ])
-  const [activities, setActivities] = React.useState<Activity[]>([
-    {
-      id: "act-1",
-      action: "Status Changed",
-      user: "Jane Smith",
-      timestamp: "2025-06-13T16:45:00Z",
-      details: "Status changed from Escalated to Pending"
-    },
-    {
-      id: "act-2",
-      action: "Note Added",
-      user: "Jane Smith",
-      timestamp: "2025-06-13T15:30:00Z"
-    },
-    {
-      id: "act-3",
-      action: "Ticket Created",
-      user: "System",
-      timestamp: "2025-06-13T14:22:00Z",
-      details: "Escalation automatically created from chat session"
-    }
-  ])
+      createdAt: "2025-06-13T15:30:00Z"    },
+    ])
+  const [activities, setActivities] = React.useState<Activity[]>([])
+  const [loadingActivities, setLoadingActivities] = React.useState(false)
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const [copiedCaseNumber, setCopiedCaseNumber] = useState(false);
   const [copiedSessionId, setCopiedSessionId] = useState(false);
-
+  console.log(activities)
   const addCaseNote = () => {
     if (!noteText.trim()) return;
     
@@ -134,7 +101,6 @@ export default function EscalationDetailsPage() {
     const newActivity: Activity = {
       id: `act-${Date.now()}`,
       action: "Note Added",
-      user: "Current User",
       timestamp: new Date().toISOString()
     };
     
@@ -155,7 +121,6 @@ export default function EscalationDetailsPage() {
     const newActivity: Activity = {
       id: `act-${Date.now()}`,
       action: "Note Deleted",
-      user: "Current User",
       timestamp: new Date().toISOString()
     };
     
@@ -163,7 +128,6 @@ export default function EscalationDetailsPage() {
     
     // In a real app, you would delete this from the backend
   };
-
   React.useEffect(() => {
     if (!id || !token) return
     setLoading(true)
@@ -176,11 +140,12 @@ export default function EscalationDetailsPage() {
         if (res.data.sessionId) {
           fetchChatMessages(res.data.sessionId)
         }
+        // Fetch activities for this escalation
+        fetchActivities(res.data._id)
       })
       .catch(() => setEscalation(null))
       .finally(() => setLoading(false))
   }, [id, token])
-
   const fetchChatMessages = async (sessionId: string) => {
     setLoadingChats(true)
     try {
@@ -196,6 +161,27 @@ export default function EscalationDetailsPage() {
     }
   }
 
+  const fetchActivities = async (escalationId: string) => {
+    setLoadingActivities(true)
+    try {
+      const response = await axios.get(`${API_URL}/activity/escalation/${escalationId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      // Transform server response to match client-side Activity interface
+      const transformedActivities = response.data.map((activity: any) => ({
+        id: activity._id,
+        action: activity.action,
+        timestamp: activity.timestamp,
+        details: activity.details
+      }))
+      setActivities(transformedActivities)
+    } catch (error) {
+      console.error('Error fetching activities:', error)
+      setActivities([])
+    } finally {
+      setLoadingActivities(false)
+    }
+  }
   const handleStatusChange = async (newStatus: string) => {
     if (!escalation) return
     
@@ -210,17 +196,11 @@ export default function EscalationDetailsPage() {
       
       const newUpdatedAt = new Date().toISOString();
       
-      // Add status change to activities
-      const newActivity: Activity = {
-        id: `act-${Date.now()}`,
-        action: "Status Changed",
-        user: "Current User", // In a real app, get the current user's name
-        timestamp: newUpdatedAt,
-        details: `Status changed from ${escalation.status} to ${newStatus}`
-      };
-      
-      setActivities([newActivity, ...activities]);
+      // Update escalation state
       setEscalation(prev => prev ? { ...prev, status: newStatus as any, updatedAt: newUpdatedAt } : null)
+      
+      // Refresh activities to show the new status change activity
+      fetchActivities(escalation._id)
     } catch (error) {
       console.error('Error updating escalation status:', error)
     }
@@ -250,40 +230,40 @@ export default function EscalationDetailsPage() {
     return new Date(dateString).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit' 
-    })
-  }
-  if (loading) return <PageSpinner message="Loading escalation details..." />
-  if (!escalation) return <PageSpinner message="Escalation not found" />
-
-  const StatusIcon = statusIcons[escalation.status]
+    })  }
+  
+  const StatusIcon = escalation ? statusIcons[escalation.status] : AlertTriangle
   
 return (
   <div className="bg-background min-h-screen flex flex-col">
-    <EscalationHeader
-      escalation={{
-        caseNumber: escalation.caseNumber,
-        sessionId: escalation.sessionId,
-        status: escalation.status,
-      }}
-      statusColors={statusColors}
-      StatusIcon={StatusIcon}
-      copiedCaseNumber={copiedCaseNumber}
-      copiedSessionId={copiedSessionId}
-      setCopiedCaseNumber={setCopiedCaseNumber}
-      setCopiedSessionId={setCopiedSessionId}
-      handleStatusChange={handleStatusChange}
-    />    
+    {escalation && (
+      <EscalationHeader
+        escalation={{
+          caseNumber: escalation.caseNumber,
+          sessionId: escalation.sessionId,
+          status: escalation.status,
+        }}
+        statusColors={statusColors}
+        StatusIcon={StatusIcon}
+        copiedCaseNumber={copiedCaseNumber}
+        copiedSessionId={copiedSessionId}
+        setCopiedCaseNumber={setCopiedCaseNumber}
+        setCopiedSessionId={setCopiedSessionId}
+        handleStatusChange={handleStatusChange}
+      />
+    )}
     {/* Main Content */}
     <div className="flex-1 overflow-y-auto">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 md:p-6">        {/* Left Column */}
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 md:p-6">        
+        {/* Left Column */}
+        <div className="col-span-2 space-y-4">
           <CustomerIssueCard
-            customerName={escalation.customerName}
-            customerEmail={escalation.customerEmail}
-            customerPhone={escalation.customerPhone}
-            concern={escalation.concern}
-            description={escalation.description}
-            status={escalation.status}
+            customerName={escalation?.customerName || ''}
+            customerEmail={escalation?.customerEmail || ''}
+            customerPhone={escalation?.customerPhone}
+            concern={escalation?.concern || ''}
+            description={escalation?.description}
+            status={escalation?.status || 'escalated'}
           />
 
           <ConversationHistory
@@ -303,8 +283,7 @@ return (
               onAddNote={addCaseNote}
               onDeleteNote={deleteNote}
               formatDate={formatDate}
-            />
-
+            />            
             <ActivityFeed 
               activities={activities}
               formatDate={formatDate}

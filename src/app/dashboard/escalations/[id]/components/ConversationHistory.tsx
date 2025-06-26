@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Bot, Clock, MessageSquare, RefreshCw, UserCircle } from "lucide-react";
 import Markdown from "markdown-to-jsx";
@@ -39,9 +40,6 @@ export function ConversationHistory({
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-blue-500" />
           <h2 className="text-lg font-semibold">Conversation History</h2>
-          <Badge variant="secondary" className="text-xs">
-            {chatMessages.length} messages
-          </Badge>
         </div>
         <Button
           variant="outline"
@@ -53,20 +51,40 @@ export function ConversationHistory({
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")}/>
           Refresh
         </Button>
-      </div>
-      <Card className="p-0 overflow-hidden shadow-sm border-border/40">
-        {loadingChats ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading conversation...</p>
-          </div>
-        ) : chatMessages.length === 0 ? (
-          <div className="p-8 text-center">
-            <MessageSquare className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">No conversation found for this session</p>
-          </div>
+      </div>        <Card className="p-0 overflow-hidden shadow-sm border-border/40">
+        {chatMessages.length === 0 ? (
+          <ScrollArea className="h-[470px]">
+            <div className="p-4 space-y-4">
+              {/* Customer message skeleton */}
+              <div className="flex flex-col items-end space-y-1">
+                <Skeleton className="h-4 w-16" /> {/* Name */}
+                <Skeleton className="h-8 w-64" /> {/* Message */}
+                <Skeleton className="h-3 w-12" /> {/* Time */}
+              </div>
+              
+              {/* AI message skeleton */}
+              <div className="flex flex-col items-start space-y-1">
+                <Skeleton className="h-4 w-20" /> {/* Name */}
+                <Skeleton className="h-12 w-80" /> {/* Message */}
+                <Skeleton className="h-3 w-12" /> {/* Time */}
+              </div>
+              
+              {/* Customer message skeleton */}
+              <div className="flex flex-col items-end space-y-1">
+                <Skeleton className="h-4 w-16" /> {/* Name */}
+                <Skeleton className="h-6 w-48" /> {/* Message */}
+                <Skeleton className="h-3 w-12" /> {/* Time */}
+              </div>
+              
+              {/* AI message skeleton */}
+              <div className="flex flex-col items-start space-y-1">
+                <Skeleton className="h-4 w-20" /> {/* Name */}
+                <Skeleton className="h-10 w-72" /> {/* Message */}
+                <Skeleton className="h-3 w-12" /> {/* Time */}
+              </div>            </div>
+          </ScrollArea>
         ) : (
-          <ScrollArea className="h-[500px]">
+          <ScrollArea className="h-[470px]">
             <div className="p-4 space-y-6">
               {chatMessages.map((message) => (
                 <div key={message._id} className="space-y-6">

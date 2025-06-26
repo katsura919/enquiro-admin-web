@@ -5,7 +5,6 @@ import { ViewAllActivities } from "./ViewAllActivities";
 export interface ActivityItem {
   id: string
   action: string
-  user: string
   timestamp: string
   details?: string
 }
@@ -36,7 +35,7 @@ export function ActivityFeed({ activities, formatDate }: ActivityFeedProps) {
               <p className="text-muted-foreground">No recent activity</p>
             </div>          ) : (
             <>              
-              <div className="space-y-6 relative">
+              <div className="space-y-2 relative">
                 {recentActivities.map((activity, index) => (
                   <div key={activity.id} className="flex gap-4 items-start pl-1">
                     <div className="h-7 w-7 rounded-full bg-blue-500 flex items-center justify-center z-10 flex-shrink-0">
@@ -70,7 +69,7 @@ export function ActivityFeed({ activities, formatDate }: ActivityFeedProps) {
                 </div>
               
               {activities.length > 3 && (
-                <div className="pt-3 mt-2 relative z-10 border-t border-border/30">
+                <div className="pt-3 mt-2 relative z-10 border-border/30">
                   <ViewAllActivities 
                     activities={activities} 
                     formatDate={formatDate}

@@ -36,7 +36,6 @@ export function CustomerIssueCard({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Customer Information */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground">Customer Information</h4>
             
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -73,7 +72,6 @@ export function CustomerIssueCard({
           
           {/* Issue Details */}
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-muted-foreground">Issue Information</h4>
             
             <div className="space-y-4">
               <div>
