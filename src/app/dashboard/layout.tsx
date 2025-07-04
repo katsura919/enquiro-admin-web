@@ -89,7 +89,6 @@ export default function DashboardLayout({
         <div className="min-h-screen bg-background">
           <PageSpinner 
             animationData={animationData}
-            showProgressBar={true}
           />
         </div>
       </ProtectedRoute>

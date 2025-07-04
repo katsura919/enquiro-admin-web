@@ -193,12 +193,10 @@ export function LottieSpinner({
 
 export function PageSpinner({ 
   message = "Loading...",
-  animationData,
-  showProgressBar = true
+  animationData
 }: { 
   message?: string;
   animationData?: any;
-  showProgressBar?: boolean;
 }) {
   // If animation data is provided, use the Lottie spinner
   if (animationData) {
@@ -208,22 +206,14 @@ export function PageSpinner({
           animationData={animationData} 
           size="lg" 
           message={message}
-          showProgressBar={showProgressBar} 
         />
       </div>
     );
   }
-    // Fallback to the regular spinner with progress bar
+    // Fallback to the regular spinner
   return (
     <div className="flex flex-col items-center justify-center h-screen w-full fixed inset-0 z-50 bg-background space-y-4">
       <Spinner size="lg" color="accent" />
-      {showProgressBar ? (
-        <div className="mt-4 w-full max-w-xs">
-          <AnimatedProgress />
-        </div>
-      ) : (
-        <p className="text-muted-foreground text-sm">{message}</p>
-      )}
     </div>
   );
 }

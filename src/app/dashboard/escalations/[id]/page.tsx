@@ -11,7 +11,7 @@ import {
 import {
   ActivityFeed,
   CaseNotes,
-  ConversationHistory,
+  CommunicationTabs,
   CustomerIssueCard,
 } from "./components"
 import { useState } from "react"
@@ -29,6 +29,7 @@ interface Escalation {
   description?: string
   status: "escalated" | "pending" | "resolved"
   assignedTo?: string
+  emailThreadId?: string
   createdAt: string
   updatedAt: string
 }
@@ -42,6 +43,24 @@ interface ChatMessage {
   isGoodResponse?: boolean | null
   createdAt: string
   updatedAt: string
+}
+
+interface EmailMessage {
+  id: string;
+  threadId: string;
+  snippet: string;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  body: string;
+  quotedContent: string | null;
+  isHTML: boolean;
+  labels: string[];
+  internalDate: string;
+  attachments: { name: string; size: string; url?: string; contentType?: string }[];
+  isFromCustomer?: boolean;
+  isRead?: boolean;
 }
 
 // Import types from our component files
@@ -67,10 +86,14 @@ export default function EscalationDetailsPage() {
   const params = useParams()
   const { id } = params as { id: string }
   const [escalation, setEscalation] = React.useState<Escalation | null>(null)
+  console.log(escalation)
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([])
+  const [emails, setEmails] = React.useState<EmailMessage[]>([])
   const [loading, setLoading] = React.useState(false)
   const [loadingChats, setLoadingChats] = React.useState(false)
+  const [loadingEmails, setLoadingEmails] = React.useState(false)
   const [refreshing, setRefreshing] = React.useState(false)
+  const [refreshingEmails, setRefreshingEmails] = React.useState(false)
   const [noteText, setNoteText] = React.useState("")
   const [caseNotes, setCaseNotes] = React.useState<CaseNote[]>([
     {
@@ -84,7 +107,6 @@ export default function EscalationDetailsPage() {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const [copiedCaseNumber, setCopiedCaseNumber] = useState(false);
   const [copiedSessionId, setCopiedSessionId] = useState(false);
-  console.log(activities)
   const addCaseNote = () => {
     if (!noteText.trim()) return;
     
@@ -142,10 +164,20 @@ export default function EscalationDetailsPage() {
         }
         // Fetch activities for this escalation
         fetchActivities(res.data._id)
+        // Fetch emails for this escalation (will be called after escalation is set)
+        // fetchEmails will be called in a separate useEffect when escalation changes
       })
       .catch(() => setEscalation(null))
       .finally(() => setLoading(false))
   }, [id, token])
+
+  // Fetch emails when escalation data is available
+  React.useEffect(() => {
+    if (escalation?.emailThreadId) {
+      fetchEmails();
+    }
+  }, [escalation?.emailThreadId, token])
+
   const fetchChatMessages = async (sessionId: string) => {
     setLoadingChats(true)
     try {
@@ -182,6 +214,137 @@ export default function EscalationDetailsPage() {
       setLoadingActivities(false)
     }
   }
+
+  const fetchEmails = async () => {
+    if (!escalation?.emailThreadId) {
+      console.log('No emailThreadId found for this escalation');
+      setLoadingEmails(false);
+      return;
+    }
+
+    setLoadingEmails(true)
+    try {
+      const response = await axios.get(`${API_URL}/api/email/threads/${escalation.emailThreadId}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      if (response.data.success && response.data.data.messages) {
+        // Transform the API response to include additional UI properties
+        const transformedEmails = response.data.data.messages.map((message: any) => ({
+          ...message,
+          isFromCustomer: !message.labels.includes('SENT'), // If not sent by us, it's from customer
+          isRead: true // You might want to implement read/unread logic based on your needs
+        }));
+        setEmails(transformedEmails);
+      } else {
+        setEmails([]);
+      }
+    } catch (error) {
+      console.error('Error fetching emails:', error)
+      setEmails([]);
+    } finally {
+      setLoadingEmails(false)
+    }
+  }
+
+  const handleRefreshEmails = async () => {
+    if (!escalation?.emailThreadId) return
+    
+    setRefreshingEmails(true)
+    try {
+      const response = await axios.get(`${API_URL}/api/email/threads/${escalation.emailThreadId}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      if (response.data.success && response.data.data.messages) {
+        // Transform the API response to include additional UI properties
+        const transformedEmails = response.data.data.messages.map((message: any) => ({
+          ...message,
+          isFromCustomer: !message.labels.includes('SENT'), // If not sent by us, it's from customer
+          isRead: true // You might want to implement read/unread logic based on your needs
+        }));
+        setEmails(transformedEmails);
+      } else {
+        setEmails([]);
+      }
+    } catch (error) {
+      console.error('Error refreshing emails:', error)
+    } finally {
+      setRefreshingEmails(false)
+    }
+  }
+
+  const handleSendEmailReply = async (content: string, recipients: string[], originalMessageId?: string) => {
+    if (!escalation?.emailThreadId || !originalMessageId) return
+    
+    try {
+      await axios.post(
+        `${API_URL}/api/email/reply`,
+        {
+          threadId: escalation.emailThreadId,
+          to: recipients[0], // Using first recipient
+          body: content,
+          from: "Customer Support",
+          originalMessageId: originalMessageId
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+      
+      // Refresh emails to show the new reply
+      handleRefreshEmails()
+      
+      // Add activity
+      const newActivity = {
+        id: `act-${Date.now()}`,
+        action: "Email Sent",
+        timestamp: new Date().toISOString(),
+        details: `Replied to ${recipients.join(", ")}`
+      }
+      setActivities([newActivity, ...activities])
+    } catch (error) {
+      console.error('Error sending email reply:', error)
+    }
+  }
+
+  const handleSendNewEmail = async (emailData: { to: string; subject: string; content: string }) => {
+    if (!escalation) return
+    
+    try {
+      await axios.post(
+        `${API_URL}/api/email/send`,
+        {
+          to: emailData.to,
+          subject: emailData.subject,
+          body: emailData.content,
+          from: "Support Team",
+          escalationId: escalation._id,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+      
+      // If this creates a new thread, you might need to update the escalation with emailThreadId
+      // and then fetch emails
+      if (escalation.emailThreadId) {
+        handleRefreshEmails()
+      }
+      
+      // Add activity
+      const newActivity = {
+        id: `act-${Date.now()}`,
+        action: "Email Sent",
+        timestamp: new Date().toISOString(),
+        details: `Sent to ${emailData.to}`
+      }
+      setActivities([newActivity, ...activities])
+    } catch (error) {
+      console.error('Error sending new email:', error)
+    }
+  }
+
   const handleStatusChange = async (newStatus: string) => {
     if (!escalation) return
     
@@ -230,7 +393,13 @@ export default function EscalationDetailsPage() {
     return new Date(dateString).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit' 
-    })  }
+    })
+  }
+
+  const formatEmailDate = (dateString: string) => {
+    // Handle both ISO format and email date format
+    return new Date(dateString).toLocaleString()
+  }
   
   const StatusIcon = escalation ? statusIcons[escalation.status] : AlertTriangle
   
@@ -266,12 +435,22 @@ return (
             status={escalation?.status || 'escalated'}
           />
 
-          <ConversationHistory
+          <CommunicationTabs
             chatMessages={chatMessages}
             loadingChats={loadingChats}
-            refreshing={refreshing}
+            refreshingChats={refreshing}
             handleRefreshChats={handleRefreshChats}
+            emails={emails}
+            loadingEmails={loadingEmails}
+            refreshingEmails={refreshingEmails}
+            handleRefreshEmails={handleRefreshEmails}
+            onSendEmailReply={handleSendEmailReply}
+            onSendNewEmail={handleSendNewEmail}
             formatTime={formatTime}
+            formatEmailDate={formatEmailDate}
+            customerEmail={escalation?.customerEmail || ''}
+            customerName={escalation?.customerName || ''}
+            concernSubject={escalation?.concern || ''}
           />
         </div>
 

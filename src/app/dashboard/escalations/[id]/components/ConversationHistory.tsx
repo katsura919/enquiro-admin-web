@@ -53,7 +53,7 @@ export function ConversationHistory({
         </Button>
       </div>        <Card className="p-0 overflow-hidden shadow-sm border-border/40">
         {chatMessages.length === 0 ? (
-          <ScrollArea className="h-[470px]">
+          <ScrollArea className="h-[650px]">
             <div className="p-4 space-y-4">
               {/* Customer message skeleton */}
               <div className="flex flex-col items-end space-y-1">
@@ -84,7 +84,7 @@ export function ConversationHistory({
               </div>            </div>
           </ScrollArea>
         ) : (
-          <ScrollArea className="h-[470px]">
+          <ScrollArea className="h-[650px]">
             <div className="p-4 space-y-6">
               {chatMessages.map((message) => (
                 <div key={message._id} className="space-y-6">
