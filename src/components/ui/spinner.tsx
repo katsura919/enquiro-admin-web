@@ -210,10 +210,4 @@ export function PageSpinner({
       </div>
     );
   }
-    // Fallback to the regular spinner
-  return (
-    <div className="flex flex-col items-center justify-center h-screen w-full fixed inset-0 z-50 bg-background space-y-4">
-      <Spinner size="lg" color="accent" />
-    </div>
-  );
 }

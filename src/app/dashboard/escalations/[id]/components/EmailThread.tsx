@@ -530,7 +530,7 @@ export function EmailThread({
                                 </Button>
                                 
                                 {expandedQuotedText.has(email.id) && quotedContentToShow && (
-                                  <div className="mt-3 pl-4 border-l-4 border-gray-300 bg-gray-50 rounded-r-md p-4 text-xs text-gray-700 overflow-hidden">
+                                  <div className="mt-3 pl-4 border-l-4 rounded-r-md p-4 text-xs  overflow-hidden">
                                     {email.isHTML && hasBackendQuoted ? (
                                       <div 
                                         className="break-words prose prose-xs max-w-none"
