@@ -40,14 +40,14 @@ export default function Navbar() {
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
           <NavbarButton 
-            href="/login" 
+            href="/auth/login" 
             variant="secondary" 
             className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10"
           >
             Sign In
           </NavbarButton>
           <NavbarButton 
-            href="/register" 
+            href="/auth/register" 
             variant="gradient"
             className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
           >
@@ -57,7 +57,7 @@ export default function Navbar() {
       </NavBody>
 
       {/* Mobile Navigation */}
-      <MobileNav className="bg-black/20 dark:bg-black/20 backdrop-blur-md border border-white/10">
+      <MobileNav className="bg-black/20 dark:bg-black/20 backdrop-blur-md ">
         <MobileNavHeader>
           {/* Mobile Logo */}
           <a
@@ -78,7 +78,7 @@ export default function Navbar() {
         <MobileNavMenu 
           isOpen={isMobileMenuOpen} 
           onClose={() => setIsMobileMenuOpen(false)}
-          className="bg-black/80 dark:bg-black/80 backdrop-blur-md border border-white/20"
+          className="bg-black dark:bg-black backdrop-blur-sm border border-white/20"
         >
           {navItems.map((item, idx) => (
             <a
@@ -92,14 +92,14 @@ export default function Navbar() {
           ))}
           <div className="flex flex-col gap-2 w-full mt-4">
             <NavbarButton 
-              href="/login" 
+              href="/auth/login" 
               variant="secondary" 
               className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10 w-full"
             >
               Sign In
             </NavbarButton>
             <NavbarButton 
-              href="/register" 
+              href="/auth/register" 
               variant="gradient"
               className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 w-full"
             >

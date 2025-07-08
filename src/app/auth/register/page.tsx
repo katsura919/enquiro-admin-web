@@ -11,7 +11,7 @@ import { BackgroundGradient } from "@/components/ui/background-gradient"
 import { GridPattern } from "@/components/ui/grid-pattern"
 import { useAuth } from "@/lib/auth"
 import Lottie from "lottie-react"
-import registrationAnimation from "../../../public/animations/registration.json"
+import registrationAnimation from "../../../../public/animations/registration.json"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 
@@ -319,9 +319,6 @@ export default function RegisterPage() {
                   </button>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 bg-white/5 rounded-lg px-4 py-3 border border-gray-700">
-                Password must be at least 8 characters long
-              </p>
             </div>
           </div>
         )
