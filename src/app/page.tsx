@@ -3,6 +3,8 @@ import { ArrowRight, Bot, Brain, Users, GitMerge } from "lucide-react"
 import { BackgroundGradient } from "@/components/ui/background-gradient"
 import { GridPattern } from "@/components/ui/grid-pattern"
 import Link from "next/link"
+import Navbar from "@/components/Navbar"
+import Footer from "@/components/Footer"
 
 export default function Home() {
   return (
@@ -11,25 +13,7 @@ export default function Home() {
       <GridPattern />
       
       {/* Navigation */}
-      <nav className="relative z-10 w-full border-b border-blue-500/20 bg-black/50 backdrop-blur-sm">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-white">
-            AI Chatbot Platform
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/auth">
-              <Button variant="ghost" className="text-gray-300 hover:text-white hover:bg-white/10">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/auth">
-              <Button className="bg-blue-500 hover:bg-blue-600">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <main className="flex-1 relative">
@@ -45,7 +29,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="space-x-4">
-                <Link href="/auth">
+                <Link href="/register">
                   <Button className="bg-blue-500 hover:bg-blue-600" size="lg">
                     Get Started
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -137,33 +121,19 @@ export default function Home() {
               <p className="mx-auto max-w-[600px] text-blue-100">
                 Join organizations that are already leveraging our AI chatbot to provide superior customer service.
               </p>
-              <Button className="bg-white text-blue-600 hover:bg-blue-50" size="lg">
-                Start Free Trial
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link href="/register">
+                <Button className="bg-white text-blue-600 hover:bg-blue-50" size="lg">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-6 bg-black/50 backdrop-blur-sm border-t border-blue-500/20">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <p className="text-sm text-gray-400">
-              © 2024 AI Chatbot Platform. All rights reserved.
-            </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-sm text-gray-400 hover:text-blue-400">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-sm text-gray-400 hover:text-blue-400">
-                Terms of Service
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
