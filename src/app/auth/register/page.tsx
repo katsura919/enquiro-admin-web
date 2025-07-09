@@ -12,8 +12,11 @@ import { GridPattern } from "@/components/ui/grid-pattern"
 import { useAuth } from "@/lib/auth"
 import Lottie from "lottie-react"
 import registrationAnimation from "../../../../public/animations/registration.json"
+import checkAnimation from "../../../../public/animations/check.json"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
+import TermsModal from "./component/TermsModal"
+import PrivacyModal from "./component/PrivacyModal"
 
 type RegistrationStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
@@ -21,12 +24,14 @@ export default function RegisterPage() {
   const router = useRouter()
   const { register } = useAuth()
   const [currentStep, setCurrentStep] = useState<RegistrationStep>(1)
-  const [error, setError] = useState("")
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSettingUp, setIsSettingUp] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
   
   // Form state
   const [email, setEmail] = useState("")
@@ -75,70 +80,74 @@ export default function RegisterPage() {
   }
 
   const validateStep = (step: RegistrationStep): boolean => {
-    setError("")
+    setErrors({})
     
     switch (step) {
       case 1:
         if (!email) {
-          setError("Please enter your email address")
+          setErrors({ email: "Please enter your email address" })
           return false
         }
         if (!/\S+@\S+\.\S+/.test(email)) {
-          setError("Please enter a valid email address")
+          setErrors({ email: "Please enter a valid email address" })
           return false
         }
         return true
       case 2:
+        const newErrors: Record<string, string> = {}
         if (!firstName.trim()) {
-          setError("Please enter your first name")
-          return false
+          newErrors.firstName = "Please enter your first name"
         }
         if (!lastName.trim()) {
-          setError("Please enter your last name")
+          newErrors.lastName = "Please enter your last name"
+        }
+        if (Object.keys(newErrors).length > 0) {
+          setErrors(newErrors)
           return false
         }
         return true
       case 3:
+        const passwordErrors: Record<string, string> = {}
         if (!password) {
-          setError("Please enter a password")
-          return false
-        }
-        if (password.length < 8) {
-          setError("Password must be at least 8 characters long")
-          return false
+          passwordErrors.password = "Please enter a password"
+        } else if (password.length < 8) {
+          passwordErrors.password = "Password must be at least 8 characters long"
         }
         if (!confirmPassword) {
-          setError("Please confirm your password")
-          return false
+          passwordErrors.confirmPassword = "Please confirm your password"
+        } else if (password !== confirmPassword) {
+          passwordErrors.confirmPassword = "Passwords do not match"
         }
-        if (password !== confirmPassword) {
-          setError("Passwords do not match")
+        if (Object.keys(passwordErrors).length > 0) {
+          setErrors(passwordErrors)
           return false
         }
         return true
       case 5:
         if (!businessName.trim()) {
-          setError("Please enter your business name")
+          setErrors({ businessName: "Please enter your business name" })
           return false
         }
         return true
       case 6:
+        const businessErrors: Record<string, string> = {}
         if (!description.trim()) {
-          setError("Please enter a business description")
-          return false
+          businessErrors.description = "Please enter a business description"
         }
         if (!category.trim()) {
-          setError("Please enter a business category")
-          return false
+          businessErrors.category = "Please enter a business category"
         }
         if (!address.trim()) {
-          setError("Please enter your business address")
+          businessErrors.address = "Please enter your business address"
+        }
+        if (Object.keys(businessErrors).length > 0) {
+          setErrors(businessErrors)
           return false
         }
         return true
       case 7:
         if (!agreeToTerms) {
-          setError("Please accept the Terms of Service and Privacy Policy")
+          setErrors({ terms: "Please accept the Terms of Service and Privacy Policy" })
           return false
         }
         return true
@@ -171,15 +180,17 @@ export default function RegisterPage() {
   const handleBack = () => {
     if (currentStep > 1 && currentStep !== 4) {
       setCurrentStep((prev) => (prev - 1) as RegistrationStep)
-      setError("")
+      setErrors({})
     }
   }
 
   const handleFinalSubmit = async () => {
     setIsLoading(true)
-    setError("")
+    setErrors({})
 
     try {
+      const startTime = Date.now()
+      
       await register({
         firstName,
         lastName,
@@ -191,12 +202,19 @@ export default function RegisterPage() {
         category,
         address,
       })
+      
       setCurrentStep(8)
+      
+      // Ensure the success screen is visible for at least 2 seconds
+      const elapsedTime = Date.now() - startTime
+      const minimumDisplayTime = 2000 // 2 seconds
+      const remainingTime = Math.max(0, minimumDisplayTime - elapsedTime)
+      
       setTimeout(() => {
-        router.push("/login")
-      }, 3000)
+        router.push("/auth/login")
+      }, remainingTime + 1000) // Add extra 1 second for better UX
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      setErrors({ general: err instanceof Error ? err.message : "An error occurred" })
     } finally {
       setIsLoading(false)
     }
@@ -212,17 +230,26 @@ export default function RegisterPage() {
               <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[1]}</p>
             </div>
             <div className="space-y-4">
-              <label className="text-sm font-medium text-gray-300 block" htmlFor="email">
-                Email Address
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200"
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 block" htmlFor="email">
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                    errors.email 
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                      : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-400 mt-1">{errors.email}</p>
+                )}
+              </div>
             </div>
           </div>
         )
@@ -246,8 +273,15 @@ export default function RegisterPage() {
                     placeholder="First name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.firstName 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
+                  {errors.firstName && (
+                    <p className="text-sm text-red-400 mt-1">{errors.firstName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300 block" htmlFor="lastName">
@@ -259,8 +293,15 @@ export default function RegisterPage() {
                     placeholder="Last name"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.lastName 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
+                  {errors.lastName && (
+                    <p className="text-sm text-red-400 mt-1">{errors.lastName}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -286,7 +327,11 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200 pr-12"
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 pr-12 ${
+                      errors.password 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
                   <button
                     type="button"
@@ -296,6 +341,9 @@ export default function RegisterPage() {
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-sm text-red-400 mt-1">{errors.password}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-300 block" htmlFor="confirmPassword">
@@ -308,7 +356,11 @@ export default function RegisterPage() {
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200 pr-12"
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 pr-12 ${
+                      errors.confirmPassword 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
                   <button
                     type="button"
@@ -318,6 +370,9 @@ export default function RegisterPage() {
                     {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-400 mt-1">{errors.confirmPassword}</p>
+                )}
               </div>
             </div>
           </div>
@@ -358,17 +413,26 @@ export default function RegisterPage() {
               <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[5]}</p>
             </div>
             <div className="space-y-4">
-              <label className="text-sm font-medium text-gray-300 block" htmlFor="businessName">
-                Business Name
-              </label>
-              <Input
-                id="businessName"
-                type="text"
-                placeholder="Acme Corporation"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200"
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 block" htmlFor="businessName">
+                  Business Name
+                </label>
+                <Input
+                  id="businessName"
+                  type="text"
+                  placeholder="Acme Corporation"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                    errors.businessName 
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                      : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
+                />
+                {errors.businessName && (
+                  <p className="text-sm text-red-400 mt-1">{errors.businessName}</p>
+                )}
+              </div>
             </div>
           </div>
         )
@@ -392,8 +456,15 @@ export default function RegisterPage() {
                     placeholder="Technology"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.category 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
+                  {errors.category && (
+                    <p className="text-sm text-red-400 mt-1">{errors.category}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300 block" htmlFor="description">
@@ -405,8 +476,15 @@ export default function RegisterPage() {
                     placeholder="Software Development"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.description 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
+                  {errors.description && (
+                    <p className="text-sm text-red-400 mt-1">{errors.description}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300 block" htmlFor="address">
@@ -418,8 +496,15 @@ export default function RegisterPage() {
                     placeholder="123 Main St, City, State 12345"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="h-12 text-base bg-white/5 border-gray-700 text-white placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:ring-2 transition-all duration-200"
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.address 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
                   />
+                  {errors.address && (
+                    <p className="text-sm text-red-400 mt-1">{errors.address}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -434,45 +519,40 @@ export default function RegisterPage() {
               <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[7]}</p>
             </div>
             <div className="space-y-4">
-              <div className="bg-white/5 rounded-2xl border border-blue-500/20 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-700/50">
-                  <h3 className="text-lg font-semibold text-white">Terms of Service</h3>
-                </div>
-                <div className="px-6 py-4">
-                  <div className="text-sm text-gray-400 space-y-4 max-h-48 overflow-y-auto custom-scrollbar">
-                    <div className="space-y-2">
-                      <p className="font-medium text-gray-200">1. Acceptance of Terms</p>
-                      <p className="leading-relaxed">By using Enquiro's AI Chatbot Platform, you agree to these Terms of Service and our Privacy Policy.</p>
-                    </div>
+              {/* Summary Card */}
+              <div className="bg-white/5 rounded-2xl border border-blue-500/20 p-6">
+                <div className="space-y-4">          
+                  <div className="flex flex-col space-y-3">
+                    <button
+                      onClick={() => setShowTermsModal(true)}
+                      className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl border border-gray-700 hover:border-blue-500/50 transition-all duration-200 group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                          <FileText className="h-4 w-4 text-blue-400" />
+                        </div>
+                        <span className="text-white font-medium">Terms of Service</span>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                    </button>
                     
-                    <div className="space-y-2">
-                      <p className="font-medium text-gray-200">2. Service Description</p>
-                      <p className="leading-relaxed">Enquiro provides a multi-tenant AI chatbot platform that helps organizations automate customer support through intelligent conversation management.</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <p className="font-medium text-gray-200">3. User Responsibilities</p>
-                      <p className="leading-relaxed">You are responsible for maintaining the confidentiality of your account credentials and for all activities under your account.</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <p className="font-medium text-gray-200">4. Data Privacy</p>
-                      <p className="leading-relaxed">We implement industry-standard security measures to protect your data. Each tenant's data is isolated and encrypted.</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <p className="font-medium text-gray-200">5. Service Availability</p>
-                      <p className="leading-relaxed">We strive to maintain 99.9% uptime but cannot guarantee uninterrupted service availability.</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <p className="font-medium text-gray-200">6. Limitation of Liability</p>
-                      <p className="leading-relaxed">Enquiro's liability is limited to the amount paid for the service in the preceding 12 months.</p>
-                    </div>
+                    <button
+                      onClick={() => setShowPrivacyModal(true)}
+                      className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl border border-gray-700 hover:border-blue-500/50 transition-all duration-200 group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                          <Shield className="h-4 w-4 text-blue-400" />
+                        </div>
+                        <span className="text-white font-medium">Privacy Policy</span>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
+                    </button>
                   </div>
                 </div>
               </div>
               
+              {/* Agreement Checkbox */}
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-6 py-4">
                 <div className="flex items-start space-x-3">
                   <input 
@@ -480,15 +560,34 @@ export default function RegisterPage() {
                     id="agreeToTerms"
                     checked={agreeToTerms}
                     onChange={(e) => setAgreeToTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-gray-700 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 focus:ring-2"
+                    className={`mt-1 w-4 h-4 rounded bg-white/5 focus:ring-offset-0 focus:ring-2 ${
+                      errors.terms
+                        ? 'border-red-500 text-red-500 focus:ring-red-500'
+                        : 'border-gray-700 text-blue-500 focus:ring-blue-500'
+                    }`}
                   />
-                  <label htmlFor="agreeToTerms" className="text-sm text-gray-400 leading-relaxed">
-                    I have read and agree to the{" "}
-                    <span className="text-blue-400 font-medium">Terms of Service</span>{" "}
-                    and{" "}
-                    <span className="text-blue-400 font-medium">Privacy Policy</span>. 
-                    I understand that my business data will be processed according to these terms.
-                  </label>
+                  <div className="flex-1">
+                    <label htmlFor="agreeToTerms" className="text-sm text-gray-400 leading-relaxed">
+                      I have read and agree to the{" "}
+                      <button
+                        onClick={() => setShowTermsModal(true)}
+                        className="text-blue-400 font-medium hover:text-blue-300 underline transition-colors"
+                      >
+                        Terms of Service
+                      </button>{" "}
+                      and{" "}
+                      <button
+                        onClick={() => setShowPrivacyModal(true)}
+                        className="text-blue-400 font-medium hover:text-blue-300 underline transition-colors"
+                      >
+                        Privacy Policy
+                      </button>. 
+                      I understand that my business data will be processed according to these terms.
+                    </label>
+                    {errors.terms && (
+                      <p className="text-sm text-red-400 mt-2">{errors.terms}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -500,23 +599,19 @@ export default function RegisterPage() {
           <div className="space-y-8 text-center py-12">
             <div className="space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center border border-green-500/20">
-                  <CheckCircle className="h-8 w-8 text-green-500" />
+                <div className="w-24 h-24">
+                  <Lottie 
+                    animationData={checkAnimation}
+                    loop={false}
+                    className="w-full h-full"
+                  />
                 </div>
               </div>
               <div className="space-y-4">
                 <h2 className="text-3xl font-bold text-white tracking-tight">Welcome to Enquiro!</h2>
                 <p className="text-lg text-gray-300 leading-relaxed">
-                  Your account has been created successfully. You'll be redirected to the login page shortly.
+                  Registered successfully. Redirecting you now to the login page.
                 </p>
-              </div>
-              <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-6 py-4">
-                <p className="text-green-400 font-medium">
-                  Registration complete!
-                </p>
-              </div>
-              <div className="flex justify-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500/30 border-t-blue-500"></div>
               </div>
             </div>
           </div>
@@ -556,10 +651,10 @@ export default function RegisterPage() {
             
             {/* Heading and Description */}
             <div className="space-y-8 mb-10">
-              <h1 className="text-4xl font-bold text-white leading-tight tracking-tight">
-                Join Enquiro Now!
+              <h1 className="text-4xl font-bold text-white leading-tight tracking-tight text-center">
+                Join <span className="font-bold">Enquiro</span> Now!
               </h1>
-              <p className="text-lg text-blue-100/90 leading-relaxed font-medium">
+              <p className="text-lg text-blue-100/90 leading-relaxed font-medium text-center">
                 Transform your customer support with intelligent AI chatbots designed for modern businesses.
               </p>
             </div>
@@ -604,10 +699,10 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Error Message */}
-            {error && (
+            {/* Error Message for General Errors */}
+            {errors.general && (
               <div className="mb-6 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
-                {error}
+                {errors.general}
               </div>
             )}
             
@@ -678,6 +773,16 @@ export default function RegisterPage() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Modals */}
+      <TermsModal 
+        isOpen={showTermsModal} 
+        onClose={() => setShowTermsModal(false)} 
+      />
+      <PrivacyModal 
+        isOpen={showPrivacyModal} 
+        onClose={() => setShowPrivacyModal(false)} 
+      />
     </div>
   )
 }

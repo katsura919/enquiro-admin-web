@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const data = await response.json();
-      router.push('/auth'); // Redirect to login after successful registration
+      router.push('/auth/login'); // Redirect to login after successful registration
     } catch (error) {
       throw error;
     }

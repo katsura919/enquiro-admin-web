@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { BackgroundGradient } from "@/components/ui/background-gradient"
 import { GridPattern } from "@/components/ui/grid-pattern"
 import { useAuth } from "@/lib/auth"
+import Navbar from "@/components/Navbar"
+import Footer from "@/components/Footer"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -38,29 +40,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black">
-      <BackgroundGradient />
-      <GridPattern />
-      
-      {/* Navigation Back */}
-      <Link 
-        href="/" 
-        className="absolute left-8 top-8 z-20 flex items-center text-sm text-gray-400 hover:text-white transition-colors"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Home
-      </Link>
+    <div className="min-h-screen bg-black flex flex-col">
+      {/* Navbar */}
+      <Navbar />
 
-      {/* Login Card */}
-      <Card className="w-full max-w-md mx-auto relative z-10 bg-white/5 backdrop-blur-sm border border-blue-500/20">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-white">
-            Welcome Back
-          </CardTitle>
-          <CardDescription className="text-gray-300">
-            Sign in to your account to continue
-          </CardDescription>
-        </CardHeader>
+      {/* Main Content */}
+      <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden px-4 py-8">
+        <BackgroundGradient />
+        <GridPattern />
+        
+        {/* Login Card */}
+        <Card className="w-full max-w-md mx-auto relative z-10 bg-white/5 backdrop-blur-sm border border-blue-500/20">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-white">
+              Welcome Back
+            </CardTitle>
+            <CardDescription className="text-gray-300">
+              Sign in to your account to continue
+            </CardDescription>
+          </CardHeader>
         
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6">
@@ -144,7 +142,7 @@ export default function LoginPage() {
             <div className="text-center text-sm text-gray-400">
               Don't have an account?{" "}
               <Link 
-                href="/register" 
+                href="/auth/register" 
                 className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
               >
                 Create one here
@@ -154,12 +152,11 @@ export default function LoginPage() {
         </form>
       </Card>
 
-      {/* Decorative Elements */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-center">
-        <p className="text-xs text-gray-500">
-          Secure login powered by AI Chatbot Platform
-        </p>
+
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 }
