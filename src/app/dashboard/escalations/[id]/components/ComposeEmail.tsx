@@ -64,13 +64,10 @@ export function ComposeEmail({
   if (!isComposing) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Mail className="h-5 w-5 text-blue-500" />
-          <h2 className="text-lg font-semibold">Email Thread</h2>
-        </div>
+
         
-        <Card>
-          <CardContent className="p-8">
+        <Card className="bg-card">
+          <CardContent className=" p-8">
             <div className="text-center space-y-4">
               <div className="mx-auto w-16 h-16 bg-blue-50 dark:bg-blue-950/20 rounded-full flex items-center justify-center">
                 <Mail className="h-8 w-8 text-blue-500" />
@@ -103,9 +100,9 @@ export function ComposeEmail({
         <h2 className="text-lg font-semibold">Compose Email</h2>
       </div>
       
-      <Card>
+      <Card className="">
         <CardHeader>
-          <CardTitle className="text-lg">New Email</CardTitle>
+      
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

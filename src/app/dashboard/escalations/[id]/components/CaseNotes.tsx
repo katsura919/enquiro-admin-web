@@ -44,7 +44,7 @@ export function CaseNotes({
       </div>
       
       {/* Add Note Form */}
-      <Card className="p-4 overflow-hidden shadow-sm border-border/40 relative">
+      <Card className="bg-card p-4 overflow-hidden shadow-sm border-border/40 relative">
         <div className="space-y-3">
           <Textarea
             placeholder="Type your note here..."
@@ -66,7 +66,7 @@ export function CaseNotes({
       </Card>
       
       {/* Notes List */}
-      <div className="space-y-3 mt-2">
+      <div className=" space-y-3 mt-2">
         {notes.length === 0 ? (
           <div className="p-8 text-center bg-muted rounded-lg">
             <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
@@ -74,7 +74,7 @@ export function CaseNotes({
           </div>
         ) : (
           notes.map((note) => (
-            <Card key={note.id} className="p-4 overflow-hidden shadow-sm border-border/40">
+            <Card key={note.id} className="bg-card p-4 overflow-hidden shadow-sm border-border/40">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

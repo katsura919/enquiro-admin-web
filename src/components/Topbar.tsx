@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Menu, Bell, Search, User } from "lucide-react"
+import { Menu, Bell, Search, User, LayoutDashboard, FolderKanban, MessageSquare, AlertTriangle, Settings, HelpCircle, Package, Wrench, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface TopbarProps {
@@ -11,35 +11,46 @@ interface TopbarProps {
   isMobile?: boolean
 }
 
-const getPageTitle = (pathname: string) => {
+const getPageInfo = (pathname: string) => {
   const segments = pathname.split('/').filter(Boolean)
-  // If the path is /dashboard/escalations/[id] or deeper, show 'Escalation Details'
+  
+  // Handle escalation details
   if (segments.includes('escalations') && segments.length > 2) {
-    return 'Escalation Details'
+    return { title: 'Escalation Details', icon: AlertTriangle }
   }
+  
   const page = segments[segments.length - 1]
   switch (page) {
     case 'dashboard':
-      return 'Overview'
+      return { title: 'Overview', icon: LayoutDashboard }
     case 'knowledge':
-      return 'Knowledge Base'
+      return { title: 'Knowledge Base', icon: FolderKanban }
+    case 'faq':
+      return { title: 'FAQ Management', icon: HelpCircle }
+    case 'products':
+      return { title: 'Products Management', icon: Package }
+    case 'services':
+      return { title: 'Services Management', icon: Wrench }
+    case 'policy':
+      return { title: 'Policy Management', icon: FileText }
     case 'sessions':
-      return 'Chat Sessions'
+      return { title: 'Chat Sessions', icon: MessageSquare }
     case 'escalations':
-      return 'Escalations'
+      return { title: 'Escalations', icon: AlertTriangle }
     case 'settings':
-      return 'Settings'
+      return { title: 'Settings', icon: Settings }
     case 'business':
-      return 'Business Settings'
-    
+      return { title: 'Business Settings', icon: Settings }
     default:
-      return 'Dashboard'
+      return { title: 'Dashboard', icon: LayoutDashboard }
   }
 }
 
 export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
   const pathname = usePathname()
-  const pageTitle = getPageTitle(pathname)
+  const pageInfo = getPageInfo(pathname)
+  const PageIcon = pageInfo.icon
+  
   return (
     <header className="sticky top-0 left-0 w-full z-30 h-16 bg-card/50 backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
       {/* Left section */}
@@ -56,10 +67,13 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
           </Button>
         )}
         
-        {/* Page title */}
-        <div className="flex flex-col">
-          <h1 className="text-lg md:text-xl font-semibold text-foreground">
-            {pageTitle}
+        {/* Page title with icon */}
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0">
+            <PageIcon className="h-6 w-6 text-primary" />
+          </div>
+          <h1 className="text-xl md:text-2xl font-semibold text-foreground">
+            {pageInfo.title}
           </h1>
         </div>
       </div>

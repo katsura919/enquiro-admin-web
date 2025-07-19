@@ -103,7 +103,7 @@ export function CommunicationTabs({
   return (
     <div className="space-y-4">
       {/* Tab Navigation */}
-      <Card className="p-1">
+      <Card className="bg-card p-1">
         <div className="flex space-x-1">
           {tabs.map((tab) => {
             const Icon = tab.icon;

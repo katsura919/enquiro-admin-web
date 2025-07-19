@@ -29,7 +29,7 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
   setCopiedSessionId,
   handleStatusChange,
 }) => (
-  <div className="border-b border-border bg-card/50 w-full">
+  <div className="border-b border-border bg-card w-full">
     <div className="px-4 py-3 md:px-6 md:py-4">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-3">

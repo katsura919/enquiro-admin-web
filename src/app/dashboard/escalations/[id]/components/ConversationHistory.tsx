@@ -51,7 +51,8 @@ export function ConversationHistory({
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")}/>
           Refresh
         </Button>
-      </div>        <Card className="p-0 overflow-hidden shadow-sm border-border/40">
+      </div>        
+      <Card className="bg-card p-0 overflow-hidden shadow-sm border-border/40">
         {chatMessages.length === 0 ? (
           <ScrollArea className="h-[650px]">
             <div className="p-4 space-y-4">

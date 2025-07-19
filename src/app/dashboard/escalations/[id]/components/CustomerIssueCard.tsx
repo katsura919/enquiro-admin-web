@@ -29,7 +29,7 @@ export function CustomerIssueCard({
   const StatusIcon = status === 'escalated' ? AlertTriangle : status === 'pending' ? Clock : CheckCircle;
 
   return (
-    <Card className="overflow-hidden shadow-sm border-border/40">
+    <Card className="bg-card overflow-hidden shadow-sm border-border/40">
       <div className="p-6">
 
 
