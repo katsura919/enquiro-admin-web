@@ -195,7 +195,7 @@ export default function ServiceTable({ services, onEdit, onDelete, onToggleStatu
                         className="h-8 w-8 p-0"
                       >
                         {service.isActive ? (
-                          <Eye className="h-4 w-4 text-green-500" />
+                          <Eye className="h-4 w-4 text-blue-500" />
                         ) : (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
                         )}

@@ -1,33 +1,185 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, FileText } from "lucide-react"
+import { useState } from "react"
+import { Dialog } from "@/components/ui/dialog"
+import PolicyHeader from "./components/PolicyHeader"
+import PolicyFilters from "./components/PolicyFilters"
+import PolicyCard from "./components/PolicyCard"
+import PolicyDialog from "./components/PolicyDialog"
+import EmptyState from "./components/EmptyState"
+import { Policy, PolicyFormData, mockPolicies, policyTypes } from "./components/types"
 
 export default function PolicyPage() {
-  return (
-    <div className="p-8">
+  const [policies, setPolicies] = useState<Policy[]>(mockPolicies)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedType, setSelectedType] = useState("All")
+  const [showActiveOnly, setShowActiveOnly] = useState(false)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null)
 
-      <div className="grid gap-6">
-        <Card className="bg-card border-border">
-          <CardHeader>
-         
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No Policies Yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Add your business policies to help customers understand your terms and conditions.
-              </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Policy
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+  // Form state for creating/editing policy
+  const [formData, setFormData] = useState<PolicyFormData>({
+    title: "",
+    content: "",
+    type: "",
+    tags: "",
+    isActive: true
+  })
+
+  // Filter policies based on search and filters
+  const filteredPolicies = policies.filter(policy => {
+    const matchesSearch = policy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         policy.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         policy.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+    
+    const matchesType = selectedType === "All" || policy.type === selectedType
+    const matchesActiveStatus = !showActiveOnly || policy.isActive
+    
+    return matchesSearch && matchesType && matchesActiveStatus
+  })
+
+  const handleFormChange = (field: keyof PolicyFormData, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleCreatePolicy = () => {
+    // TODO: Implement API call to create policy
+    const newPolicy: Policy = {
+      id: Date.now().toString(),
+      businessId: "business1",
+      title: formData.title,
+      content: formData.content,
+      type: formData.type as Policy['type'],
+      isActive: formData.isActive,
+      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    setPolicies([newPolicy, ...policies])
+    resetForm()
+  }
+
+  const handleEditPolicy = (policy: Policy) => {
+    setEditingPolicy(policy)
+    setFormData({
+      title: policy.title,
+      content: policy.content,
+      type: policy.type,
+      tags: policy.tags.join(', '),
+      isActive: policy.isActive
+    })
+    setIsCreateDialogOpen(true)
+  }
+
+  const handleUpdatePolicy = () => {
+    if (!editingPolicy) return
+    
+    // TODO: Implement API call to update policy
+    const updatedPolicies = policies.map(policy => 
+      policy.id === editingPolicy.id 
+        ? {
+            ...policy,
+            title: formData.title,
+            content: formData.content,
+            type: formData.type as Policy['type'],
+            tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+            isActive: formData.isActive,
+            updatedAt: new Date().toISOString()
+          }
+        : policy
+    )
+    
+    setPolicies(updatedPolicies)
+    resetForm()
+  }
+
+  const handleDeletePolicy = (id: string) => {
+    // TODO: Implement API call to delete policy
+    setPolicies(policies.filter(policy => policy.id !== id))
+  }
+
+  const togglePolicyStatus = (id: string) => {
+    // TODO: Implement API call to toggle policy status
+    setPolicies(policies.map(policy => 
+      policy.id === id ? { ...policy, isActive: !policy.isActive } : policy
+    ))
+  }
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      content: "",
+      type: "",
+      tags: "",
+      isActive: true
+    })
+    setEditingPolicy(null)
+    setIsCreateDialogOpen(false)
+  }
+
+  const handleDialogSubmit = () => {
+    if (editingPolicy) {
+      handleUpdatePolicy()
+    } else {
+      handleCreatePolicy()
+    }
+  }
+
+  const activeCount = policies.filter(p => p.isActive).length
+  const inactiveCount = policies.filter(p => !p.isActive).length
+
+  return (
+    <div className="p-6">
+      <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
+        setIsCreateDialogOpen(open)
+        if (!open) resetForm()
+      }}>
+        <PolicyHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
+        
+        <PolicyFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedType={selectedType}
+          onTypeChange={setSelectedType}
+          showActiveOnly={showActiveOnly}
+          onActiveOnlyChange={setShowActiveOnly}
+          policyTypes={policyTypes}
+          totalPolicies={policies.length}
+          filteredCount={filteredPolicies.length}
+          activeCount={activeCount}
+          inactiveCount={inactiveCount}
+        />
+
+        {/* Policy List */}
+        <div className="space-y-4">
+          {filteredPolicies.length === 0 ? (
+            <EmptyState 
+              hasAnyPolicies={policies.length > 0} 
+              onCreateClick={() => setIsCreateDialogOpen(true)} 
+            />
+          ) : (
+            filteredPolicies.map((policy) => (
+              <PolicyCard
+                key={policy.id}
+                policy={policy}
+                onEdit={handleEditPolicy}
+                onDelete={handleDeletePolicy}
+                onToggleStatus={togglePolicyStatus}
+              />
+            ))
+          )}
+        </div>
+
+        <PolicyDialog
+          isOpen={isCreateDialogOpen}
+          onClose={resetForm}
+          editingPolicy={editingPolicy}
+          formData={formData}
+          onFormChange={handleFormChange}
+          onSubmit={handleDialogSubmit}
+        />
+      </Dialog>
     </div>
   )
 }

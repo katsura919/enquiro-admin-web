@@ -31,10 +31,10 @@ const navigation = [
     href: "/dashboard/knowledge", 
     icon: FolderKanban,
     children: [
-      { name: "FAQ", href: "/dashboard/knowledge/faq", icon: HelpCircle },
       { name: "Products", href: "/dashboard/knowledge/products", icon: Package },
       { name: "Services", href: "/dashboard/knowledge/services", icon: Wrench },
       { name: "Policy", href: "/dashboard/knowledge/policy", icon: FileText },
+      { name: "FAQ", href: "/dashboard/knowledge/faq", icon: HelpCircle },
     ]
   },
   { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },

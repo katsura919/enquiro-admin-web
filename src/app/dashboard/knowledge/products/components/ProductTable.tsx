@@ -174,7 +174,7 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
                           className="h-8 w-8 p-0"
                         >
                           {product.isActive ? (
-                            <Eye className="h-4 w-4 text-green-500" />
+                            <Eye className="h-4 w-4 text-blue-500" />
                           ) : (
                             <EyeOff className="h-4 w-4 text-muted-foreground" />
                           )}
