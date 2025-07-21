@@ -7,9 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/lib/auth"
-import axios from "axios"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+import api from "@/utils/api"
 
 export default function EscalationsPage() {
   const router = useRouter()
@@ -21,25 +19,21 @@ export default function EscalationsPage() {
   const [totalPages, setTotalPages] = React.useState(1)
   const [search, setSearch] = React.useState("")
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const businessId = user?.businessId
 
   console.log("Debug - businessId:", businessId)
-  console.log("Debug - token:", token)
   console.log("Debug - user:", user)
 
   React.useEffect(() => {
-    if (!businessId || !token) {
-      console.log("Missing businessId or token, skipping fetch")
+    if (!businessId) {
+      console.log("Missing businessId, skipping fetch")
       return
     }
     
     console.log("Fetching escalations...")
     setLoading(true)
-    axios.get(`${API_URL}/escalation/business/${businessId}?status=${status}&page=${page}&limit=10`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
+    api.get(`/escalation/business/${businessId}?status=${status}&page=${page}&limit=10`)
+      .then((res: any) => {
         console.log("API Response:", res.data)
         // Transform the data to match the EscalationTable interface
         const transformed = res.data.escalations.map((e: any) => ({
@@ -55,12 +49,12 @@ export default function EscalationsPage() {
         setEscalations(transformed)
         setTotalPages(res.data.totalPages)
       })
-      .catch(error => {
+      .catch((error: any) => {
         console.error("Error fetching escalations:", error)
         setEscalations([])
       })
       .finally(() => setLoading(false))
-  }, [businessId, token, status, page])
+  }, [businessId, status, page])
 
   const handleRowClick = (id: string) => {
     router.push(`/dashboard/escalations/${id}`)

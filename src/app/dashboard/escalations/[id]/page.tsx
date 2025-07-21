@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter, useParams } from "next/navigation"
-import axios from "axios"
+import api from "@/utils/api"
 import { 
   AlertTriangle, 
   Clock, 
@@ -58,7 +58,17 @@ interface EmailMessage {
   isHTML: boolean;
   labels: string[];
   internalDate: string;
-  attachments: { name: string; size: string; url?: string; contentType?: string }[];
+  attachments: { 
+    partId?: string;
+    mimeType?: string;
+    filename?: string;
+    name: string; 
+    size: string | number; 
+    url?: string; 
+    contentType?: string;
+    attachmentId?: string;
+    contentId?: string;
+  }[];
   isFromCustomer?: boolean;
   isRead?: boolean;
 }
@@ -66,8 +76,6 @@ interface EmailMessage {
 // Import types from our component files
 import type { CaseNote } from './components/CaseNotes'
 import type { ActivityItem as Activity } from './components/ActivityFeed'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 const statusIcons = {
   escalated: AlertTriangle,
@@ -104,7 +112,6 @@ export default function EscalationDetailsPage() {
     ])
   const [activities, setActivities] = React.useState<Activity[]>([])
   const [loadingActivities, setLoadingActivities] = React.useState(false)
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const [copiedCaseNumber, setCopiedCaseNumber] = useState(false);
   const [copiedSessionId, setCopiedSessionId] = useState(false);
   const addCaseNote = () => {
@@ -151,12 +158,10 @@ export default function EscalationDetailsPage() {
     // In a real app, you would delete this from the backend
   };
   React.useEffect(() => {
-    if (!id || !token) return
+    if (!id) return
     setLoading(true)
-    axios.get(`${API_URL}/escalation/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
+    api.get(`/escalation/${id}`)
+      .then((res: any) => {
         setEscalation(res.data)
         // Fetch chat messages after getting escalation
         if (res.data.sessionId) {
@@ -169,21 +174,19 @@ export default function EscalationDetailsPage() {
       })
       .catch(() => setEscalation(null))
       .finally(() => setLoading(false))
-  }, [id, token])
+  }, [id])
 
   // Fetch emails when escalation data is available
   React.useEffect(() => {
     if (escalation?.emailThreadId) {
       fetchEmails();
     }
-  }, [escalation?.emailThreadId, token])
+  }, [escalation?.emailThreadId])
 
   const fetchChatMessages = async (sessionId: string) => {
     setLoadingChats(true)
     try {
-      const response = await axios.get(`${API_URL}/chat/session/${sessionId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/chat/session/${sessionId}`)
       setChatMessages(response.data)
     } catch (error) {
       console.error('Error fetching chat messages:', error)
@@ -196,9 +199,7 @@ export default function EscalationDetailsPage() {
   const fetchActivities = async (escalationId: string) => {
     setLoadingActivities(true)
     try {
-      const response = await axios.get(`${API_URL}/activity/escalation/${escalationId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/activity/escalation/${escalationId}`)
       // Transform server response to match client-side Activity interface
       const transformedActivities = response.data.map((activity: any) => ({
         id: activity._id,
@@ -224,16 +225,19 @@ export default function EscalationDetailsPage() {
 
     setLoadingEmails(true)
     try {
-      const response = await axios.get(`${API_URL}/api/email/threads/${escalation.emailThreadId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/email/threads/${escalation.emailThreadId}/messages`)
       
       if (response.data.success && response.data.data.messages) {
         // Transform the API response to include additional UI properties
         const transformedEmails = response.data.data.messages.map((message: any) => ({
           ...message,
           isFromCustomer: !message.labels.includes('SENT'), // If not sent by us, it's from customer
-          isRead: true // You might want to implement read/unread logic based on your needs
+          isRead: true, // You might want to implement read/unread logic based on your needs
+          attachments: message.attachments?.map((att: any) => ({
+            ...att,
+            name: att.filename || att.name || 'attachment',
+            size: att.size || 0
+          })) || []
         }));
         setEmails(transformedEmails);
       } else {
@@ -252,16 +256,19 @@ export default function EscalationDetailsPage() {
     
     setRefreshingEmails(true)
     try {
-      const response = await axios.get(`${API_URL}/api/email/threads/${escalation.emailThreadId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/email/threads/${escalation.emailThreadId}/messages`)
       
       if (response.data.success && response.data.data.messages) {
         // Transform the API response to include additional UI properties
         const transformedEmails = response.data.data.messages.map((message: any) => ({
           ...message,
           isFromCustomer: !message.labels.includes('SENT'), // If not sent by us, it's from customer
-          isRead: true // You might want to implement read/unread logic based on your needs
+          isRead: true, // You might want to implement read/unread logic based on your needs
+          attachments: message.attachments?.map((att: any) => ({
+            ...att,
+            name: att.filename || att.name || 'attachment',
+            size: att.size || 0
+          })) || []
         }));
         setEmails(transformedEmails);
       } else {
@@ -278,17 +285,14 @@ export default function EscalationDetailsPage() {
     if (!escalation?.emailThreadId || !originalMessageId) return
     
     try {
-      await axios.post(
-        `${API_URL}/api/email/reply`,
+      await api.post(
+        `/email/reply`,
         {
           threadId: escalation.emailThreadId,
           to: recipients[0], // Using first recipient
           body: content,
           from: "Customer Support",
           originalMessageId: originalMessageId
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
         }
       )
       
@@ -312,17 +316,14 @@ export default function EscalationDetailsPage() {
     if (!escalation) return
     
     try {
-      await axios.post(
-        `${API_URL}/api/email/send`,
+      await api.post(
+        `/email/send`,
         {
           to: emailData.to,
           subject: emailData.subject,
           body: emailData.content,
           from: "Support Team",
           escalationId: escalation._id,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
         }
       )
       
@@ -349,12 +350,9 @@ export default function EscalationDetailsPage() {
     if (!escalation) return
     
     try {
-      await axios.patch(
-        `${API_URL}/escalation/${escalation._id}/status`,
-        { status: newStatus },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+      await api.patch(
+        `/escalation/${escalation._id}/status`,
+        { status: newStatus }
       )
       
       const newUpdatedAt = new Date().toISOString();
@@ -374,9 +372,7 @@ export default function EscalationDetailsPage() {
     
     setRefreshing(true)
     try {
-      const response = await axios.get(`${API_URL}/chat/session/${escalation.sessionId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.get(`/chat/session/${escalation.sessionId}`)
       setChatMessages(response.data)
     } catch (error) {
       console.error('Error refreshing chat messages:', error)
@@ -423,9 +419,9 @@ return (
     )}
     {/* Main Content */}
     <div className="flex-1 overflow-y-auto">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 md:p-6">        
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-4 md:p-6">        
         {/* Left Column */}
-        <div className="col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4">
           <CustomerIssueCard
             customerName={escalation?.customerName || ''}
             customerEmail={escalation?.customerEmail || ''}
@@ -455,8 +451,8 @@ return (
         </div>
 
         {/* Right Column */}
-        <div className="md:border-l md:border-border/40">
-          <div className="p-0 md:p-4 space-y-8">
+        <div className="lg:border-l lg:border-border/40">
+          <div className="p-0 lg:p-4 space-y-6 md:space-y-8">
             <CaseNotes 
               notes={caseNotes}
               onAddNote={addCaseNote}

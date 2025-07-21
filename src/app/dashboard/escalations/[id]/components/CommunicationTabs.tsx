@@ -31,7 +31,17 @@ interface EmailMessage {
   isHTML: boolean;
   labels: string[];
   internalDate: string;
-  attachments: { name: string; size: string; url?: string; contentType?: string }[];
+  attachments: { 
+    partId?: string;
+    mimeType?: string;
+    filename?: string;
+    name: string; 
+    size: string | number; 
+    url?: string; 
+    contentType?: string;
+    attachmentId?: string;
+    contentId?: string;
+  }[];
   isFromCustomer?: boolean;
   isRead?: boolean;
 }

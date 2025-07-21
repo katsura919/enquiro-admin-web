@@ -1,14 +1,20 @@
 /* Gmail email content styling */
 .email-content {
   font-family: Arial, sans-serif;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .email-content div {
   margin: 0;
+  max-width: 100%;
 }
 
 .email-content p {
   margin: 8px 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .email-content blockquote {
@@ -16,17 +22,22 @@
   padding-left: 12px;
   border-left: 2px solid hsl(var(--border));
   color: hsl(var(--muted-foreground));
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .email-content blockquote.gmail_quote {
   margin: 0px 0px 0px 0.8ex;
   border-left: 1px solid hsl(var(--border));
   padding-left: 1ex;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .email-content a {
   color: hsl(var(--primary));
   text-decoration: none;
+  word-break: break-all;
 }
 
 .email-content a:hover {
@@ -36,17 +47,23 @@
 .gmail_quote {
   font-size: 12px !important;
   color: hsl(var(--muted-foreground)) !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .gmail_attr {
   font-size: 12px;
   color: hsl(var(--muted-foreground));
   margin-bottom: 8px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .gmail_quote_container {
   font-size: 12px;
   color: hsl(var(--muted-foreground));
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Custom quoted text styling */
@@ -63,6 +80,9 @@
   background-color: #f9fafb;
   color: #6b7280;
   transition: all 0.2s ease;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 /* Dark mode support for quoted text */
@@ -81,4 +101,29 @@
 
 .quoted-text-indicator:hover {
   opacity: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .email-content {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .email-content p {
+    margin: 6px 0;
+  }
+  
+  .email-content blockquote {
+    padding-left: 8px;
+    margin-left: 4px;
+  }
+  
+  .gmail_quote {
+    font-size: 11px !important;
+  }
+  
+  .gmail_attr {
+    font-size: 11px;
+  }
 }
