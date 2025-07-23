@@ -1,5 +1,7 @@
 "use client"
 
+import * as React from "react";
+
 import { useState } from "react"
 import { Dialog } from "@/components/ui/dialog"
 import FAQHeader from "./components/FAQHeader"
@@ -8,9 +10,15 @@ import FAQCard from "./components/FAQCard"
 import FAQDialog from "./components/FAQDialog"
 import EmptyState from "./components/EmptyState"
 import { FAQ, FormData, mockFAQs, categories } from "./components/types"
+import api from "@/utils/api";
+import { useAuth } from "@/lib/auth"
 
 export default function FAQPage() {
-  const [faqs, setFaqs] = useState<FAQ[]>(mockFAQs)
+  // Replace with your actual businessId source
+  const { user } = useAuth()
+  const businessId = user?.businessId
+  const [faqs, setFaqs] = useState<FAQ[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
@@ -25,6 +33,28 @@ export default function FAQPage() {
     tags: "",
     isActive: true
   })
+
+  // Fetch FAQs and categories on mount
+  React.useEffect(() => {
+    const fetchFAQs = async () => {
+      try {
+        const { data } = await api.get(`/faq/business/${businessId}`)
+        if (data.success) setFaqs(data.faqs)
+      } catch (err) {
+        setFaqs([])
+      }
+    }
+    const fetchCategories = async () => {
+      try {
+        const { data } = await api.get(`/faq/business/${businessId}/categories`)
+        if (data.success) setCategories(data.categories)
+      } catch (err) {
+        setCategories([])
+      }
+    }
+    fetchFAQs()
+    fetchCategories()
+  }, [businessId])
 
   // Filter FAQs based on search and filters
   const filteredFAQs = faqs.filter(faq => {
@@ -42,21 +72,21 @@ export default function FAQPage() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleCreateFAQ = () => {
-    // TODO: Implement API call to create FAQ
-    const newFAQ: FAQ = {
-      id: Date.now().toString(),
-      question: formData.question,
-      answer: formData.answer,
-      category: formData.category,
-      isActive: formData.isActive,
-      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-    
-    setFaqs([newFAQ, ...faqs])
-    resetForm()
+  const handleCreateFAQ = async () => {
+    try {
+      const { data } = await api.post(`/faq`, {
+        businessId,
+        question: formData.question,
+        answer: formData.answer,
+        category: formData.category,
+        isActive: formData.isActive,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      })
+      if (data.success && data.faq) {
+        setFaqs([data.faq, ...faqs])
+        resetForm()
+      }
+    } catch (err) {}
   }
 
   const handleEditFAQ = (faq: FAQ) => {
@@ -71,38 +101,41 @@ export default function FAQPage() {
     setIsCreateDialogOpen(true)
   }
 
-  const handleUpdateFAQ = () => {
+  const handleUpdateFAQ = async () => {
     if (!editingFAQ) return
-    
-    // TODO: Implement API call to update FAQ
-    const updatedFAQs = faqs.map(faq => 
-      faq.id === editingFAQ.id 
-        ? {
-            ...faq,
-            question: formData.question,
-            answer: formData.answer,
-            category: formData.category,
-            tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
-            isActive: formData.isActive,
-            updatedAt: new Date().toISOString()
-          }
-        : faq
-    )
-    
-    setFaqs(updatedFAQs)
-    resetForm()
+    try {
+      const { data } = await api.put(`/faq/${editingFAQ._id || editingFAQ.id}`, {
+        question: formData.question,
+        answer: formData.answer,
+        category: formData.category,
+        isActive: formData.isActive,
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
+      })
+      if (data.success && data.faq) {
+        setFaqs(faqs.map(faq => (faq._id || faq.id) === data.faq._id ? data.faq : faq))
+        resetForm()
+      }
+    } catch (err) {}
   }
 
-  const handleDeleteFAQ = (id: string) => {
-    // TODO: Implement API call to delete FAQ
-    setFaqs(faqs.filter(faq => faq.id !== id))
+  const handleDeleteFAQ = async (id: string) => {
+    try {
+      const { data } = await api.delete(`/faq/${id}`)
+      if (data.success) {
+        setFaqs(faqs.filter(faq => (faq._id || faq.id) !== id))
+      }
+    } catch (err) {}
   }
 
-  const toggleFAQStatus = (id: string) => {
-    // TODO: Implement API call to toggle FAQ status
-    setFaqs(faqs.map(faq => 
-      faq.id === id ? { ...faq, isActive: !faq.isActive } : faq
-    ))
+  const toggleFAQStatus = async (id: string) => {
+    const faq = faqs.find(f => (f._id || f.id) === id)
+    if (!faq) return
+    try {
+      const { data } = await api.put(`/faq/${id}`, { ...faq, isActive: !faq.isActive })
+      if (data.success && data.faq) {
+        setFaqs(faqs.map(f => (f._id || f.id) === id ? data.faq : f))
+      }
+    } catch (err) {}
   }
 
   const resetForm = () => {

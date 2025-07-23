@@ -17,6 +17,7 @@ import {
   MoreVertical,
   Tag
 } from "lucide-react"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,16 +27,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-interface FAQ {
-  id: string
-  question: string
-  answer: string
-  category: string
-  isActive: boolean
-  tags: string[]
-  createdAt: string
-  updatedAt: string
-}
+import { FAQ } from "./types";
+
 
 interface FAQCardProps {
   faq: FAQ
@@ -84,7 +77,7 @@ export default function FAQCard({ faq, onEdit, onDelete, onToggleStatus }: FAQCa
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onToggleStatus(faq.id)}
+                    onClick={() => onToggleStatus(faq._id || faq.id!)}
                     className="h-8 w-8 p-0"
                   >
                     {faq.isActive ? (
@@ -113,7 +106,7 @@ export default function FAQCard({ faq, onEdit, onDelete, onToggleStatus }: FAQCa
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                    onClick={() => onDelete(faq.id)}
+                    onClick={() => onDelete(faq._id || faq.id!)}
                     className="text-destructive"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />

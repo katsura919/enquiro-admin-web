@@ -21,8 +21,6 @@ export default function EscalationsPage() {
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
   const businessId = user?.businessId
 
-  console.log("Debug - businessId:", businessId)
-  console.log("Debug - user:", user)
 
   React.useEffect(() => {
     if (!businessId) {

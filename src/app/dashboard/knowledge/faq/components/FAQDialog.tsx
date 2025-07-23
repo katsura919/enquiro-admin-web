@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog"
 
 interface FAQ {
-  id: string
+  id?: string
   question: string
   answer: string
   category: string
@@ -52,6 +52,10 @@ export default function FAQDialog({
   categories
 }: FAQDialogProps) {
   const isFormValid = formData.question && formData.answer && formData.category
+
+  // Fallback categories if none provided
+  const fallbackCategories = ["Account Management", "Billing", "Support", "Technical", "General"];
+  const categoryList = categories && categories.length > 0 ? categories : fallbackCategories;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -95,7 +99,7 @@ export default function FAQDialog({
                 onChange={(e) => onFormChange('category', e.target.value)}
               >
                 <option value="">Select category...</option>
-                {categories.map(cat => (
+                {categoryList.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
