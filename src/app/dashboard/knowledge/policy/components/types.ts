@@ -1,6 +1,7 @@
 // Types and interfaces for Policy management
 export interface Policy {
-  id: string
+  id?: string
+  _id?: string
   businessId: string
   title: string
   content: string
