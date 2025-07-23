@@ -1,22 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog } from "@/components/ui/dialog"
 import ProductHeader from "./components/ProductHeader"
 import ProductFilters from "./components/ProductFilters"
 import ProductTable from "./components/ProductTable"
 import ProductDialog from "./components/ProductDialog"
 import EmptyState from "./components/EmptyState"
-import { Product, ProductFormData, mockProducts, categories } from "./components/types"
+import { Product, ProductFormData } from "./components/types"
+import api from "@/utils/api"
+import { useAuth } from "@/lib/auth"
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(mockProducts)
+  const user = useAuth().user
+  const businessId = user?.businessId
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [showInStockOnly, setShowInStockOnly] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+
 
   // Form state for creating/editing product
   const [formData, setFormData] = useState<ProductFormData>({
@@ -29,6 +35,43 @@ export default function ProductsPage() {
     quantity: "0",
     isActive: true
   })
+
+
+
+  // Fetch products and categories from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const params: any = {}
+        if (selectedCategory !== "All") params.category = selectedCategory
+        if (showActiveOnly) params.isActive = true
+        if (showInStockOnly) params.inStock = true
+        if (searchTerm.length > 1) {
+          // Use search endpoint
+          const res = await api.get(`/product/business/${businessId}/search`, { params: { query: searchTerm } })
+          setProducts(res.data.products || [])
+          return
+        }
+        const res = await api.get(`/product/business/${businessId}`, { params })
+        setProducts(res.data.products || [])
+      } catch (err) {
+        setProducts([])
+      }
+    }
+    fetchProducts()
+  }, [businessId, selectedCategory, showActiveOnly, showInStockOnly, searchTerm])
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get(`/product/business/${businessId}/categories`)
+        setCategories(res.data.categories || [])
+      } catch (err) {
+        setCategories([])
+      }
+    }
+    fetchCategories()
+  }, [businessId])
 
   // Filter products based on search and filters
   const filteredProducts = products.filter(product => {
@@ -47,27 +90,31 @@ export default function ProductsPage() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleCreateProduct = () => {
-    // TODO: Implement API call to create product
-    const newProduct: Product = {
-      id: Date.now().toString(),
-      businessId: "business1",
-      name: formData.name,
-      sku: formData.sku,
-      description: formData.description,
-      category: formData.category,
-      price: {
-        amount: Number(formData.priceAmount),
-        currency: formData.currency
-      },
-      quantity: Number(formData.quantity),
-      isActive: formData.isActive,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+  const handleCreateProduct = async () => {
+    try {
+      const payload = {
+        businessId,
+        name: formData.name,
+        sku: formData.sku,
+        description: formData.description,
+        category: formData.category,
+        price: {
+          amount: Number(formData.priceAmount),
+          currency: formData.currency
+        },
+        quantity: Number(formData.quantity),
+        isActive: formData.isActive
+      }
+      // Flatten price for backend
+      // price is already set above
+      const res = await api.post(`/product`, payload)
+      if (res.data && res.data.product) {
+        setProducts(prev => [res.data.product, ...prev])
+      }
+      resetForm()
+    } catch (err) {
+      console.log(err)
     }
-    
-    setProducts([newProduct, ...products])
-    resetForm()
   }
 
   const handleEditProduct = (product: Product) => {
@@ -85,43 +132,64 @@ export default function ProductsPage() {
     setIsCreateDialogOpen(true)
   }
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!editingProduct) return
-    
-    // TODO: Implement API call to update product
-    const updatedProducts = products.map(product => 
-      product.id === editingProduct.id 
-        ? {
-            ...product,
-            name: formData.name,
-            sku: formData.sku,
-            description: formData.description,
-            category: formData.category,
-            price: {
-              amount: Number(formData.priceAmount),
-              currency: formData.currency
-            },
-            quantity: Number(formData.quantity),
-            isActive: formData.isActive,
-            updatedAt: new Date().toISOString()
-          }
-        : product
-    )
-    
-    setProducts(updatedProducts)
-    resetForm()
+    try {
+      const payload = {
+        name: formData.name,
+        sku: formData.sku,
+        description: formData.description,
+        category: formData.category,
+        price: {
+          amount: Number(formData.priceAmount),
+          currency: formData.currency
+        },
+        quantity: Number(formData.quantity),
+        isActive: formData.isActive
+      }
+      const productId = editingProduct._id || editingProduct.id
+      const res = await api.put(`/product/${productId}`, payload)
+      if (res.data && res.data.product) {
+        setProducts(prev => prev.map(product => {
+          const pid = product._id || product.id
+          return pid === productId ? res.data.product : product
+        }))
+      }
+      resetForm()
+    } catch (err) {
+      // handle error
+    }
   }
 
-  const handleDeleteProduct = (id: string) => {
-    // TODO: Implement API call to delete product
-    setProducts(products.filter(product => product.id !== id))
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      await api.delete(`/product/${id}`)
+      setProducts(prev => prev.filter(product => {
+        const pid = product._id || product.id
+        return pid !== id
+      }))
+    } catch (err) {
+      // handle error
+    }
   }
 
-  const toggleProductStatus = (id: string) => {
-    // TODO: Implement API call to toggle product status
-    setProducts(products.map(product => 
-      product.id === id ? { ...product, isActive: !product.isActive } : product
-    ))
+  const toggleProductStatus = async (id: string) => {
+    try {
+      const product = products.find(p => (p._id || p.id) === id)
+      if (!product) return
+      const res = await api.put(`/product/${id}`, {
+        ...product,
+        isActive: !product.isActive
+      })
+      if (res.data && res.data.product) {
+        setProducts(prev => prev.map(p => {
+          const pid = p._id || p.id
+          return pid === id ? res.data.product : p
+        }))
+      }
+    } catch (err) {
+      // handle error
+    }
   }
 
   const resetForm = () => {
@@ -159,7 +227,6 @@ export default function ProductsPage() {
         if (!open) resetForm()
       }}>
         <ProductHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
-        
         <ProductFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -169,7 +236,7 @@ export default function ProductsPage() {
           onActiveOnlyChange={setShowActiveOnly}
           showInStockOnly={showInStockOnly}
           onInStockOnlyChange={setShowInStockOnly}
-          categories={categories}
+          categories={["All", ...categories]}
           totalProducts={products.length}
           filteredCount={filteredProducts.length}
           activeCount={activeCount}
@@ -177,13 +244,12 @@ export default function ProductsPage() {
           inStockCount={inStockCount}
           outOfStockCount={outOfStockCount}
         />
-
         {/* Product List */}
         <div className="space-y-4">
           {filteredProducts.length === 0 ? (
-            <EmptyState 
-              hasAnyProducts={products.length > 0} 
-              onCreateClick={() => setIsCreateDialogOpen(true)} 
+            <EmptyState
+              hasAnyProducts={products.length > 0}
+              onCreateClick={() => setIsCreateDialogOpen(true)}
             />
           ) : (
             <ProductTable
@@ -194,7 +260,6 @@ export default function ProductsPage() {
             />
           )}
         </div>
-
         <ProductDialog
           isOpen={isCreateDialogOpen}
           onClose={resetForm}
@@ -206,4 +271,5 @@ export default function ProductsPage() {
       </Dialog>
     </div>
   )
+// ...existing code...
 }

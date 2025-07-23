@@ -12,7 +12,7 @@ import { Policy, PolicyFormData, mockPolicies, policyTypes } from "./components/
 import { useAuth } from "@/lib/auth"
 
 export default function PolicyPage() {
-  // Replace with your actual businessId source
+
   const user = useAuth().user
   const businessId = user?.businessId
   const [policies, setPolicies] = useState<Policy[]>([])

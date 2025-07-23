@@ -9,7 +9,7 @@ import FAQFilters from "./components/FAQFilters"
 import FAQCard from "./components/FAQCard"
 import FAQDialog from "./components/FAQDialog"
 import EmptyState from "./components/EmptyState"
-import { FAQ, FormData, mockFAQs, categories } from "./components/types"
+import { FAQ, FormData, categories } from "./components/types"
 import api from "@/utils/api";
 import { useAuth } from "@/lib/auth"
 
