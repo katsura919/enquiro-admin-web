@@ -94,7 +94,6 @@ export default function EscalationDetailsPage() {
   const params = useParams()
   const { id } = params as { id: string }
   const [escalation, setEscalation] = React.useState<Escalation | null>(null)
-  console.log(escalation)
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([])
   const [emails, setEmails] = React.useState<EmailMessage[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -103,59 +102,80 @@ export default function EscalationDetailsPage() {
   const [refreshing, setRefreshing] = React.useState(false)
   const [refreshingEmails, setRefreshingEmails] = React.useState(false)
   const [noteText, setNoteText] = React.useState("")
-  const [caseNotes, setCaseNotes] = React.useState<CaseNote[]>([
-    {
-      id: "note-1",
-      content: "Initial assessment: Customer reported issues with login functionality after the recent update.",
-      author: "Jane Smith",
-      createdAt: "2025-06-13T15:30:00Z"    },
-    ])
+  const [caseNotes, setCaseNotes] = React.useState<CaseNote[]>([])
+  const [loadingNotes, setLoadingNotes] = React.useState(false)
   const [activities, setActivities] = React.useState<Activity[]>([])
   const [loadingActivities, setLoadingActivities] = React.useState(false)
   const [copiedCaseNumber, setCopiedCaseNumber] = useState(false);
   const [copiedSessionId, setCopiedSessionId] = useState(false);
-  const addCaseNote = () => {
-    if (!noteText.trim()) return;
-    
-    const newNote: CaseNote = {
-      id: `note-${Date.now()}`,
-      content: noteText,
-      author: "Current User", // In a real app, get the current user's name
-      createdAt: new Date().toISOString()
-    };
-    
-    setCaseNotes([newNote, ...caseNotes]);
-    
-    // Add to activities
-    const newActivity: Activity = {
-      id: `act-${Date.now()}`,
-      action: "Note Added",
-      timestamp: new Date().toISOString()
-    };
-    
-    setActivities([newActivity, ...activities]);
-    setNoteText("");
-    
-    // In a real app, you would save this to the backend
-    // Example:
-    // axios.post(`${API_URL}/escalation/${id}/notes`, newNote, {
-    //   headers: { Authorization: `Bearer ${token}` }
-    // });
+  const fetchNotes = async () => {
+    if (!id) return;
+    setLoadingNotes(true);
+    try {
+      const response = await api.get(`/notes/escalation/${id}`);
+      if (response.data.success && response.data.data?.notes) {
+        // Map backend notes to CaseNote interface
+        const notes = response.data.data.notes.map((note: any) => ({
+          id: note._id,
+          content: note.content,
+          author: note.author || "You", // If you have author info, use it
+          createdAt: note.createdAt
+        }));
+        setCaseNotes(notes);
+      } else {
+        setCaseNotes([]);
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      setCaseNotes([]);
+    } finally {
+      setLoadingNotes(false);
+    }
   };
 
-  const deleteNote = (noteId: string) => {
-    setCaseNotes(caseNotes.filter(note => note.id !== noteId));
-    
-    // Add to activities
-    const newActivity: Activity = {
-      id: `act-${Date.now()}`,
-      action: "Note Deleted",
-      timestamp: new Date().toISOString()
-    };
-    
-    setActivities([newActivity, ...activities]);
-    
-    // In a real app, you would delete this from the backend
+  React.useEffect(() => {
+    fetchNotes();
+    // ...existing code...
+  }, [id]);
+
+  const addCaseNote = async (content: string) => {
+    if (!content.trim()) return;
+    try {
+      const response = await api.post(`/notes/escalation/${id}`, { content });
+      console.log('Add note response:', response);
+      if (response.data.success && response.data.data) {
+        fetchNotes();
+        const newActivity: Activity = {
+          id: `act-${Date.now()}`,
+          action: "Note Added",
+          timestamp: new Date().toISOString()
+        };
+        setActivities([newActivity, ...activities]);
+      } else {
+        alert('Failed to create note.');
+      }
+    } catch (error) {
+      alert('Error adding note.');
+      console.error('Error adding note:', error);
+    }
+  };
+
+  const deleteNote = async (noteId: string) => {
+    try {
+      const response = await api.delete(`/notes/${noteId}`);
+      if (response.data.success) {
+        fetchNotes();
+        // Add to activities
+        const newActivity: Activity = {
+          id: `act-${Date.now()}`,
+          action: "Note Deleted",
+          timestamp: new Date().toISOString()
+        };
+        setActivities([newActivity, ...activities]);
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+    }
   };
   React.useEffect(() => {
     if (!id) return
