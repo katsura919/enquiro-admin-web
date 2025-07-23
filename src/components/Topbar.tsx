@@ -1,4 +1,5 @@
 "use client"
+import * as React from "react"
 
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -47,12 +48,34 @@ const getPageInfo = (pathname: string) => {
 }
 
 export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
-  const pathname = usePathname()
-  const pageInfo = getPageInfo(pathname)
-  const PageIcon = pageInfo.icon
-  
+  const pathname = usePathname();
+  const segments = pathname.split('/').filter(Boolean);
+  // Map segment to label/icon
+  const segmentMap: Record<string, { label: string; icon?: React.ElementType }> = {
+    dashboard: { label: 'Overview', icon: LayoutDashboard },
+    knowledge: { label: 'Knowledge Base', icon: FolderKanban },
+    faq: { label: 'FAQ Management', icon: HelpCircle },
+    products: { label: 'Products Management', icon: Package },
+    services: { label: 'Services Management', icon: Wrench },
+    policy: { label: 'Policy Management', icon: FileText },
+    sessions: { label: 'Chat Sessions', icon: MessageSquare },
+    escalations: { label: 'Escalations', icon: AlertTriangle },
+    settings: { label: 'Settings', icon: Settings },
+    business: { label: 'Business Settings', icon: Settings },
+    register: { label: 'Register' },
+    login: { label: 'Login' },
+    chat: { label: 'Chat' },
+    auth: { label: 'Auth' },
+  };
+  // Breadcrumb import
+  // prettier-ignore
+  // @ts-ignore
+  // eslint-disable-next-line
+  const { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } = require("@/components/ui/breadcrumb");
+  const NextLink = require("next/link").default;
+
   return (
-    <header className="sticky top-0 left-0 w-full z-30 h-16 bg-card/50 backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 left-0 w-full z-30 h-16 bg-card backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
       {/* Left section */}
       <div className="flex items-center gap-4">
         {/* Mobile menu button */}
@@ -66,16 +89,46 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
             <Menu className="h-5 w-5 text-muted-foreground" />
           </Button>
         )}
-        
-        {/* Page title with icon */}
-        <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
-            <PageIcon className="h-6 w-6 text-primary" />
-          </div>
-          <h1 className="text-xl md:text-2xl font-semibold text-foreground">
-            {pageInfo.title}
-          </h1>
-        </div>
+
+        {/* Breadcrumb */}
+        <Breadcrumb>
+          <BreadcrumbList>
+            {/* Home/dashboard always first */}
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <NextLink href="/dashboard">
+                  Overview
+                </NextLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            {segments.map((seg, idx) => {
+              // Skip dashboard for first segment
+              if (idx === 0 && seg === 'dashboard') return null;
+              // Skip 'knowledge' segment (no page)
+              if (seg === 'knowledge') return null;
+              const isLast = idx === segments.length - 1;
+              const info = segmentMap[seg] || { label: seg };
+              return (
+                <React.Fragment key={seg + idx}>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    {isLast ? (
+                      <BreadcrumbPage>
+                        {info.label}
+                      </BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink asChild>
+                        <NextLink href={'/' + segments.slice(0, idx + 1).join('/') }>
+                          {info.label}
+                        </NextLink>
+                      </BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                </React.Fragment>
+              );
+            })}
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
 
       {/* Right section */}

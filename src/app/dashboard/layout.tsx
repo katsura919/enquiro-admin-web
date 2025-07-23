@@ -124,7 +124,7 @@ export default function DashboardLayout({
         {/* Sidebar - fixed on the left */}
         <div
           className={cn(
-            "fixed top-0 left-0 z-40 flex flex-col h-screen transition-all duration-300 ease-out bg-card/50 backdrop-blur-xl border-r border-border shadow-2xl",
+            "fixed top-0 left-0 z-40 flex flex-col h-screen transition-all duration-300 ease-out bg-card/50 backdrop-blur-xl border-r border-border",
             isSidebarOpen ? "w-80" : "lg:w-20 -translate-x-full lg:translate-x-0"
           )}
         >
@@ -149,7 +149,8 @@ export default function DashboardLayout({
                 >
                   Enquiro
                 </span>
-              </Link>              {/* Mobile menu button */}
+              </Link>              
+              {/* Mobile menu button */}
               <Button
                 variant="ghost"
                 className="lg:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent"
