@@ -129,8 +129,9 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
           <TableBody>
             {sortedProducts.map((product, index) => {
               const stockStatus = getStockStatus(product.quantity)
+              const productId = product.id ?? product._id;
               return (
-                <TableRow key={product.id} className={!product.isActive ? 'opacity-60' : ''}>
+                <TableRow key={productId ?? index} className={!product.isActive ? 'opacity-60' : ''}>
                   <TableCell className="font-mono text-xs text-muted-foreground">
                     {String(index + 1).padStart(3, '0')}
                   </TableCell>
@@ -167,18 +168,20 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
                   <TableCell>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => onToggleStatus(product.id)}
-                          className="h-8 w-8 p-0"
-                        >
-                          {product.isActive ? (
-                            <Eye className="h-4 w-4 text-blue-500" />
-                          ) : (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
+                        {productId && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => onToggleStatus(productId)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {product.isActive ? (
+                              <Eye className="h-4 w-4 text-blue-500" />
+                            ) : (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                        )}
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>{product.isActive ? 'Active product - Click to deactivate' : 'Inactive product - Click to activate'}</p>
@@ -199,13 +202,15 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => onDelete(product.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
+                        {productId && (
+                          <DropdownMenuItem 
+                            onClick={() => onDelete(productId)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

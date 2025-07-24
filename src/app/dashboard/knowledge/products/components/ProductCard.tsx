@@ -101,18 +101,20 @@ export default function ProductCard({ product, onEdit, onDelete, onToggleStatus 
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => onToggleStatus(product.id)}
-                    className="h-8 w-8 p-0"
-                  >
-                    {product.isActive ? (
-                      <Eye className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
+                  {(product.id ?? product._id) && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => onToggleStatus((product.id ?? product._id) as string)}
+                      className="h-8 w-8 p-0"
+                    >
+                      {product.isActive ? (
+                        <Eye className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  )}
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{product.isActive ? 'Active product - Click to deactivate' : 'Inactive product - Click to activate'}</p>
@@ -132,13 +134,15 @@ export default function ProductCard({ product, onEdit, onDelete, onToggleStatus 
                     Edit
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={() => onDelete(product.id)}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
+                  {(product.id ?? product._id) && (
+                    <DropdownMenuItem 
+                      onClick={() => onDelete((product.id ?? product._id) as string)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
