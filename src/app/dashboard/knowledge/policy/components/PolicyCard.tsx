@@ -107,7 +107,7 @@ export default function PolicyCard({ policy, onEdit, onDelete, onToggleStatus }:
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => onToggleStatus(policy.id)}
+                    onClick={() => onToggleStatus(policy.id ?? policy._id ?? "")}
                     className="h-8 w-8 p-0"
                   >
                     {policy.isActive ? (
@@ -136,7 +136,7 @@ export default function PolicyCard({ policy, onEdit, onDelete, onToggleStatus }:
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                    onClick={() => onDelete(policy.id)}
+                    onClick={() => onDelete(policy.id ?? policy._id ?? "")}
                     className="text-destructive"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
