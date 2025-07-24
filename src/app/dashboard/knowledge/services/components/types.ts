@@ -1,3 +1,10 @@
+// Helper to normalize service object from API (map _id to id)
+export function normalizeService(service: any): Service {
+  return {
+    ...service,
+    id: service._id || service.id,
+  }
+}
 // Types and interfaces for Service management
 export interface Service {
   id: string

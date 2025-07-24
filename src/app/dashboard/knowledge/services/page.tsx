@@ -1,16 +1,24 @@
+
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import {useAuth } from "@/lib/auth"
+import api from "@/utils/api"
 import { Dialog } from "@/components/ui/dialog"
 import ServiceHeader from "./components/ServiceHeader"
 import ServiceFilters from "./components/ServiceFilters"
 import ServiceTable from "./components/ServiceTable"
 import ServiceDialog from "./components/ServiceDialog"
 import EmptyState from "./components/EmptyState"
-import { Service, ServiceFormData, mockServices, categories } from "./components/types"
+import { Service, ServiceFormData, mockServices, categories, normalizeService } from "./components/types"
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>(mockServices)
+  const user =  useAuth().user
+  const businessId = user?.businessId
+  const [services, setServices] = useState<Service[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedPricingType, setSelectedPricingType] = useState("All")
@@ -30,43 +38,65 @@ export default function ServicesPage() {
     isActive: true
   })
 
-  // Filter services based on search and filters
+  // Fetch services from API
+  useEffect(() => {
+    const fetchServices = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        let url = `/service/business/${businessId}`
+        const params: any = {}
+        if (selectedCategory !== "All") params.category = selectedCategory
+        if (selectedPricingType !== "All") params.pricingType = selectedPricingType
+        if (showActiveOnly) params.isActive = true
+        const res = await api.get(url, { params })
+        setServices(res.data.services.map(normalizeService))
+      } catch (err: any) {
+        setError(err?.response?.data?.error || err.message || "Failed to fetch services")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchServices()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [businessId, selectedCategory, selectedPricingType, showActiveOnly])
+
+  // Filter services based on search and filters (search is client-side)
   const filteredServices = services.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCategory = selectedCategory === "All" || service.category === selectedCategory
-    const matchesPricingType = selectedPricingType === "All" || service.pricing.type === selectedPricingType
-    const matchesActiveStatus = !showActiveOnly || service.isActive
-    
-    return matchesSearch && matchesCategory && matchesPricingType && matchesActiveStatus
+      service.description.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesSearch
   })
 
   const handleFormChange = (field: keyof ServiceFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleCreateService = () => {
-    // TODO: Implement API call to create service
-    const newService: Service = {
-      id: Date.now().toString(),
-      businessId: "business1",
-      name: formData.name,
-      description: formData.description,
-      category: formData.category,
-      pricing: {
-        type: formData.pricingType,
-        amount: formData.pricingType === 'quote' ? 0 : Number(formData.pricingAmount),
-        currency: formData.currency
-      },
-      duration: formData.duration,
-      isActive: formData.isActive,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+  const handleCreateService = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const payload = {
+        businessId,
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        pricing: {
+          type: formData.pricingType,
+          amount: formData.pricingType === 'quote' ? 0 : Number(formData.pricingAmount),
+          currency: formData.currency
+        },
+        duration: formData.duration,
+        isActive: formData.isActive
+      }
+      const res = await api.post("/service", payload)
+      setServices([normalizeService(res.data.service), ...services])
+      resetForm()
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to create service")
+    } finally {
+      setLoading(false)
     }
-    
-    setServices([newService, ...services])
-    resetForm()
   }
 
   const handleEditService = (service: Service) => {
@@ -84,43 +114,64 @@ export default function ServicesPage() {
     setIsCreateDialogOpen(true)
   }
 
-  const handleUpdateService = () => {
+  const handleUpdateService = async () => {
     if (!editingService) return
-    
-    // TODO: Implement API call to update service
-    const updatedServices = services.map(service => 
-      service.id === editingService.id 
-        ? {
-            ...service,
-            name: formData.name,
-            description: formData.description,
-            category: formData.category,
-            pricing: {
-              type: formData.pricingType,
-              amount: formData.pricingType === 'quote' ? 0 : Number(formData.pricingAmount),
-              currency: formData.currency
-            },
-            duration: formData.duration,
-            isActive: formData.isActive,
-            updatedAt: new Date().toISOString()
-          }
-        : service
-    )
-    
-    setServices(updatedServices)
-    resetForm()
+    setLoading(true)
+    setError(null)
+    try {
+      const payload = {
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        pricing: {
+          type: formData.pricingType,
+          amount: formData.pricingType === 'quote' ? 0 : Number(formData.pricingAmount),
+          currency: formData.currency
+        },
+        duration: formData.duration,
+        isActive: formData.isActive
+      }
+      const res = await api.put(`/service/${editingService.id}`, payload)
+      setServices(services.map(service =>
+        service.id === editingService.id
+          ? normalizeService(res.data.service)
+          : service
+      ))
+      resetForm()
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to update service")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDeleteService = (id: string) => {
-    // TODO: Implement API call to delete service
-    setServices(services.filter(service => service.id !== id))
+  const handleDeleteService = async (id: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      await api.delete(`/service/${id}`)
+      setServices(services.filter(service => service.id !== id))
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to delete service")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const toggleServiceStatus = (id: string) => {
-    // TODO: Implement API call to toggle service status
-    setServices(services.map(service => 
-      service.id === id ? { ...service, isActive: !service.isActive } : service
-    ))
+  const toggleServiceStatus = async (id: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const service = services.find(s => s.id === id)
+      if (!service) return
+      const payload = { ...service, isActive: !service.isActive }
+      const res = await api.put(`/service/${id}`, payload)
+      setServices(services.map(s => s.id === id ? normalizeService(res.data.service) : s))
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to update status")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const resetForm = () => {
@@ -156,7 +207,7 @@ export default function ServicesPage() {
         if (!open) resetForm()
       }}>
         <ServiceHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
-        
+
         <ServiceFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -173,12 +224,15 @@ export default function ServicesPage() {
           inactiveCount={inactiveCount}
         />
 
+        {error && <div className="text-red-500 mb-2">{error}</div>}
+        {loading && <div className="text-gray-500 mb-2">Loading...</div>}
+
         {/* Service List */}
         <div className="space-y-4">
           {filteredServices.length === 0 ? (
-            <EmptyState 
-              hasAnyServices={services.length > 0} 
-              onCreateClick={() => setIsCreateDialogOpen(true)} 
+            <EmptyState
+              hasAnyServices={services.length > 0}
+              onCreateClick={() => setIsCreateDialogOpen(true)}
             />
           ) : (
             <ServiceTable
