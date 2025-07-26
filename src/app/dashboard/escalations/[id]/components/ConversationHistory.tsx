@@ -7,18 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Bot, Clock, MessageSquare, RefreshCw, UserCircle } from "lucide-react";
 import Markdown from "markdown-to-jsx";
-
-interface ChatMessage {
-  _id: string;
-  businessId: string;
-  sessionId: string;
-  message: string;
-  senderType: 'customer' | 'ai' | 'agent';
-  agentId?: string | null;
-  isGoodResponse?: boolean | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { ChatMessage } from "@/types/ChatMessage";
 
 interface ConversationHistoryProps {
   chatMessages: ChatMessage[];
