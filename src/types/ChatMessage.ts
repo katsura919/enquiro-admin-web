@@ -3,7 +3,7 @@ export interface ChatMessage {
   businessId: string;
   sessionId: string;
   message: string;
-  senderType: 'customer' | 'ai' | 'agent';
+  senderType: 'customer' | 'ai' | 'agent' | 'system';
   agentId?: string | null;
   isGoodResponse?: boolean | null;
   createdAt: string;
