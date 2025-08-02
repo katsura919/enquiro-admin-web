@@ -153,8 +153,8 @@ export default function EscalationDialog({
             </div>
 
             <DialogFooter>
-              <Button onClick={onClose}>
-                Close
+              <Button onClick={() => onOpenChange(false)}>
+                Continue Waiting
               </Button>
             </DialogFooter>
           </div>

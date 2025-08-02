@@ -75,6 +75,7 @@ export function useLiveChat({
         escalationResponse &&
         businessData?._id
       ) {
+        console.log('[SOCKET] Leaving queue due to component unmount or navigation')
         socketRef.current.emit('leave_queue', {
           businessId: businessData._id,
           escalationId: escalationResponse._id,

@@ -308,6 +308,9 @@ export default function ChatPage() {
       
       // Request live chat
       requestChat(response.data._id, businessData._id)
+
+      // Close the dialog immediately after successful submission
+      setEscalationVisible(false)
       
     } catch (error: any) {
       setFormError(error.response?.data?.error || "Failed to submit escalation. Please try again.")
@@ -317,15 +320,20 @@ export default function ChatPage() {
   // Handle escalation dialog close
   const handleEscalationClose = () => {
     setEscalationVisible(false)
-    setEscalationSuccess(false)
-    setEscalationResponse(null)
-    setFormData({
-      customerName: "",
-      customerEmail: "",
-      customerPhone: "",
-      concern: "",
-      description: "",
-    })
+    setFormError(null) // Clear any form errors
+    
+    // Only reset form data if not waiting for agent (to allow re-opening dialog for edits)
+    if (!waitingForAgent) {
+      setEscalationSuccess(false)
+      setEscalationResponse(null)
+      setFormData({
+        customerName: "",
+        customerEmail: "",
+        customerPhone: "",
+        concern: "",
+        description: "",
+      })
+    }
   }
 
   return (
@@ -350,6 +358,7 @@ export default function ChatPage() {
             disabled={loading || businessLoading}
             placeholder={isConnectedToAgent ? "Type your message to the agent..." : "Type your message here..."}
             isLiveChatMode={isConnectedToAgent}
+            escalationResponse={escalationResponse}
           />
         </div>
 
