@@ -206,7 +206,7 @@ export default function ServicesPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-        <ServiceHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
+
 
         <ServiceFilters
           searchTerm={searchTerm}
@@ -224,8 +224,9 @@ export default function ServicesPage() {
           inactiveCount={inactiveCount}
         />
 
+        <ServiceHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
+
         {error && <div className="text-red-500 mb-2">{error}</div>}
-        {loading && <div className="text-gray-500 mb-2">Loading...</div>}
 
         {/* Service List */}
         <div className="space-y-4">

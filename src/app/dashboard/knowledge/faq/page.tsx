@@ -161,7 +161,7 @@ export default function FAQPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-        <FAQHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
+
         
         <FAQFilters
           searchTerm={searchTerm}
@@ -176,6 +176,8 @@ export default function FAQPage() {
           activeCount={activeCount}
           inactiveCount={inactiveCount}
         />
+        
+        <FAQHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
 
         {/* FAQ List */}
         <div className="space-y-4">

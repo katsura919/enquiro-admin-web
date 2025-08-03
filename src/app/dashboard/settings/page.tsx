@@ -27,15 +27,15 @@ export default function GeneralSettingsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-white">General Settings</h1>
+          <h1 className="text-2xl font-semibold text-primary">General Settings</h1>
           <p className="text-gray-400">Manage your basic preferences</p>
         </div>
       </div>
 
       <div className="space-y-6">
-        <Card className="bg-white/5 border-blue-500/20">
+        <Card className="bg-card border-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-primary">
               <Moon className="h-5 w-5" />
               Appearance
             </CardTitle>
@@ -58,10 +58,10 @@ export default function GeneralSettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white/5 border-blue-500/20">
+        <Card className="bg-card border-none">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Bell className="h-5 w-5" />
+            <CardTitle className="text-primary flex items-center gap-2">
+              <Bell className="h-5 w-5 text-primary" />
               Notifications
             </CardTitle>
           </CardHeader>

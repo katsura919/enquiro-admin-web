@@ -76,7 +76,7 @@ export default function SettingsLayout({
   return (
     <div className="flex min-h-screen">
       {/* Settings Sidebar */}
-      <div className="w-80 border-r  bg-white/5">
+      <div className="w-80 border-r bg-card backdrop-blur-lg">
         <div className="p-6">
           <p className="text-sm text-gray-400 mb-6">
             Manage your account and preferences

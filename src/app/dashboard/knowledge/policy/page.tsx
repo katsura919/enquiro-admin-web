@@ -165,7 +165,7 @@ export default function PolicyPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-        <PolicyHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
+
         
         <PolicyFilters
           searchTerm={searchTerm}
@@ -180,6 +180,8 @@ export default function PolicyPage() {
           activeCount={activeCount}
           inactiveCount={inactiveCount}
         />
+        
+        <PolicyHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
 
         {/* Policy List */}
         <div className="space-y-4">

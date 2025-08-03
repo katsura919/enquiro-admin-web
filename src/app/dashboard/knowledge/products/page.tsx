@@ -226,7 +226,6 @@ export default function ProductsPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-        <ProductHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
         <ProductFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
@@ -244,6 +243,9 @@ export default function ProductsPage() {
           inStockCount={inStockCount}
           outOfStockCount={outOfStockCount}
         />
+
+        <ProductHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
+          
         {/* Product List */}
         <div className="space-y-4">
           {filteredProducts.length === 0 ? (
@@ -271,5 +273,5 @@ export default function ProductsPage() {
       </Dialog>
     </div>
   )
-// ...existing code...
+
 }

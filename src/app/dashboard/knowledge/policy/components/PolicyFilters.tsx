@@ -34,7 +34,7 @@ export default function PolicyFilters({
   inactiveCount
 }: PolicyFiltersProps) {
   return (
-    <Card className="mb-4">
+    <Card className="bg-card border-none mb-4">
       <CardContent className="p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
@@ -44,14 +44,14 @@ export default function PolicyFilters({
                 placeholder="Search policies by title, content, or tags..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-10"
+                className="bg-card pl-10"
               />
             </div>
           </div>
           
           <div className="flex gap-2">
             <select 
-              className="px-3 py-2 border border-input rounded-md bg-background min-w-[150px]"
+              className="px-3 py-2 border border-input rounded-md bg-card min-w-[150px]"
               value={selectedType}
               onChange={(e) => onTypeChange(e.target.value)}
             >
@@ -61,7 +61,7 @@ export default function PolicyFilters({
               ))}
             </select>
             
-            <div className="flex items-center space-x-2 px-3 py-2 border border-input rounded-md bg-background">
+            <div className="flex items-center space-x-2 px-3 py-2 border border-input rounded-md bg-card">
               <Switch
                 id="activeOnly"
                 checked={showActiveOnly}
