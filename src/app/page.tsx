@@ -1,17 +1,13 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Bot, Brain, Users, GitMerge } from "lucide-react"
-import { BackgroundGradient } from "@/components/ui/background-gradient"
-import { GridPattern } from "@/components/ui/grid-pattern"
+import { GridBackground } from "@/components/ui/grid-background"
 import Link from "next/link"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 
 export default function Home() {
   return (
-    <div className="relative flex flex-col min-h-screen overflow-hidden bg-black">
-      <BackgroundGradient />
-      <GridPattern />
-      
+    <GridBackground className="relative flex flex-col min-h-screen overflow-hidden">
       {/* Navigation */}
       <Navbar />
 
@@ -109,31 +105,10 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* CTA Section */}
-        <section className="w-full py-12 md:py-24 lg:py-32 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-90"></div>
-          <div className="container px-4 md:px-6 relative">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl text-white">
-                Ready to Transform Your Customer Support?
-              </h2>
-              <p className="mx-auto max-w-[600px] text-blue-100">
-                Join organizations that are already leveraging our AI chatbot to provide superior customer service.
-              </p>
-              <Link href="/register">
-                <Button className="bg-white text-blue-600 hover:bg-blue-50" size="lg">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
       <Footer />
-    </div>
+    </GridBackground>
   )
 }
