@@ -22,7 +22,7 @@ interface EscalationHeaderProps {
 export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
   escalation,
   statusColors,
-  StatusIcon,
+  // StatusIcon,
   copiedCaseNumber,
   copiedSessionId,
   setCopiedCaseNumber,
@@ -86,8 +86,7 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
         <div className="flex items-center gap-2 md:gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <StatusIcon className={cn("h-4 w-4", statusColors[escalation.status])} />
+              <Button variant="outline" className="bg-card flex items-center gap-2">
                 <span className="capitalize">{escalation.status}</span>
                 <ChevronDown className="h-4 w-4 ml-1 text-muted-foreground" />
               </Button>

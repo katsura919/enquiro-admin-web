@@ -14,7 +14,7 @@ export default function EscalationsPage() {
   const { user } = useAuth()
   const [escalations, setEscalations] = React.useState<Escalation[]>([])
   const [loading, setLoading] = React.useState(false)
-  const [status, setStatus] = React.useState<"all" | "escalated" | "pending" | "resolved">("escalated")
+  const [status, setStatus] = React.useState<"all" | "escalated" | "pending" | "resolved">("all")
   const [page, setPage] = React.useState(1)
   const [totalPages, setTotalPages] = React.useState(1)
   const [search, setSearch] = React.useState("")
@@ -30,7 +30,7 @@ export default function EscalationsPage() {
     
     console.log("Fetching escalations...")
     setLoading(true)
-    api.get(`/escalation/business/${businessId}?status=${status}&page=${page}&limit=10`)
+    api.get(`/escalation/business/${businessId}?status=${status}&page=${page}&limit=14`)
       .then((res: any) => {
         console.log("API Response:", res.data)
         // Transform the data to match the EscalationTable interface
@@ -65,11 +65,11 @@ export default function EscalationsPage() {
           placeholder="Search by customer, case #, or concern..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="max-w-md flex-1"
+          className="bg-card max-w-md flex-1"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="bg-card flex items-center gap-2">
               {status.charAt(0).toUpperCase() + status.slice(1)}
               <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
             </Button>
@@ -95,9 +95,23 @@ export default function EscalationsPage() {
       />
       
       <div className="flex justify-end gap-2 mt-4">
-        <Button disabled={page <= 1} onClick={() => setPage(p => p - 1)} variant="outline">Previous</Button>
+        <Button 
+          className="bg-card"
+          disabled={page <= 1} 
+          onClick={() => setPage(p => p - 1)} 
+          variant="outline"
+        >
+            Previous
+        </Button>
         <span className="px-2 text-muted-foreground">Page {page} of {totalPages}</span>
-        <Button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} variant="outline">Next</Button>
+        <Button 
+          className="bg-card"
+          disabled={page >= totalPages} 
+          onClick={() => setPage(p => p + 1)} 
+          variant="outline"
+        >
+          Next
+        </Button>
       </div>
     </div>
   )

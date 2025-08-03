@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button"
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Topbar from '@/components/Topbar'
-import { PageSpinner } from '@/components/ui/spinner'
+import { PageSpinner } from '@/components/ui/spinner1'
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },

@@ -40,11 +40,11 @@ export function CaseNotes({
           <FileText className="h-5 w-5 text-indigo-500" />
           <h2 className="text-lg font-semibold">Case Notes</h2>
         </div>
-        <Badge variant="outline" className="text-xs">{notes.length}</Badge>
+        <Badge variant="outline" className="bg-card text-xs">{notes.length}</Badge>
       </div>
       
       {/* Add Note Form */}
-      <Card className="p-4 overflow-hidden bg-none shadow-sm border-border/40 relative">
+      <Card className="p-4 overflow-hidden bg-card shadow-sm border-border/40 relative">
         <div className="space-y-3">
           <Textarea
             placeholder="Type your note here..."
