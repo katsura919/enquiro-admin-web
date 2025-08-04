@@ -67,6 +67,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     login: { label: 'Login' },
     chat: { label: 'Chat' },
     auth: { label: 'Auth' },
+    agents: { label: 'Agents' },
   };
   // Breadcrumb import
   // prettier-ignore

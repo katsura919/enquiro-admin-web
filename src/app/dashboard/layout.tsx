@@ -18,6 +18,7 @@ import {
   Package,
   Wrench,
   FileText,
+  UserRound
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProtectedRoute from '@/components/ProtectedRoute'
@@ -38,6 +39,7 @@ const navigation = [
     ]
   },
   { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
+  { name: "Agents", href: "/dashboard/agents", icon: UserRound },
   { name: "Escalations", href: "/dashboard/escalations", icon: AlertTriangle },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]

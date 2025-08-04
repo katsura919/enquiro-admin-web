@@ -37,7 +37,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Login Form */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
+      
+      <div className="bg-black flex-1 flex flex-col items-center justify-center p-8 relative">
         {/* Logo/Brand top left */}
         <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 group">
           <Bot className="h-8 w-8 text-blue-400 group-hover:text-blue-500 transition-colors" />
