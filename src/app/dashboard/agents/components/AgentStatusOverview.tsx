@@ -14,6 +14,18 @@ import {
   Activity
 } from 'lucide-react';
 
+interface Agent {
+  id: string;
+  name: string;
+  email: string;
+  status: 'offline' | 'online' | 'available' | 'away' | 'in-chat';
+  profilePic?: string;
+  activeChats: number;
+  totalChats: number;
+  lastActive: Date;
+  businessId: string;
+}
+
 interface StatusOverview {
   status: string;
   count: number;
@@ -31,108 +43,127 @@ interface AgentPerformance {
   efficiency: number;
 }
 
-export function AgentStatusOverview() {
-  const [statusOverview, setStatusOverview] = useState<StatusOverview[]>([
-    {
-      status: 'Available',
-      count: 12,
-      percentage: 50,
-      color: 'green',
-      icon: <UserCheck className="h-4 w-4" />,
-      description: 'Ready to handle new chats'
-    },
-    {
-      status: 'In Chat',
-      count: 6,
-      percentage: 25,
-      color: 'blue',
-      icon: <MessageSquare className="h-4 w-4" />,
-      description: 'Currently handling customers'
-    },
-    {
-      status: 'Away',
-      count: 3,
-      percentage: 12.5,
-      color: 'yellow',
-      icon: <Clock className="h-4 w-4" />,
-      description: 'Temporarily unavailable'
-    },
-    {
-      status: 'Offline',
-      count: 3,
-      percentage: 12.5,
-      color: 'gray',
-      icon: <WifiOff className="h-4 w-4" />,
-      description: 'Not currently working'
+interface AgentStatusOverviewProps {
+  agents?: Agent[];
+}
+
+export function AgentStatusOverview({ agents = [] }: AgentStatusOverviewProps) {
+  const [statusOverview, setStatusOverview] = useState<StatusOverview[]>([]);
+
+  useEffect(() => {
+    if (agents.length === 0) {
+      // Fallback data if no agents provided
+      setStatusOverview([
+        {
+          status: 'Available',
+          count: 0,
+          percentage: 0,
+          color: 'green',
+          icon: <UserCheck className="h-4 w-4" />,
+          description: 'Ready to handle new chats'
+        },
+        {
+          status: 'In Chat',
+          count: 0,
+          percentage: 0,
+          color: 'blue',
+          icon: <MessageSquare className="h-4 w-4" />,
+          description: 'Currently helping customers'
+        },
+        {
+          status: 'Away',
+          count: 0,
+          percentage: 0,
+          color: 'yellow',
+          icon: <Clock className="h-4 w-4" />,
+          description: 'Temporarily unavailable'
+        },
+        {
+          status: 'Offline',
+          count: 0,
+          percentage: 0,
+          color: 'gray',
+          icon: <WifiOff className="h-4 w-4" />,
+          description: 'Not connected'
+        }
+      ]);
+      return;
     }
-  ]);
 
-  const [topPerformers, setTopPerformers] = useState<AgentPerformance[]>([
-    {
-      name: 'Sarah Johnson',
-      status: 'available',
-      chatsHandled: 23,
-      avgResponseTime: '32s',
-      efficiency: 96
-    },
-    {
-      name: 'Mike Chen',
-      status: 'in-chat',
-      chatsHandled: 18,
-      avgResponseTime: '45s',
-      efficiency: 92
-    },
-    {
-      name: 'Emily Rodriguez',
-      status: 'available',
-      chatsHandled: 16,
-      avgResponseTime: '38s',
-      efficiency: 89
-    },
-    {
-      name: 'Lisa Wang',
-      status: 'in-chat',
-      chatsHandled: 21,
-      avgResponseTime: '28s',
-      efficiency: 94
-    }
-  ]);
+    // Calculate status counts from real agent data
+    const statusCounts = {
+      available: agents.filter(a => a.status === 'available').length,
+      'in-chat': agents.filter(a => a.status === 'in-chat').length,
+      away: agents.filter(a => a.status === 'away').length,
+      offline: agents.filter(a => a.status === 'offline').length,
+      online: agents.filter(a => a.status === 'online').length
+    };
 
-  const totalAgents = statusOverview.reduce((sum, status) => sum + status.count, 0);
-  const onlineAgents = statusOverview
-    .filter(s => s.status !== 'Offline')
-    .reduce((sum, status) => sum + status.count, 0);
+    const total = agents.length;
+    
+    setStatusOverview([
+      {
+        status: 'Available',
+        count: statusCounts.available,
+        percentage: total > 0 ? Math.round((statusCounts.available / total) * 100) : 0,
+        color: 'green',
+        icon: <UserCheck className="h-4 w-4" />,
+        description: 'Ready to handle new chats'
+      },
+      {
+        status: 'In Chat',
+        count: statusCounts['in-chat'],
+        percentage: total > 0 ? Math.round((statusCounts['in-chat'] / total) * 100) : 0,
+        color: 'blue',
+        icon: <MessageSquare className="h-4 w-4" />,
+        description: 'Currently helping customers'
+      },
+      {
+        status: 'Away',
+        count: statusCounts.away,
+        percentage: total > 0 ? Math.round((statusCounts.away / total) * 100) : 0,
+        color: 'yellow',
+        icon: <Clock className="h-4 w-4" />,
+        description: 'Temporarily unavailable'
+      },
+      {
+        status: 'Offline',
+        count: statusCounts.offline,
+        percentage: total > 0 ? Math.round((statusCounts.offline / total) * 100) : 0,
+        color: 'gray',
+        icon: <WifiOff className="h-4 w-4" />,
+        description: 'Not connected'
+      }
+    ]);
+  }, [agents]);
 
-  const getColorClasses = (color: string) => {
+  const [agentPerformance, setAgentPerformance] = useState<AgentPerformance[]>([]);
+
+  useEffect(() => {
+    // Convert agents to performance data
+    const performance = agents.map(agent => ({
+      name: agent.name,
+      status: agent.status,
+      chatsHandled: agent.totalChats,
+      avgResponseTime: '1m 23s', // Would be calculated from real data
+      efficiency: Math.floor(Math.random() * 20) + 80 // Mock efficiency
+    }));
+    
+    setAgentPerformance(performance);
+  }, [agents]);
+
+  const getStatusColor = (color: string) => {
     switch (color) {
       case 'green':
-        return {
-          bg: 'bg-green-50 dark:bg-green-950',
-          border: 'border-green-200 dark:border-green-800',
-          text: 'text-green-700 dark:text-green-300',
-          icon: 'text-green-600 dark:text-green-400'
-        };
+        return 'text-green-600 bg-green-50 dark:bg-green-950 dark:text-green-400';
       case 'blue':
-        return {
-          bg: 'bg-blue-50 dark:bg-blue-950',
-          border: 'border-blue-200 dark:border-blue-800',
-          text: 'text-blue-700 dark:text-blue-300',
-          icon: 'text-blue-600 dark:text-blue-400'
-        };
+        return 'text-blue-600 bg-blue-50 dark:bg-blue-950 dark:text-blue-400';
       case 'yellow':
-        return {
-          bg: 'bg-yellow-50 dark:bg-yellow-950',
-          border: 'border-yellow-200 dark:border-yellow-800',
-          text: 'text-yellow-700 dark:text-yellow-300',
-          icon: 'text-yellow-600 dark:text-yellow-400'
-        };
+        return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-400';
+      case 'gray':
+        return 'text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-400';
       default:
-        return {
-          bg: 'bg-gray-50 dark:bg-gray-950',
-          border: 'border-gray-200 dark:border-gray-800',
-          text: 'text-gray-700 dark:text-gray-300',
-          icon: 'text-gray-600 dark:text-gray-400'
-        };
+        return 'text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-400';
     }
   };
 
@@ -144,27 +175,12 @@ export function AgentStatusOverview() {
         return 'secondary';
       case 'away':
         return 'outline';
-      default:
+      case 'offline':
         return 'destructive';
+      default:
+        return 'outline';
     }
   };
-
-  // Simulate real-time updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStatusOverview(prev => prev.map(status => {
-        const change = Math.floor(Math.random() * 3) - 1;
-        const newCount = Math.max(0, status.count + change);
-        return {
-          ...status,
-          count: newCount,
-          percentage: totalAgents > 0 ? (newCount / totalAgents) * 100 : 0
-        };
-      }));
-    }, 20000);
-
-    return () => clearInterval(interval);
-  }, [totalAgents]);
 
   return (
     <div className="space-y-6">
@@ -175,84 +191,30 @@ export function AgentStatusOverview() {
             <Activity className="h-5 w-5 mr-2" />
             Agent Status Distribution
           </CardTitle>
-          <div className="text-sm text-muted-foreground">
-            {onlineAgents} of {totalAgents} agents online ({Math.round((onlineAgents / totalAgents) * 100)}%)
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {statusOverview.map((status, index) => {
-            const colors = getColorClasses(status.color);
-            return (
-              <div 
-                key={index}
-                className={`p-4 rounded-lg border ${colors.bg} ${colors.border}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    <div className={colors.icon}>
-                      {status.icon}
-                    </div>
-                    <div>
-                      <div className={`font-medium ${colors.text}`}>
-                        {status.status}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {status.description}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-xl font-bold ${colors.text}`}>
-                      {status.count}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {status.percentage.toFixed(1)}%
-                    </div>
-                  </div>
-                </div>
-                <Progress 
-                  value={status.percentage} 
-                  className="h-2 mt-2"
-                />
-              </div>
-            );
-          })}
-        </CardContent>
-      </Card>
-
-      {/* Top Performers */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Top Performing Agents</CardTitle>
-          <div className="text-sm text-muted-foreground">
-            Based on today's performance metrics
-          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {topPerformers.map((agent, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+            {statusOverview.map((status, index) => (
+              <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center justify-center w-8 h-8 bg-primary text-primary-foreground rounded-full text-sm font-bold">
-                    {index + 1}
+                  <div className={`p-2 rounded-lg ${getStatusColor(status.color)}`}>
+                    {status.icon}
                   </div>
                   <div>
-                    <div className="font-medium">{agent.name}</div>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Badge variant={getStatusBadgeVariant(agent.status)} className="text-xs capitalize">
-                        {agent.status}
-                      </Badge>
-                      <span>•</span>
-                      <span>{agent.chatsHandled} chats</span>
-                    </div>
+                    <p className="font-medium">{status.status}</p>
+                    <p className="text-sm text-muted-foreground">{status.description}</p>
                   </div>
                 </div>
-                <div className="text-right space-y-1">
-                  <div className="text-sm font-medium">
-                    {agent.efficiency}% efficiency
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <p className="font-semibold">{status.count}</p>
+                    <p className="text-sm text-muted-foreground">{status.percentage}%</p>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Avg: {agent.avgResponseTime}
+                  <div className="w-20">
+                    <Progress 
+                      value={status.percentage} 
+                      className="h-2"
+                    />
                   </div>
                 </div>
               </div>
@@ -261,37 +223,39 @@ export function AgentStatusOverview() {
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
+      {/* Agent Performance */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Quick Stats</CardTitle>
+          <CardTitle className="text-lg">Top Performers</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {Math.round((onlineAgents / totalAgents) * 100)}%
+          <div className="space-y-3">
+            {agentPerformance.slice(0, 5).map((agent, index) => (
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
+                    <span className="text-xs font-medium">
+                      {agent.name.split(' ').map(n => n[0]).join('')}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium">{agent.name}</p>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={getStatusBadgeVariant(agent.status)} className="text-xs">
+                        {agent.status}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {agent.chatsHandled} chats
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium">{agent.avgResponseTime}</p>
+                  <p className="text-xs text-muted-foreground">avg response</p>
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground">Online Rate</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {statusOverview.find(s => s.status === 'In Chat')?.count || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">Active Chats</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {topPerformers.reduce((sum, agent) => sum + agent.chatsHandled, 0)}
-              </div>
-              <div className="text-sm text-muted-foreground">Total Chats Today</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                92%
-              </div>
-              <div className="text-sm text-muted-foreground">Avg Efficiency</div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>

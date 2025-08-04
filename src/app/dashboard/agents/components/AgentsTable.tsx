@@ -45,78 +45,21 @@ interface Agent {
 
 interface AgentsTableProps {
   filterOnline?: boolean;
+  agents?: Agent[];
 }
 
-export function AgentsTable({ filterOnline = false }: AgentsTableProps) {
-  const [agents, setAgents] = useState<Agent[]>([]);
+export function AgentsTable({ filterOnline = false, agents: propAgents }: AgentsTableProps) {
+  const [agents, setAgents] = useState<Agent[]>(propAgents || []);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!propAgents || propAgents.length === 0);
 
-  // Mock data - replace with actual API call
+  // Update agents when props change
   useEffect(() => {
-    const mockAgents: Agent[] = [
-      {
-        id: '1',
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@company.com',
-        status: 'available',
-        profilePic: '',
-        activeChats: 3,
-        totalChats: 47,
-        lastActive: new Date(),
-        businessId: 'bus1'
-      },
-      {
-        id: '2',
-        name: 'Mike Chen',
-        email: 'mike.chen@company.com',
-        status: 'in-chat',
-        profilePic: '',
-        activeChats: 5,
-        totalChats: 32,
-        lastActive: new Date(Date.now() - 300000), // 5 minutes ago
-        businessId: 'bus1'
-      },
-      {
-        id: '3',
-        name: 'Emily Rodriguez',
-        email: 'emily.rodriguez@company.com',
-        status: 'away',
-        profilePic: '',
-        activeChats: 1,
-        totalChats: 28,
-        lastActive: new Date(Date.now() - 900000), // 15 minutes ago
-        businessId: 'bus1'
-      },
-      {
-        id: '4',
-        name: 'David Kim',
-        email: 'david.kim@company.com',
-        status: 'offline',
-        profilePic: '',
-        activeChats: 0,
-        totalChats: 19,
-        lastActive: new Date(Date.now() - 3600000), // 1 hour ago
-        businessId: 'bus1'
-      },
-      {
-        id: '5',
-        name: 'Lisa Wang',
-        email: 'lisa.wang@company.com',
-        status: 'online',
-        profilePic: '',
-        activeChats: 2,
-        totalChats: 41,
-        lastActive: new Date(Date.now() - 60000), // 1 minute ago
-        businessId: 'bus1'
-      }
-    ];
-
-    setTimeout(() => {
-      setAgents(mockAgents);
+    if (propAgents) {
+      setAgents(propAgents);
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  }, [propAgents]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

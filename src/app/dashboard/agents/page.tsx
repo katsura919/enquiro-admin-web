@@ -3,31 +3,34 @@
 import { useState, useEffect } from 'react';
 import { AgentStatusOverview } from './components/AgentStatusOverview';
 import { AgentsTable } from './components/AgentsTable';
-import { QueueMonitor } from './components/QueueMonitor';
 import { AgentStatusCards } from './components/AgentStatusCards';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { useAgentDashboard } from '@/hooks/useAgentDashboard';
+import { useAuth } from '@/lib/auth';
+import { Wifi, WifiOff } from 'lucide-react';
 
 export default function AgentDashboardPage() {
-  const [loading, setLoading] = useState(true);
-  const [agents, setAgents] = useState([]);
-  const [queueData, setQueueData] = useState({
-    waiting: 0,
-    inProgress: 0,
-    resolved: 0
-  });
+  const { user, isLoading: authLoading } = useAuth();
+  
+  const {
+    agents,
+    queueData,
+    loading,
+    connected,
+    getOnlineAgents,
+    totalAgents,
+    onlineAgents,
+    availableAgents,
+    busyAgents,
+    awayAgents,
+    offlineAgents
+  } = useAgentDashboard(user?.businessId || '');
 
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
+  // Show loading state while auth or agent data is loading
+  if (authLoading || loading) {
     return (
       <div className="w-full p-6 space-y-6">
         <div className="space-y-2">
@@ -74,65 +77,111 @@ export default function AgentDashboardPage() {
     );
   }
 
+  // Show message if user is not authenticated
+  if (!user) {
+    return (
+      <div className="w-full p-6 flex items-center justify-center min-h-[400px]">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-center">Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-muted-foreground">
+              Please log in to access the agent dashboard.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full p-6 space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Agent Dashboard</h1>
-        <p className="text-muted-foreground">
-          Monitor agent performance, status, and customer queue in real-time
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Agent Dashboard</h1>
+            <p className="text-muted-foreground">
+              Monitor agent performance, status, and customer queue in real-time
+            </p>
+          </div>
+          
+          {/* Connection Status */}
+          <div className="flex items-center gap-2">
+            <Badge variant={connected ? "default" : "destructive"} className="flex items-center gap-1">
+              {connected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+              {connected ? "Connected" : "Disconnected"}
+            </Badge>
+            <div className="text-sm text-muted-foreground">
+              {onlineAgents}/{totalAgents} agents online
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Status Cards */}
-      <AgentStatusCards />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Agent Status Cards */}
+        <div className="lg:col-span-4">
+          <AgentStatusCards 
+            agents={agents}
+            availableCount={availableAgents}
+            busyCount={busyAgents}
+            awayCount={awayAgents}
+            offlineCount={offlineAgents}
+          />
+        </div>
+        
+        {/* Customer Queue Card - matching the agent status card design */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Waiting
+            </CardTitle>
+            <div className="p-2 rounded-full text-orange-600 bg-orange-50 dark:bg-orange-950 dark:text-orange-400">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-2xl font-bold">{queueData.waiting}</div>
+              <Badge variant="default" className="text-xs">
+                +0
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              In queue
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Agents Table */}
-        <div className="lg:col-span-2">
+        <div className="w-full">
           <Tabs defaultValue="agents" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="agents">All Agents</TabsTrigger>
-              <TabsTrigger value="online">Online Only</TabsTrigger>
+              <TabsTrigger value="agents">All Agents ({totalAgents})</TabsTrigger>
+              <TabsTrigger value="online">Online Only ({onlineAgents})</TabsTrigger>
               <TabsTrigger value="status-overview">Status Overview</TabsTrigger>
             </TabsList>
             
             <TabsContent value="agents" className="space-y-4">
-              <AgentsTable />
+              <AgentsTable agents={agents} />
             </TabsContent>
             
             <TabsContent value="online" className="space-y-4">
-              <AgentsTable filterOnline={true} />
+              <AgentsTable agents={getOnlineAgents()} filterOnline={true} />
             </TabsContent>
             
             <TabsContent value="status-overview" className="space-y-4">
-              <AgentStatusOverview />
+              <AgentStatusOverview agents={agents} />
             </TabsContent>
           </Tabs>
-        </div>
-
-        {/* Queue Monitor */}
-        <div className="space-y-6">
-          <QueueMonitor />
-          
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                Add New Agent
-              </button>
-              <button className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                Broadcast Message
-              </button>
-              <button className="w-full bg-outline hover:bg-accent px-4 py-2 rounded-md text-sm font-medium transition-colors">
-                Generate Report
-              </button>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

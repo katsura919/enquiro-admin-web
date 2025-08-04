@@ -38,24 +38,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
   useEffect(() => {
-    // Check for stored token and validate it
+    // Check for stored token and fetch user info
     const token = localStorage.getItem('token');
     if (token) {
-      const userData = JSON.parse(localStorage.getItem('user') || 'null');
-      setUser(userData);
+      fetchUserInfo(token).finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
+
+  const fetchUserInfo = async (token: string) => {
+    try {
+      const response = await api.get('/user/info');
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
+    } catch (error) {
+      setUser(null);
+      localStorage.removeItem('user');
+    }
+  };
 
   const login = async (email: string, password: string) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-
       const data = response.data;
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setUser(data.user);
+      await fetchUserInfo(data.token);
       router.push('/dashboard'); // Redirect to dashboard after login
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Login failed');
@@ -75,9 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     setUser(null);
-    router.push('/login');
+    router.push('/');
   };
 
   return (

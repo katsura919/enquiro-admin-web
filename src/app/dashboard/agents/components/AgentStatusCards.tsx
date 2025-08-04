@@ -3,7 +3,19 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCheck, UserX, Clock } from 'lucide-react';
+import { Users, UserCheck, UserX, Clock, MessageSquare } from 'lucide-react';
+
+interface Agent {
+  id: string;
+  name: string;
+  email: string;
+  status: 'offline' | 'online' | 'available' | 'away' | 'in-chat';
+  profilePic?: string;
+  activeChats: number;
+  totalChats: number;
+  lastActive: Date;
+  businessId: string;
+}
 
 interface StatusCardData {
   title: string;
@@ -13,50 +25,60 @@ interface StatusCardData {
   color: string;
 }
 
-export function AgentStatusCards() {
-  const [statusData, setStatusData] = useState<StatusCardData[]>([
-    {
-      title: 'Total Agents',
-      value: 24,
-      change: +2,
-      icon: <Users className="h-4 w-4" />,
-      color: 'blue'
-    },
-    {
-      title: 'Online Agents',
-      value: 18,
-      change: +3,
-      icon: <UserCheck className="h-4 w-4" />,
-      color: 'green'
-    },
-    {
-      title: 'Available',
-      value: 12,
-      change: -1,
-      icon: <Clock className="h-4 w-4" />,
-      color: 'yellow'
-    },
-    {
-      title: 'Offline',
-      value: 6,
-      change: -1,
-      icon: <UserX className="h-4 w-4" />,
-      color: 'red'
-    }
-  ]);
+interface AgentStatusCardsProps {
+  agents?: Agent[];
+  availableCount?: number;
+  busyCount?: number;
+  awayCount?: number;
+  offlineCount?: number;
+}
 
-  // Simulate real-time updates
+export function AgentStatusCards({ 
+  agents = [], 
+  availableCount = 0, 
+  busyCount = 0, 
+  awayCount = 0, 
+  offlineCount = 0 
+}: AgentStatusCardsProps) {
+  const totalAgents = agents.length;
+  const onlineAgents = totalAgents - offlineCount;
+  
+  const [statusData, setStatusData] = useState<StatusCardData[]>([]);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStatusData(prev => prev.map(item => ({
-        ...item,
-        value: Math.max(0, item.value + Math.floor(Math.random() * 3) - 1),
-        change: Math.floor(Math.random() * 5) - 2
-      })));
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+    const newStatusData: StatusCardData[] = [
+      {
+        title: 'Total Agents',
+        value: totalAgents,
+        change: 0, // Would calculate from previous state in real app
+        icon: <Users className="h-4 w-4" />,
+        color: 'blue'
+      },
+      {
+        title: 'Online Agents',
+        value: onlineAgents,
+        change: 0,
+        icon: <UserCheck className="h-4 w-4" />,
+        color: 'green'
+      },
+      {
+        title: 'Available',
+        value: availableCount,
+        change: 0,
+        icon: <Clock className="h-4 w-4" />,
+        color: 'yellow'
+      },
+      {
+        title: 'In Chat',
+        value: busyCount,
+        change: 0,
+        icon: <MessageSquare className="h-4 w-4" />,
+        color: 'purple'
+      }
+    ];
+    
+    setStatusData(newStatusData);
+  }, [totalAgents, onlineAgents, availableCount, busyCount]);
 
   const getColorClasses = (color: string) => {
     switch (color) {
@@ -68,6 +90,8 @@ export function AgentStatusCards() {
         return 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-400';
       case 'red':
         return 'text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400';
+      case 'purple':
+        return 'text-purple-600 bg-purple-50 dark:bg-purple-950 dark:text-purple-400';
       default:
         return 'text-gray-600 bg-gray-50 dark:bg-gray-950 dark:text-gray-400';
     }
