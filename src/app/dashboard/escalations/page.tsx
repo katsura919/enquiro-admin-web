@@ -4,7 +4,6 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { EscalationTable, Escalation } from "./components/EscalationTable"
 import { EscalationCountCards } from "./components/EscalationCountCards"
-import { EscalationsPageSkeleton, EscalationsPageSkeletonMobile } from "./components/EscalationsPageSkeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
@@ -109,11 +108,6 @@ export default function EscalationsPage() {
   const handleCountCardClick = (selectedStatus: "all" | "escalated" | "pending" | "resolved") => {
     setStatus(selectedStatus)
     setPage(1) // Reset to first page when changing filter
-  }
-
-  // Show skeleton while initial loading
-  if (initialLoading) {
-    return isMobile ? <EscalationsPageSkeletonMobile /> : <EscalationsPageSkeleton />
   }
 
   console.log("Rendering with escalations:", escalations)

@@ -100,6 +100,28 @@ export function EscalationCountCards({
     )
   }
 
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Card key={index} className="bg-card border-lg transition-all duration-200 flex-1">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-6 w-6" />
+              </div>
+              
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-16" />
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
       {cards.map((card) => (
