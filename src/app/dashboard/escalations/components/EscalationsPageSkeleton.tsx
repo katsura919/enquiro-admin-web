@@ -26,7 +26,7 @@ export function EscalationsPageSkeleton() {
                 <Skeleton className="h-10 w-16" />
                 <Skeleton className="h-5 w-24" />
               </div>
-              <Skeleton className="h-1.5 w-full mt-3 rounded-full" />
+            
             </CardContent>
           </Card>
         ))}

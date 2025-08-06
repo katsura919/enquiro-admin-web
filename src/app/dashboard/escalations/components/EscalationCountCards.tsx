@@ -128,19 +128,6 @@ export function EscalationCountCards({
               )}
             </div>
             
-            {/* Progress indicator for non-total cards */}
-            {card.status !== "all" && counts.total > 0 && (
-              <div className="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                <div
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    card.status === "escalated" ? "bg-red-500" :
-                    card.status === "pending" ? "bg-yellow-500" :
-                    "bg-green-500"
-                  }`}
-                  style={{ width: `${(card.count / counts.total) * 100}%` }}
-                />
-              </div>
-            )}
           </CardContent>
         </Card>
       ))}
