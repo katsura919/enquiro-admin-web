@@ -19,25 +19,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 import { 
   Edit, 
   Trash2, 
   Eye,
-  MoreVertical,
   ArrowUpDown,
   Calendar,
   User,
   Mail
 } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Spinner } from "@/components/ui/spinner"
 
 export interface Escalation {
   _id: string
@@ -83,19 +81,37 @@ export function EscalationTable({
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString()
+    const date = new Date(dateString)
+    const options: Intl.DateTimeFormatOptions = { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    }
+    return date.toLocaleDateString('en-US', options)
   }
 
   const getStatusInfo = (status: Escalation['status']) => {
     switch (status) {
       case 'escalated':
-        return { text: 'Escalated', variant: 'destructive' as const }
+        return { 
+          text: 'Escalated', 
+          className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-200 dark:border-red-800' 
+        }
       case 'pending':
-        return { text: 'Pending', variant: 'secondary' as const }
+        return { 
+          text: 'Pending', 
+          className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800' 
+        }
       case 'resolved':
-        return { text: 'Resolved', variant: 'default' as const }
+        return { 
+          text: 'Resolved', 
+          className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-200 dark:border-green-800' 
+        }
       default:
-        return { text: status, variant: 'secondary' as const }
+        return { 
+          text: status, 
+          className: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 border-gray-200 dark:border-gray-800' 
+        }
     }
   }
 
@@ -163,9 +179,7 @@ export function EscalationTable({
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px] p-12">
-        <div className="text-center">
-          <Spinner size="lg" className="mx-auto mb-6 bg-blue-600 w-12 h-12" />
-        </div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -193,90 +207,66 @@ export function EscalationTable({
               <SortableHeader field="concern">Concern</SortableHeader>
               <SortableHeader field="status">Status</SortableHeader>
               <SortableHeader field="createdAt">Created</SortableHeader>
-              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedEscalations.map((escalation, index) => {
               const statusInfo = getStatusInfo(escalation.status)
               return (
-                <TableRow 
-                  key={escalation._id} 
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => onRowClick(escalation._id)}
-                >
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(escalation._id)}
-                      onChange={() => handleSelectItem(escalation._id)}
-                      className="rounded border border-input bg-background"
-                    />
-                  </TableCell>
-                  <TableCell className="font-mono text-sm font-medium">
-                    {escalation.caseNumber}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{escalation.customerName}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{escalation.customerEmail}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-[300px] truncate">
-                      <span className="font-medium">{escalation.concern}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusInfo.variant}>
-                      {statusInfo.text}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{formatDate(escalation.createdAt)}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => onRowClick(escalation._id)}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </DropdownMenuItem>
-                        {onEdit && (
-                          <DropdownMenuItem onClick={() => onEdit(escalation)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        {onDelete && (
-                          <DropdownMenuItem 
-                            onClick={() => onDelete(escalation._id)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
+                <ContextMenu key={escalation._id}>
+                  <ContextMenuTrigger asChild>
+                    <TableRow 
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => onRowClick(escalation._id)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(escalation._id)}
+                          onChange={() => handleSelectItem(escalation._id)}
+                          className="rounded border border-input bg-background"
+                        />
+                      </TableCell>
+                      <TableCell className="font-mono text-sm font-medium">
+                        {escalation.caseNumber}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{escalation.customerName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">{escalation.customerEmail}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[300px] truncate">
+                          <span className="font-medium">{escalation.concern}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${statusInfo.className}`}>
+                          {statusInfo.text}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{formatDate(escalation.createdAt)}</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="w-48">
+                    <ContextMenuItem onClick={() => onRowClick(escalation._id)}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               )
             })}
           </TableBody>

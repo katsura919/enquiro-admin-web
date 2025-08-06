@@ -112,16 +112,13 @@ export default function DashboardLayout({
   }, [])
 
   // If loading, show the spinner  
+  // Show loading state while checking authentication
   if (isLoading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen bg-background">
-          <PageSpinner 
-            animationData={animationData}
-          />
-        </div>
-      </ProtectedRoute>
-    )
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
   
   // Otherwise, show the full dashboard
