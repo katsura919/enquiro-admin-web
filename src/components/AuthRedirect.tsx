@@ -19,7 +19,7 @@ export default function AuthRedirect({ children }: AuthRedirectProps) {
   useEffect(() => {
     // If user is authenticated, redirect to home page
     if (!isLoading && user) {
-      router.replace('/'); // Use replace instead of push to prevent back navigation to auth page
+      router.replace('/dashboard'); // Use replace instead of push to prevent back navigation to auth page
     }
   }, [user, isLoading, router]);
 

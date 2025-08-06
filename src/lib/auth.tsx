@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = response.data;
       localStorage.setItem('token', data.token);
       await fetchUserInfo(data.token);
-      router.push('/dashboard'); // Redirect to dashboard after login
+      router.push('/dashboard'); 
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Login failed');
     }

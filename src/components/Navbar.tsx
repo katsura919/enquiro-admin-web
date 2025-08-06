@@ -54,7 +54,8 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {isLoading && !isLoggingOut && !user ? (
             // Show loading state only during initial auth check, not during logout
-            <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+            <div className="flex items-center justify-center w-8 h-8">
+            </div>
           ) : user ? (
             // Show authenticated user buttons
             <>
