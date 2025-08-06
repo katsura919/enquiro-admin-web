@@ -18,7 +18,9 @@ import {
   Package,
   Wrench,
   FileText,
-  UserRound
+  UserRound,
+  Ticket,
+  Inbox
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ProtectedRoute from '@/components/ProtectedRoute'
@@ -28,6 +30,7 @@ import { PageSpinner } from '@/components/ui/spinner1'
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Agent Monitoring", href: "/dashboard/agents", icon: UserRound },
   { 
     name: "Knowledge Base", 
     href: "/dashboard/knowledge", 
@@ -40,8 +43,7 @@ const navigation = [
     ]
   },
   { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
-  { name: "Agents", href: "/dashboard/agents", icon: UserRound },
-  { name: "Escalations", href: "/dashboard/escalations", icon: AlertTriangle },
+  { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
@@ -124,11 +126,11 @@ export default function DashboardLayout({
   // Otherwise, show the full dashboard
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-card">
+      <div className="min-h-screen ">
         {/* Sidebar - fixed on the left */}
         <div
           className={cn(
-            "fixed top-0 left-0 z-40 flex flex-col h-screen transition-all duration-300 ease-out bg-card/50 backdrop-blur-xl border-r border-border",
+            "fixed top-0 left-0 z-40 flex flex-col h-screen transition-all duration-300 ease-out bg-sidebar backdrop-blur-xl border-r border-border",
             isSidebarOpen ? "w-80" : "lg:w-20 -translate-x-full lg:translate-x-0"
           )}
         >
@@ -137,15 +139,16 @@ export default function DashboardLayout({
             <div className="flex h-20 shrink-0 items-center justify-between px-2">              <Link 
                 href="/dashboard" 
                 className={cn(
-                  "flex items-center gap-3 text-foreground transition-all duration-300 ease-out group",
+                  "flex items-center gap-3 text-white transition-all duration-300 ease-out group",
                   !isSidebarOpen && "lg:justify-center"
                 )}
               >
                 {/* Logo icon */}
                 <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                  <span className="text-primary-foreground font-bold text-sm">E</span>
+                  <span className="text-white font-bold text-sm">E</span>
                 </div>
-                {/* Brand name */}                <span 
+                {/* Brand name */}                
+                <span 
                   className={cn(
                     "text-xl font-bold transition-all duration-300 ease-out whitespace-nowrap",
                     !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
@@ -157,10 +160,10 @@ export default function DashboardLayout({
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
-                className="lg:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent"
+                className="lg:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-white/10"
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               >
-                <Menu className="h-5 w-5 text-muted-foreground" />
+                <Menu className="h-5 w-5 text-white" />
               </Button>
             </div>
             {/* Navigation */}
@@ -187,10 +190,10 @@ export default function DashboardLayout({
                       <div
                         className={cn(
                           "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
-                          "hover:bg-accent",
+                          "hover:bg-white/10",
                           isActive
-                            ? "bg-primary/20 text-foreground shadow-lg"
-                            : "text-muted-foreground hover:text-foreground",
+                            ? "bg-white/10 text-white shadow-lg"
+                            : "text-white/70 hover:text-white",
                           !isSidebarOpen ? "justify-center gap-0" : "gap-3"
                         )}
                         onClick={() => {
@@ -203,13 +206,13 @@ export default function DashboardLayout({
                       >
                         {/* Active indicator */}
                         {isActive && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full shadow-lg" />
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
                         )}
                         
                         <div className="flex-shrink-0">
                           <item.icon className={cn(
                             "h-5 w-5 transition-all duration-300",
-                            isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                            isActive ? "text-white" : "text-white/70 group-hover:text-white"
                           )} />
                         </div>
                         
@@ -232,7 +235,7 @@ export default function DashboardLayout({
                             <ChevronRight className={cn(
                               "h-4 w-4 transition-transform duration-200",
                               isExpanded ? "rotate-90" : "rotate-0",
-                              isActive ? "text-primary" : "text-muted-foreground"
+                              isActive ? "text-white" : "text-white/70"
                             )} />
                           </div>
                         )}
@@ -256,11 +259,11 @@ export default function DashboardLayout({
                                 href={child.href}
                                 className={cn(
                                   "group relative flex items-center gap-3 rounded-lg p-2 text-sm font-medium transition-all duration-200",
-                                  "hover:bg-accent transform translate-y-0",
+                                  "hover:bg-white/10 transform translate-y-0",
                                   "animate-in slide-in-from-top-2 fade-in-0",
                                   isChildActive
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-muted-foreground hover:text-foreground",
+                                    ? "bg-white/10 text-white"
+                                    : "text-white/70 hover:text-white",
                                   isExpanded ? "delay-75" : ""
                                 )}
                                 style={{
@@ -272,7 +275,7 @@ export default function DashboardLayout({
                                 <div className="flex-shrink-0">
                                   <child.icon className={cn(
                                     "h-4 w-4 transition-colors",
-                                    isChildActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+                                    isChildActive ? "text-white" : "text-white/70 group-hover:text-white"
                                   )} />
                                 </div>
                                 <span className="truncate">{child.name}</span>
