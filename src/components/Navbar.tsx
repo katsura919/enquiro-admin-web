@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import { useAuth } from "@/lib/auth"
 import { 
   Navbar as AceternityNavbar,
   NavBody,
@@ -13,6 +14,18 @@ import {
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const { user, isLoading, logout } = useAuth()
+
+  const handleLogout = () => {
+    setIsLoggingOut(true)
+    setIsMobileMenuOpen(false) // Close mobile menu
+    logout()
+  }
+
+  const handleDashboardClick = () => {
+    setIsMobileMenuOpen(false) // Close mobile menu when navigating to dashboard
+  }
 
   const navItems = [
     { name: "Home", link: "/" },
@@ -39,20 +52,48 @@ export default function Navbar() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          <NavbarButton 
-            href="/auth/login" 
-            variant="secondary" 
-            className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10"
-          >
-            Sign In
-          </NavbarButton>
-          <NavbarButton 
-            href="/auth/register" 
-            variant="gradient"
-            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
-          >
-            Get Started
-          </NavbarButton>
+          {isLoading && !isLoggingOut && !user ? (
+            // Show loading state only during initial auth check, not during logout
+            <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          ) : user ? (
+            // Show authenticated user buttons
+            <>
+              <NavbarButton 
+                href="/dashboard" 
+                variant="gradient"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                onClick={handleDashboardClick}
+              >
+                Dashboard
+              </NavbarButton>
+              <NavbarButton 
+                as="button"
+                onClick={handleLogout}
+                variant="secondary" 
+                className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10"
+              >
+                Sign Out
+              </NavbarButton>
+            </>
+          ) : (
+            // Show unauthenticated user buttons
+            <>
+              <NavbarButton 
+                href="/auth/login" 
+                variant="secondary" 
+                className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10"
+              >
+                Sign In
+              </NavbarButton>
+              <NavbarButton 
+                href="/auth/register" 
+                variant="gradient"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+              >
+                Get Started
+              </NavbarButton>
+            </>
+          )}
         </div>
       </NavBody>
 
@@ -91,20 +132,50 @@ export default function Navbar() {
             </a>
           ))}
           <div className="flex flex-col gap-2 w-full mt-4">
-            <NavbarButton 
-              href="/auth/login" 
-              variant="secondary" 
-              className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10 w-full"
-            >
-              Sign In
-            </NavbarButton>
-            <NavbarButton 
-              href="/auth/register" 
-              variant="gradient"
-              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 w-full"
-            >
-              Get Started
-            </NavbarButton>
+            {isLoading && !isLoggingOut && !user ? (
+              // Show loading state in mobile only during initial auth check, not during logout
+              <div className="flex justify-center py-4">
+                <div className="w-6 h-6 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+              </div>
+            ) : user ? (
+              // Show authenticated user buttons in mobile
+              <>
+                <NavbarButton 
+                  href="/dashboard" 
+                  variant="gradient"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 w-full"
+                  onClick={handleDashboardClick}
+                >
+                  Dashboard
+                </NavbarButton>
+                <NavbarButton 
+                  as="button"
+                  onClick={handleLogout}
+                  variant="secondary" 
+                  className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10 w-full"
+                >
+                  Sign Out
+                </NavbarButton>
+              </>
+            ) : (
+              // Show unauthenticated user buttons in mobile
+              <>
+                <NavbarButton 
+                  href="/auth/login" 
+                  variant="secondary" 
+                  className="text-gray-300 hover:text-white bg-transparent hover:bg-white/10 w-full"
+                >
+                  Sign In
+                </NavbarButton>
+                <NavbarButton 
+                  href="/auth/register" 
+                  variant="gradient"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 w-full"
+                >
+                  Get Started
+                </NavbarButton>
+              </>
+            )}
           </div>
         </MobileNavMenu>
       </MobileNav>

@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { BackgroundGradient } from "@/components/ui/background-gradient"
 import { GridPattern } from "@/components/ui/grid-pattern"
 import { useAuth } from "@/lib/auth"
+import AuthRedirect from "@/components/AuthRedirect"
 import Lottie from "lottie-react"
 import registrationAnimation from "../../../../public/animations/registration.json"
 import checkAnimation from "../../../../public/animations/check.json"
@@ -623,9 +624,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      {/* Navbar */}
-      <Navbar />
+    <AuthRedirect>
+      <div className="min-h-screen bg-black flex flex-col">
+        {/* Navbar */}
+        <Navbar />
 
       {/* Main Content */}
       <div className="flex-1 flex">
@@ -784,5 +786,6 @@ export default function RegisterPage() {
         onClose={() => setShowPrivacyModal(false)} 
       />
     </div>
+    </AuthRedirect>
   )
 }

@@ -6,6 +6,15 @@ import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Menu, Bell, Search, User, LayoutDashboard, FolderKanban, MessageSquare, AlertTriangle, Settings, HelpCircle, Package, Wrench, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface TopbarProps {
   onMenuToggle?: () => void
@@ -49,6 +58,7 @@ const getPageInfo = (pathname: string) => {
 
 export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const segments = pathname.split('/').filter(Boolean);
   // Map segment to label/icon
   const segmentMap: Record<string, { label: string; icon?: React.ElementType }> = {
@@ -160,13 +170,29 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
         </div>
 
         {/* User profile - hidden on small mobile screens */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden sm:flex h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent"
-        >
-          <User className="h-4 w-4 text-muted-foreground" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden sm:flex h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent"
+            >
+              <User className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+              {user?.firstName && user?.lastName 
+                ? `${user.firstName} ${user.lastName}`
+                : user?.email || 'My Account'
+              }
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

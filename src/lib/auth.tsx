@@ -55,8 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(response.data);
       localStorage.setItem('user', JSON.stringify(response.data));
     } catch (error) {
+      console.log('Failed to fetch user info, clearing authentication data');
       setUser(null);
       localStorage.removeItem('user');
+      localStorage.removeItem('token');
     }
   };
 
@@ -84,9 +86,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    // Clear all authentication-related items from localStorage
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // Clear any other app-specific items that should be removed on logout
+    // You can add more items here if needed
+    
     setUser(null);
-    router.push('/');
+    
+    // Use window.location.href for a hard redirect to ensure complete cleanup
+    // This prevents any cached state from lingering
+    window.location.href = '/';
   };
 
   return (

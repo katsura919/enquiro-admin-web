@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button"
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Topbar from '@/components/Topbar'
+import { useAuth } from '@/lib/auth'
 import { PageSpinner } from '@/components/ui/spinner1'
 
 const navigation = [
@@ -50,12 +51,16 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const { logout } = useAuth()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [animationData, setAnimationData] = useState(null)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-  
+
+  const handleLogout = () => {
+    logout()
+  }
   // Auto-expand knowledge base if we're on a knowledge sub-page
   useEffect(() => {
     if (pathname.startsWith('/dashboard/knowledge/')) {
@@ -281,28 +286,7 @@ export default function DashboardLayout({
                       )}
                     </div>
                   )
-                })}                {/* Sign out button */}                
-                <div className="mt-auto pt-4 border-t border-border">
-                  <Link
-                    href="/auth"
-                    className={cn(
-                      "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out",
-                      "text-destructive hover:text-destructive hover:bg-destructive/10",
-                      !isSidebarOpen ? "justify-center gap-0" : "gap-3"
-                    )}
-                    onClick={() => isMobile && setIsSidebarOpen(false)}
-                  >
-                    <div className="flex-shrink-0">
-                      <LogOut className="h-5 w-5 transition-all duration-300" />
-                    </div>
-                      <span className={cn(
-                      "transition-all duration-300 ease-out whitespace-nowrap",
-                      !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
-                    )}>
-                      Sign out
-                    </span>
-                  </Link>
-                </div>
+                })}
               </div>
             </nav>
           </div>

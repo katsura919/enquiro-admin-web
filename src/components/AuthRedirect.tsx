@@ -4,22 +4,22 @@ import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-interface ProtectedRouteProps {
+interface AuthRedirectProps {
   children: React.ReactNode;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+/**
+ * Component that redirects authenticated users away from auth pages (login/register)
+ * Use this on login and register pages to prevent authenticated users from accessing them
+ */
+export default function AuthRedirect({ children }: AuthRedirectProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      // Clear any remaining localStorage items to ensure clean state
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      
-      // Redirect to login page
-      router.push('/auth/login');
+    // If user is authenticated, redirect to home page
+    if (!isLoading && user) {
+      router.replace('/'); // Use replace instead of push to prevent back navigation to auth page
     }
   }, [user, isLoading, router]);
 
@@ -32,10 +32,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // Don't render anything if user is not authenticated
-  if (!user) {
+  // If user is authenticated, don't render the auth page content
+  if (user) {
     return null;
   }
 
+  // If user is not authenticated, render the auth page content
   return <>{children}</>;
-} 
+}
