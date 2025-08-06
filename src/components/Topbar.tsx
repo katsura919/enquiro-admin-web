@@ -3,7 +3,7 @@ import * as React from "react"
 
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ThemeSwitch } from "@/components/theme-switch"
 import { Menu, Bell, Search, User, LayoutDashboard, FolderKanban, MessageSquare, AlertTriangle, Settings, HelpCircle, Package, Wrench, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth"
@@ -164,9 +164,9 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
           <div className="absolute -top-1 -right-1 h-2 w-2 bg-destructive rounded-full"></div>
         </Button>
 
-        {/* Mode toggle */}
+        {/* Theme toggle */}
         <div className="flex items-center">
-          <ModeToggle />
+          <ThemeSwitch />
         </div>
 
         {/* User profile - hidden on small mobile screens */}
