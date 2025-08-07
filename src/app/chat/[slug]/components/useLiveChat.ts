@@ -12,6 +12,11 @@ interface UseLiveChatProps {
   onChatStarted: (data: { agentId: string, escalationId: string, room: string }) => void
   onAgentConnected?: (data: { agentId: string, room: string, message: string }) => void
   onNewMessage?: (data: any) => void
+  onSystemMessage?: (data: any) => void
+  onAgentDisconnectedDuringChat?: (data: any) => void
+  onAgentTyping?: (data: any) => void
+  onAgentStoppedTyping?: (data: any) => void
+  onChatError?: (data: any) => void
   onChatEnded?: (data: any) => void
 }
 
@@ -22,6 +27,11 @@ export function useLiveChat({
   onChatStarted,
   onAgentConnected,
   onNewMessage,
+  onSystemMessage,
+  onAgentDisconnectedDuringChat,
+  onAgentTyping,
+  onAgentStoppedTyping,
+  onChatError,
   onChatEnded
 }: UseLiveChatProps) {
   const socketRef = useRef<Socket | null>(null)
@@ -49,7 +59,7 @@ export function useLiveChat({
           socketConnected: socket.connected,
           socketId: socket.id
         })
-        socket.emit('join_escalation', { escalationId })
+        socket.emit('join_escalation', { escalationId, businessId })
         socket.emit('request_chat', { businessId, escalationId })
       } else {
         socket.once('connect', () => {
@@ -59,9 +69,20 @@ export function useLiveChat({
             socketConnected: socket.connected,
             socketId: socket.id
           })
-          socket.emit('join_escalation', { escalationId })
+          socket.emit('join_escalation', { escalationId, businessId })
           socket.emit('request_chat', { businessId, escalationId })
         })
+      }
+    }
+  }
+
+  // Send typing indicator
+  const sendTypingIndicator = (escalationId: string, isTyping: boolean) => {
+    if (socketRef.current && escalationId) {
+      if (isTyping) {
+        socketRef.current.emit('customer_typing', { escalationId })
+      } else {
+        socketRef.current.emit('customer_stopped_typing', { escalationId })
       }
     }
   }
@@ -108,6 +129,35 @@ export function useLiveChat({
       onNewMessage?.(data)
     }
 
+    // System message event
+    const handleSystemMessage = (data: any) => {
+      console.log('[SOCKET] System message received:', data)
+      onSystemMessage?.(data)
+    }
+
+    // Agent disconnected during chat event
+    const handleAgentDisconnectedDuringChat = (data: any) => {
+      console.log('[SOCKET] Agent disconnected during chat:', data)
+      onAgentDisconnectedDuringChat?.(data)
+    }
+
+    // Agent typing events
+    const handleAgentTyping = (data: any) => {
+      console.log('[SOCKET] Agent is typing:', data)
+      onAgentTyping?.(data)
+    }
+
+    const handleAgentStoppedTyping = (data: any) => {
+      console.log('[SOCKET] Agent stopped typing:', data)
+      onAgentStoppedTyping?.(data)
+    }
+
+    // Chat error event
+    const handleChatError = (data: any) => {
+      console.log('[SOCKET] Chat error:', data)
+      onChatError?.(data)
+    }
+
     // Chat ended event
     const handleChatEnded = (data: any) => {
       console.log('[SOCKET] Chat ended:', data)
@@ -117,18 +167,29 @@ export function useLiveChat({
     socket.on('chat_started', handleChatStarted)
     socket.on('agent_connected', handleAgentConnected)
     socket.on('new_message', handleNewMessage)
+    socket.on('system_message', handleSystemMessage)
+    socket.on('agent_disconnected_during_chat', handleAgentDisconnectedDuringChat)
+    socket.on('agent_typing', handleAgentTyping)
+    socket.on('agent_stopped_typing', handleAgentStoppedTyping)
+    socket.on('chat_error', handleChatError)
     socket.on('chat_ended', handleChatEnded)
 
     return () => {
       socket.off('chat_started', handleChatStarted)
       socket.off('agent_connected', handleAgentConnected)
       socket.off('new_message', handleNewMessage)
+      socket.off('system_message', handleSystemMessage)
+      socket.off('agent_disconnected_during_chat', handleAgentDisconnectedDuringChat)
+      socket.off('agent_typing', handleAgentTyping)
+      socket.off('agent_stopped_typing', handleAgentStoppedTyping)
+      socket.off('chat_error', handleChatError)
       socket.off('chat_ended', handleChatEnded)
     }
-  }, [onChatStarted, onAgentConnected, onNewMessage, onChatEnded])
+  }, [onChatStarted, onAgentConnected, onNewMessage, onSystemMessage, onAgentDisconnectedDuringChat, onAgentTyping, onAgentStoppedTyping, onChatError, onChatEnded])
 
   return {
     socket: socketRef.current,
-    requestChat
+    requestChat,
+    sendTypingIndicator
   }
 }

@@ -92,17 +92,6 @@ export default function ChatPage() {
       setChatRoom(data.room)
       setIsConnectedToAgent(true)
       console.log('[CHAT] Setting chatRoom to:', data.room);
-      // Add system message that agent joined
-      const agentJoinedMessage: ChatMessage = {
-        _id: `agent-joined-${Date.now()}`,
-        businessId: businessData?._id || '',
-        sessionId: sessionId || '',
-        message: 'An agent has joined the chat and will assist you shortly.',
-        senderType: 'system',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setMessages(prev => [...prev, agentJoinedMessage])
       console.log('[CHAT] Switched to live chat mode with agent')
     },
     onNewMessage: (data) => {
@@ -122,22 +111,62 @@ export default function ChatPage() {
         console.log('[CHAT] Received message from agent:', data.message)
       }
     },
+    onSystemMessage: (data) => {
+      // Handle system messages from backend
+      console.log('[CHAT] System message received:', data);
+      
+      // Check for duplicate messages by message content and timestamp (within 1 second)
+      const now = new Date().getTime();
+      const isDuplicate = messages.some(msg => 
+        msg.senderType === 'system' && 
+        msg.message === data.message &&
+        msg.systemMessageType === data.systemMessageType &&
+        Math.abs(now - new Date(msg.createdAt).getTime()) < 1000 // within 1 second
+      );
+      
+      if (isDuplicate) {
+        console.log('[CHAT] Skipping duplicate system message:', data.message);
+        return;
+      }
+      
+      const systemMessage: ChatMessage = {
+        _id: data._id || `system-${Date.now()}`,
+        businessId: data.businessId || businessData?._id || '',
+        sessionId: data.sessionId || sessionId || '',
+        message: data.message,
+        senderType: 'system',
+        systemMessageType: data.systemMessageType,
+        agentId: data.agentId,
+        createdAt: data.createdAt || new Date().toISOString(),
+        updatedAt: data.updatedAt || new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, systemMessage])
+      console.log('[CHAT] Added system message to chat:', data.message)
+    },
+    onAgentDisconnectedDuringChat: (data) => {
+      console.log('[CHAT] Agent disconnected during active chat:', data);
+      // Add system message about agent disconnection
+      const disconnectionMessage: ChatMessage = {
+        _id: `agent-disconnected-${Date.now()}`,
+        businessId: businessData?._id || '',
+        sessionId: sessionId || '',
+        message: data.message || 'Agent has disconnected. You will be reassigned to another agent.',
+        senderType: 'system',
+        systemMessageType: 'agent_left',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, disconnectionMessage])
+      // Reset connection state but keep waiting for reassignment
+      setIsConnectedToAgent(false)
+      setChatRoom(null)
+      setWaitingForAgent(true) // Keep waiting for reassignment
+    },
     onChatEnded: (data) => {
       console.log('[CHAT] onChatEnded received:', data);
       setIsConnectedToAgent(false)
       setChatRoom(null)
       setWaitingForAgent(false)
-      // Add system message that agent left
-      const agentLeftMessage: ChatMessage = {
-        _id: `agent-left-${Date.now()}`,
-        businessId: businessData?._id || '',
-        sessionId: sessionId || '',
-        message: data.message || 'The agent has left the chat. Thank you for contacting us.',
-        senderType: 'system',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setMessages(prev => [...prev, agentLeftMessage])
       console.log('[CHAT] Agent disconnected, switched back to AI mode')
     }
   })
