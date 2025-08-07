@@ -2,7 +2,16 @@ export interface ChatMessage {
   _id: string;
   businessId: string;
   sessionId: string;
-  message: string;
+  message?: string; // Now optional for image/file messages
+  messageType?: 'text' | 'image' | 'file';
+  attachments?: Array<{
+    fileName: string;
+    fileUrl: string;
+    fileSize: number;
+    mimeType: string;
+    publicId?: string;
+    uploadedAt: string;
+  }>;
   senderType: 'customer' | 'ai' | 'agent' | 'system';
   agentId?: string | null;
   isGoodResponse?: boolean | null;

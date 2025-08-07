@@ -2,7 +2,6 @@
 
 import { forwardRef, useState } from "react"
 import { Card } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Loader2, AlertTriangle, Users, Bot, Copy, CheckCircle2, Clock, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
@@ -29,6 +28,11 @@ interface ChatAreaProps {
     concern: string
     createdAt: string
   } | null
+  selectedFile?: File | null
+  filePreview?: string | null
+  onFileSelect?: (file: File) => void
+  onFileClear?: () => void
+  uploadLoading?: boolean
 }
 
 const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
@@ -44,7 +48,12 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
     disabled,
     placeholder = "Type your message here...",
     isLiveChatMode = false,
-    escalationResponse
+    escalationResponse,
+    selectedFile,
+    filePreview,
+    onFileSelect,
+    onFileClear,
+    uploadLoading = false
   }, chatEndRef) => {
     const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
@@ -72,9 +81,11 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
           </div>
         )}
 
-        <ScrollArea className="flex-1 p-4">
-          {waitingForAgent ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[300px] py-12 space-y-6">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4">
+              {waitingForAgent ? (
+                <div className="flex flex-col items-center justify-center min-h-[300px] py-12 space-y-6">
               <div className="flex flex-col items-center">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
                 <span className="text-lg font-medium mb-2">Waiting for an available agent...</span>
@@ -140,27 +151,29 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
                 </div>
               )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg, index) => (
-                <Message 
-                  key={msg._id} 
-                  message={msg} 
-                  index={index} 
-                  onEscalationClick={onEscalationClick}
-                />
-              ))}
-            </div>
-          )}
+            ) : (
+              <div className="space-y-4">
+                {messages.map((msg, index) => (
+                  <Message 
+                    key={msg._id} 
+                    message={msg} 
+                    index={index} 
+                    onEscalationClick={onEscalationClick}
+                  />
+                ))}
+              </div>
+            )}
 
-          {loading && (
-            <div className="flex items-center gap-2 text-muted-foreground p-4">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">AI is typing...</span>
+            {loading && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">AI is typing...</span>
+              </div>
+            )}
+            <div ref={chatEndRef} />
             </div>
-          )}
-          <div ref={chatEndRef} />
-        </ScrollArea>
+          </div>
+        </div>
 
         {error && (
           <div className="px-4 py-3 bg-destructive/10 border-t border-destructive/20">
@@ -178,6 +191,12 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
           loading={loading}
           disabled={disabled}
           placeholder={placeholder}
+          selectedFile={selectedFile}
+          filePreview={filePreview}
+          onFileSelect={onFileSelect}
+          onFileClear={onFileClear}
+          uploadLoading={uploadLoading}
+          isLiveChatMode={isLiveChatMode}
         />
       </Card>
     )
