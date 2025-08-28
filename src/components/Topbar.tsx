@@ -90,12 +90,12 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     <header className="sticky top-0 left-0 w-full z-30 h-16 bg-card backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
       {/* Left section */}
       <div className="flex items-center gap-4">
-        {/* Mobile menu button */}
-        {isMobile && onMenuToggle && (
+        {/* Menu toggle button - always visible */}
+        {onMenuToggle && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 lg:hidden"
+            className="h-8 w-8 p-0 cursor-pointer"
             onClick={onMenuToggle}
           >
             <Menu className="h-5 w-5 text-muted-foreground" />

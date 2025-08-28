@@ -18,8 +18,8 @@ import {
   Package,
   Wrench,
   FileText,
-  UserRound,
-  Ticket,
+  Users,
+  Monitor,
   Inbox
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -29,22 +29,38 @@ import { useAuth } from '@/lib/auth'
 import { PageSpinner } from '@/components/ui/spinner1'
 
 const navigation = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Agent Monitoring", href: "/dashboard/agents", icon: UserRound },
-  { 
-    name: "Knowledge Base", 
-    href: "/dashboard/knowledge", 
-    icon: FolderKanban,
-    children: [
-      { name: "Products", href: "/dashboard/knowledge/products", icon: Package },
-      { name: "Services", href: "/dashboard/knowledge/services", icon: Wrench },
-      { name: "Policy", href: "/dashboard/knowledge/policy", icon: FileText },
-      { name: "FAQ", href: "/dashboard/knowledge/faq", icon: HelpCircle },
+  {
+    category: "MAIN",
+    items: [
+      { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      { 
+        name: "Knowledge Base", 
+        href: "/dashboard/knowledge", 
+        icon: FolderKanban,
+        children: [
+          { name: "Products", href: "/dashboard/knowledge/products", icon: Package },
+          { name: "Services", href: "/dashboard/knowledge/services", icon: Wrench },
+          { name: "Policy", href: "/dashboard/knowledge/policy", icon: FileText },
+          { name: "FAQ", href: "/dashboard/knowledge/faq", icon: HelpCircle },
+        ]
+      },
+      { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
     ]
   },
-  { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
-  { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  {
+    category: "WORKFORCE",
+    items: [
+      { name: "Real-Time Monitoring", href: "/dashboard/agents", icon: Monitor },
+      { name: "Agent Management", href: "/dashboard/agents", icon: Users },
+    ]
+  },
+  {
+    category: "SETTINGS",
+    items: [
+      { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
+      { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    ]
+  }
 ]
 
 export default function DashboardLayout({
@@ -168,125 +184,177 @@ export default function DashboardLayout({
             </div>
             {/* Navigation */}
             <nav className="flex flex-1 flex-col px-2 py-4">
-              <div className="flex flex-1 flex-col gap-2">                
-                {navigation.map((item, index) => {
-                  const isActive = pathname === item.href || (item.children && item.children.some(child => pathname === child.href))
-                  const isExpanded = expandedItems.includes(item.name)
-                  const hasChildren = item.children && item.children.length > 0
-                  
-                  const toggleExpanded = () => {
-                    if (hasChildren) {
-                      setExpandedItems(prev => 
-                        prev.includes(item.name) 
-                          ? prev.filter(name => name !== item.name)
-                          : [...prev, item.name]
-                      )
-                    }
-                  }
-                  
-                  return (
-                    <div key={item.name}>
-                      {/* Main navigation item */}
-                      <div
-                        className={cn(
-                          "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
-                          "hover:bg-white/10",
-                          isActive
-                            ? "bg-white/10 text-white shadow-lg"
-                            : "text-white/70 hover:text-white",
-                          !isSidebarOpen ? "justify-center gap-0" : "gap-3"
-                        )}
-                        onClick={() => {
-                          if (hasChildren) {
-                            toggleExpanded()
-                          } else {
-                            if (isMobile) setIsSidebarOpen(false)
-                          }
-                        }}
-                      >
-                        {/* Active indicator */}
-                        {isActive && (
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
-                        )}
-                        
-                        <div className="flex-shrink-0">
-                          <item.icon className={cn(
-                            "h-5 w-5 transition-all duration-300",
-                            isActive ? "text-white" : "text-white/70 group-hover:text-white"
-                          )} />
-                        </div>
-                        
-                        <span className={cn(
-                          "transition-all duration-300 ease-out whitespace-nowrap flex-1",
-                          !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
-                        )}>
-                          {hasChildren ? (
-                            <span>{item.name}</span>
-                          ) : (
-                            <Link href={item.href} className="block w-full">
-                              {item.name}
-                            </Link>
-                          )}
-                        </span>
-                        
-                        {/* Expand/Collapse arrow */}
-                        {hasChildren && isSidebarOpen && (
-                          <div className="flex-shrink-0">
-                            <ChevronRight className={cn(
-                              "h-4 w-4 transition-transform duration-200",
-                              isExpanded ? "rotate-90" : "rotate-0",
-                              isActive ? "text-white" : "text-white/70"
-                            )} />
-                          </div>
-                        )}
+              <div className="flex flex-1 flex-col">                
+                {navigation.map((section, sectionIndex) => (
+                  <div key={section.category} className={sectionIndex > 0 ? "mt-6" : ""}>
+                    {/* Category Header */}
+                    {isSidebarOpen && (
+                      <div className="px-3 py-2 text-xs font-semibold text-white/50 uppercase tracking-wider">
+                        {section.category}
                       </div>
-                      
-                      {/* Sub-navigation items */}
-                      {hasChildren && isSidebarOpen && (
-                        <div 
-                          className={cn(
-                            "ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
-                            isExpanded 
-                              ? "max-h-96 opacity-100" 
-                              : "max-h-0 opacity-0"
-                          )}
-                        >
-                          {item.children.map((child, childIndex) => {
-                            const isChildActive = pathname === child.href
-                            return (
-                              <Link
-                                key={child.name}
-                                href={child.href}
+                    )}
+                    
+                    {/* Category Items */}
+                    <div className="space-y-1">
+                      {section.items.map((item, index) => {
+                        const isActive = pathname === item.href || (item.children && item.children.some(child => pathname === child.href))
+                        const isExpanded = expandedItems.includes(item.name)
+                        const hasChildren = item.children && item.children.length > 0
+                        
+                        const toggleExpanded = () => {
+                          if (hasChildren) {
+                            setExpandedItems(prev => 
+                              prev.includes(item.name) 
+                                ? prev.filter(name => name !== item.name)
+                                : [...prev, item.name]
+                            )
+                          }
+                        }
+                        
+                        return (
+                          <div key={item.name}>
+                            {/* Main navigation item */}
+                            {hasChildren ? (
+                              <div
                                 className={cn(
-                                  "group relative flex items-center gap-3 rounded-lg p-2 text-sm font-medium transition-all duration-200",
-                                  "hover:bg-white/10 transform translate-y-0",
-                                  "animate-in slide-in-from-top-2 fade-in-0",
-                                  isChildActive
-                                    ? "bg-white/10 text-white"
+                                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
+                                  "hover:bg-white/10",
+                                  isActive
+                                    ? "bg-white/10 text-white shadow-lg"
                                     : "text-white/70 hover:text-white",
-                                  isExpanded ? "delay-75" : ""
+                                  !isSidebarOpen ? "justify-center gap-0" : "gap-3"
                                 )}
-                                style={{
-                                  animationDelay: isExpanded ? `${childIndex * 50}ms` : "0ms",
-                                  animationDuration: "200ms"
+                                onClick={() => {
+                                  if (hasChildren) {
+                                    // For items with children, expand/collapse if sidebar is open
+                                    if (isSidebarOpen) {
+                                      toggleExpanded()
+                                    } else {
+                                      // If sidebar is collapsed, first expand it
+                                      setIsSidebarOpen(true)
+                                      // Then expand this section
+                                      setExpandedItems(prev => 
+                                        prev.includes(item.name) ? prev : [...prev, item.name]
+                                      )
+                                    }
+                                  }
                                 }}
-                                onClick={() => isMobile && setIsSidebarOpen(false)}
                               >
+                                {/* Active indicator */}
+                                {isActive && (
+                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
+                                )}
+                                
                                 <div className="flex-shrink-0">
-                                  <child.icon className={cn(
-                                    "h-4 w-4 transition-colors",
-                                    isChildActive ? "text-white" : "text-white/70 group-hover:text-white"
+                                  <item.icon className={cn(
+                                    "h-5 w-5 transition-all duration-300",
+                                    isActive ? "text-white" : "text-white/70 group-hover:text-white"
                                   )} />
                                 </div>
-                                <span className="truncate">{child.name}</span>
+                                
+                                <span className={cn(
+                                  "transition-all duration-300 ease-out whitespace-nowrap flex-1",
+                                  !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
+                                )}>
+                                  <span>{item.name}</span>
+                                </span>
+                                
+                                {/* Expand/Collapse arrow */}
+                                {hasChildren && isSidebarOpen && (
+                                  <div className="flex-shrink-0">
+                                    <ChevronRight className={cn(
+                                      "h-4 w-4 transition-transform duration-200",
+                                      isExpanded ? "rotate-90" : "rotate-0",
+                                      isActive ? "text-white" : "text-white/70"
+                                    )} />
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <Link
+                                href={item.href}
+                                className={cn(
+                                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
+                                  "hover:bg-white/10",
+                                  isActive
+                                    ? "bg-white/10 text-white shadow-lg"
+                                    : "text-white/70 hover:text-white",
+                                  !isSidebarOpen ? "justify-center gap-0" : "gap-3"
+                                )}
+                                onClick={() => {
+                                  if (isMobile) setIsSidebarOpen(false)
+                                }}
+                              >
+                                {/* Active indicator */}
+                                {isActive && (
+                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
+                                )}
+                                
+                                <div className="flex-shrink-0">
+                                  <item.icon className={cn(
+                                    "h-5 w-5 transition-all duration-300",
+                                    isActive ? "text-white" : "text-white/70 group-hover:text-white"
+                                  )} />
+                                </div>
+                                
+                                <span className={cn(
+                                  "transition-all duration-300 ease-out whitespace-nowrap flex-1",
+                                  !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
+                                )}>
+                                  {item.name}
+                                </span>
                               </Link>
-                            )
-                          })}
-                        </div>
-                      )}
+                            )}
+                            
+                            {/* Sub-navigation items */}
+                            {hasChildren && isSidebarOpen && (
+                              <div 
+                                className={cn(
+                                  "ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
+                                  isExpanded 
+                                    ? "max-h-96 opacity-100" 
+                                    : "max-h-0 opacity-0"
+                                )}
+                              >
+                                {item.children.map((child, childIndex) => {
+                                  const isChildActive = pathname === child.href
+                                  return (
+                                    <Link
+                                      key={child.name}
+                                      href={child.href}
+                                      className={cn(
+                                        "group relative flex items-center gap-3 rounded-lg p-2 text-sm font-medium transition-all duration-200",
+                                        "hover:bg-white/10 transform translate-y-0",
+                                        "animate-in slide-in-from-top-2 fade-in-0",
+                                        isChildActive
+                                          ? "bg-white/10 text-white"
+                                          : "text-white/70 hover:text-white",
+                                        isExpanded ? "delay-75" : ""
+                                      )}
+                                      style={{
+                                        animationDelay: isExpanded ? `${childIndex * 50}ms` : "0ms",
+                                        animationDuration: "200ms"
+                                      }}
+                                      onClick={() => isMobile && setIsSidebarOpen(false)}
+                                    >
+                                      <div className="flex-shrink-0">
+                                        <child.icon className={cn(
+                                          "h-4 w-4 transition-colors",
+                                          isChildActive ? "text-white" : "text-white/70 group-hover:text-white"
+                                        )} />
+                                      </div>
+                                      <span className="truncate">{child.name}</span>
+                                    </Link>
+                                  )
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
             </nav>
           </div>
@@ -300,7 +368,7 @@ export default function DashboardLayout({
         >
           {/* Topbar always at the top of the main content */}
           <Topbar 
-            onMenuToggle={() => setIsSidebarOpen(true)} 
+            onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)} 
             isMobile={isMobile}
           />
           <div className="bg-background flex flex-col flex-1 h-full">
