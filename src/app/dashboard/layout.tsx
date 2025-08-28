@@ -23,6 +23,7 @@ import {
   Inbox
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Topbar from '@/components/Topbar'
 import { useAuth } from '@/lib/auth'
@@ -187,12 +188,14 @@ export default function DashboardLayout({
               <div className="flex flex-1 flex-col">                
                 {navigation.map((section, sectionIndex) => (
                   <div key={section.category} className={sectionIndex > 0 ? "mt-6" : ""}>
-                    {/* Category Header */}
-                    {isSidebarOpen && (
+                    {/* Category Header or Separator */}
+                    {isSidebarOpen ? (
                       <div className="px-3 py-2 text-xs font-semibold text-white/50 uppercase tracking-wider">
                         {section.category}
                       </div>
-                    )}
+                    ) : sectionIndex > 0 ? (
+                      <div className="mx-auto my-4 w-8 h-px bg-white/20"></div>
+                    ) : null}
                     
                     {/* Category Items */}
                     <div className="space-y-1">
@@ -215,95 +218,113 @@ export default function DashboardLayout({
                           <div key={item.name}>
                             {/* Main navigation item */}
                             {hasChildren ? (
-                              <div
-                                className={cn(
-                                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
-                                  "hover:bg-white/10",
-                                  isActive
-                                    ? "bg-white/10 text-white shadow-lg"
-                                    : "text-white/70 hover:text-white",
-                                  !isSidebarOpen ? "justify-center gap-0" : "gap-3"
-                                )}
-                                onClick={() => {
-                                  if (hasChildren) {
-                                    // For items with children, expand/collapse if sidebar is open
-                                    if (isSidebarOpen) {
-                                      toggleExpanded()
-                                    } else {
-                                      // If sidebar is collapsed, first expand it
-                                      setIsSidebarOpen(true)
-                                      // Then expand this section
-                                      setExpandedItems(prev => 
-                                        prev.includes(item.name) ? prev : [...prev, item.name]
-                                      )
-                                    }
-                                  }
-                                }}
-                              >
-                                {/* Active indicator */}
-                                {isActive && (
-                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
-                                )}
-                                
-                                <div className="flex-shrink-0">
-                                  <item.icon className={cn(
-                                    "h-5 w-5 transition-all duration-300",
-                                    isActive ? "text-white" : "text-white/70 group-hover:text-white"
-                                  )} />
-                                </div>
-                                
-                                <span className={cn(
-                                  "transition-all duration-300 ease-out whitespace-nowrap flex-1",
-                                  !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
-                                )}>
-                                  <span>{item.name}</span>
-                                </span>
-                                
-                                {/* Expand/Collapse arrow */}
-                                {hasChildren && isSidebarOpen && (
-                                  <div className="flex-shrink-0">
-                                    <ChevronRight className={cn(
-                                      "h-4 w-4 transition-transform duration-200",
-                                      isExpanded ? "rotate-90" : "rotate-0",
-                                      isActive ? "text-white" : "text-white/70"
-                                    )} />
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={cn(
+                                      "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
+                                      "hover:bg-white/10",
+                                      isActive
+                                        ? "bg-white/10 text-white shadow-lg"
+                                        : "text-white/70 hover:text-white",
+                                      !isSidebarOpen ? "justify-center gap-0" : "gap-3"
+                                    )}
+                                    onClick={() => {
+                                      if (hasChildren) {
+                                        // For items with children, expand/collapse if sidebar is open
+                                        if (isSidebarOpen) {
+                                          toggleExpanded()
+                                        } else {
+                                          // If sidebar is collapsed, first expand it
+                                          setIsSidebarOpen(true)
+                                          // Then expand this section
+                                          setExpandedItems(prev => 
+                                            prev.includes(item.name) ? prev : [...prev, item.name]
+                                          )
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    {/* Active indicator */}
+                                    {isActive && (
+                                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
+                                    )}
+                                    
+                                    <div className="flex-shrink-0">
+                                      <item.icon className={cn(
+                                        "h-5 w-5 transition-all duration-300",
+                                        isActive ? "text-white" : "text-white/70 group-hover:text-white"
+                                      )} />
+                                    </div>
+                                    
+                                    <span className={cn(
+                                      "transition-all duration-300 ease-out whitespace-nowrap flex-1",
+                                      !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
+                                    )}>
+                                      <span>{item.name}</span>
+                                    </span>
+                                    
+                                    {/* Expand/Collapse arrow */}
+                                    {hasChildren && isSidebarOpen && (
+                                      <div className="flex-shrink-0">
+                                        <ChevronRight className={cn(
+                                          "h-4 w-4 transition-transform duration-200",
+                                          isExpanded ? "rotate-90" : "rotate-0",
+                                          isActive ? "text-white" : "text-white/70"
+                                        )} />
+                                      </div>
+                                    )}
                                   </div>
+                                </TooltipTrigger>
+                                {!isSidebarOpen && (
+                                  <TooltipContent side="right" sideOffset={10}>
+                                    {item.name}
+                                  </TooltipContent>
                                 )}
-                              </div>
+                              </Tooltip>
                             ) : (
-                              <Link
-                                href={item.href}
-                                className={cn(
-                                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
-                                  "hover:bg-white/10",
-                                  isActive
-                                    ? "bg-white/10 text-white shadow-lg"
-                                    : "text-white/70 hover:text-white",
-                                  !isSidebarOpen ? "justify-center gap-0" : "gap-3"
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Link
+                                    href={item.href}
+                                    className={cn(
+                                      "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
+                                      "hover:bg-white/10",
+                                      isActive
+                                        ? "bg-white/10 text-white shadow-lg"
+                                        : "text-white/70 hover:text-white",
+                                      !isSidebarOpen ? "justify-center gap-0" : "gap-3"
+                                    )}
+                                    onClick={() => {
+                                      if (isMobile) setIsSidebarOpen(false)
+                                    }}
+                                  >
+                                    {/* Active indicator */}
+                                    {isActive && (
+                                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
+                                    )}
+                                    
+                                    <div className="flex-shrink-0">
+                                      <item.icon className={cn(
+                                        "h-5 w-5 transition-all duration-300",
+                                        isActive ? "text-white" : "text-white/70 group-hover:text-white"
+                                      )} />
+                                    </div>
+                                    
+                                    <span className={cn(
+                                      "transition-all duration-300 ease-out whitespace-nowrap flex-1",
+                                      !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
+                                    )}>
+                                      {item.name}
+                                    </span>
+                                  </Link>
+                                </TooltipTrigger>
+                                {!isSidebarOpen && (
+                                  <TooltipContent side="right" sideOffset={10}>
+                                    {item.name}
+                                  </TooltipContent>
                                 )}
-                                onClick={() => {
-                                  if (isMobile) setIsSidebarOpen(false)
-                                }}
-                              >
-                                {/* Active indicator */}
-                                {isActive && (
-                                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
-                                )}
-                                
-                                <div className="flex-shrink-0">
-                                  <item.icon className={cn(
-                                    "h-5 w-5 transition-all duration-300",
-                                    isActive ? "text-white" : "text-white/70 group-hover:text-white"
-                                  )} />
-                                </div>
-                                
-                                <span className={cn(
-                                  "transition-all duration-300 ease-out whitespace-nowrap flex-1",
-                                  !isSidebarOpen && "lg:opacity-0 lg:w-0 lg:overflow-hidden"
-                                )}>
-                                  {item.name}
-                                </span>
-                              </Link>
+                              </Tooltip>
                             )}
                             
                             {/* Sub-navigation items */}
