@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, ChevronsUpDownIcon, UserCircle, Loader2 } from "lucide-react"
+import { ChevronsUpDownIcon, UserCircle, Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -127,7 +127,7 @@ export function CaseOwnerCombobox({
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-0 ml-2" align="start" sideOffset={4}>
+      <PopoverContent className="w-[250px] p-0 mr-6" align="start" sideOffset={4}>
         <Command shouldFilter={false}>
           <CommandInput 
             placeholder="Search agents..." 
@@ -163,15 +163,9 @@ export function CaseOwnerCombobox({
                       }
                     }}
                   >
-                    <CheckIcon
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        !value ? "opacity-100" : "opacity-0"
-                      )}
-                    />
                     <div className="flex items-center gap-2">
                       <UserCircle className="h-4 w-4 text-muted-foreground" />
-                      <div>
+                      <div className="ml-3.5">
                         <p className="text-sm font-medium">Unassigned</p>
                         <p className="text-xs text-muted-foreground">No agent assigned</p>
                       </div>
@@ -199,12 +193,6 @@ export function CaseOwnerCombobox({
                         }
                       }}
                     >
-                      <CheckIcon
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          value === agent._id ? "opacity-100" : "opacity-0"
-                        )}
-                      />
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
                           <UserCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
