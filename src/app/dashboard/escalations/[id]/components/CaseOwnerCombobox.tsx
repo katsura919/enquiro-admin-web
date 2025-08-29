@@ -112,7 +112,7 @@ export function CaseOwnerCombobox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled || saving}
-          className={cn("justify-between", className)}
+          className={cn("justify-between bg-card", className)}
         >
           <div className="flex items-center gap-2">
             {saving ? (
@@ -164,16 +164,18 @@ export function CaseOwnerCombobox({
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <UserCircle className="h-4 w-4 text-muted-foreground" />
-                      <div className="ml-3.5">
-                        <p className="text-sm font-medium">Unassigned</p>
+                      <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                          <UserCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      <div >
+                        <p className="text-sm font-medium">Remove Owner</p>
                         <p className="text-xs text-muted-foreground">No agent assigned</p>
                       </div>
                     </div>
                   </CommandItem>
                   
                   {/* Agent options */}
-                  {agents.map((agent) => (
+                  {(searchQuery.trim() ? agents : agents.slice(0, 5)).map((agent) => (
                     <CommandItem
                       key={agent._id}
                       value={agent._id}
@@ -204,6 +206,13 @@ export function CaseOwnerCombobox({
                       </div>
                     </CommandItem>
                   ))}
+                  
+                  {/* Show "Type to search" hint when agents are limited */}
+                  {!searchQuery.trim() && agents.length > 5 && (
+                    <div className="px-2 py-2 text-xs text-muted-foreground text-center border-t">
+                      Type to search for more agents.
+                    </div>
+                  )}
                 </CommandGroup>
               </>
             )}
