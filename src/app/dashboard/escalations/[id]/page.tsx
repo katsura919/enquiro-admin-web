@@ -28,7 +28,12 @@ interface Escalation {
   concern: string
   description?: string
   status: "escalated" | "pending" | "resolved"
-  assignedTo?: string
+  caseOwner?: {
+    _id: string
+    name: string
+    email: string
+    phone?: string
+  }
   emailThreadId?: string
   createdAt: string
   updatedAt: string
@@ -168,9 +173,66 @@ export default function EscalationDetailsPage() {
       console.error('Error deleting note:', error);
     }
   };
+
+  const fetchAvailableAgents = async () => {
+    // No longer needed - CaseOwnerCombobox handles agent fetching
+  };
+
+  const handleCaseOwnerChange = async (agentId: string) => {
+    if (!escalation) return;
+    
+    console.log('Updating case owner:', { escalationId: escalation._id, agentId });
+    
+    try {
+      const response = await api.patch(`/escalation/${escalation._id}/case-owner`, { 
+        caseOwner: agentId || null 
+      });
+      
+      console.log('Case owner update response:', response.data);
+      
+      if (response.data.success) {
+        // Update escalation state with new case owner
+        const updatedEscalation = { ...escalation };
+        if (agentId) {
+          // Fetch the selected agent details
+          try {
+            const agentResponse = await api.get(`/agent/${agentId}`);
+            updatedEscalation.caseOwner = agentResponse.data;
+            console.log('Agent details fetched:', agentResponse.data);
+          } catch (error) {
+            console.error('Error fetching agent details:', error);
+          }
+        } else {
+          updatedEscalation.caseOwner = undefined;
+        }
+        setEscalation(updatedEscalation);
+        
+        // Add activity
+        const newActivity: Activity = {
+          id: `act-${Date.now()}`,
+          action: agentId ? "Case Owner Assigned" : "Case Owner Unassigned",
+          timestamp: new Date().toISOString(),
+          details: agentId ? `Assigned to agent` : "Case unassigned"
+        };
+        setActivities([newActivity, ...activities]);
+        
+        console.log('Case owner updated successfully');
+      } else {
+        console.error('Case owner update failed:', response.data);
+      }
+    } catch (error) {
+      console.error('Error updating case owner:', error);
+      // Show user-friendly error message
+      alert('Failed to update case owner. Please try again.');
+      throw error; // Re-throw so the combobox can handle it
+    }
+  };
+
   React.useEffect(() => {
     if (!id) return
     setLoading(true)
+    
+    // Fetch escalation data
     api.get(`/escalation/${id}`)
       .then((res: any) => {
         setEscalation(res.data)
@@ -418,6 +480,7 @@ return (
           caseNumber: escalation.caseNumber,
           sessionId: escalation.sessionId,
           status: escalation.status,
+          caseOwner: escalation.caseOwner,
         }}
         statusColors={statusColors}
         StatusIcon={StatusIcon}
@@ -426,6 +489,8 @@ return (
         setCopiedCaseNumber={setCopiedCaseNumber}
         setCopiedSessionId={setCopiedSessionId}
         handleStatusChange={handleStatusChange}
+        handleCaseOwnerChange={handleCaseOwnerChange}
+        businessId={escalation.businessId}
       />
     )}
     {/* Main Content */}
