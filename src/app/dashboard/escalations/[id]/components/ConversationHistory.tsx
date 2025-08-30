@@ -36,7 +36,7 @@ export function ConversationHistory({
           size="sm"
           onClick={handleRefreshChats}
           disabled={refreshing}
-          className="gap-2"
+          className="gap-2 bg-card"
         >
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")}/>
           Refresh

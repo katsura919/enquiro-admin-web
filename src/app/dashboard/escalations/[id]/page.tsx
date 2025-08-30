@@ -228,6 +228,41 @@ export default function EscalationDetailsPage() {
     }
   };
 
+  const handleCustomerIssueUpdate = async (updatedData: {
+    customerName: string;
+    customerEmail: string;
+    customerPhone?: string;
+    concern: string;
+    description?: string;
+  }) => {
+    if (!escalation) return;
+    
+    try {
+      const response = await api.patch(`/escalation/${escalation._id}`, updatedData);
+      
+      if (response.data) {
+        // Update the escalation state with the new data
+        setEscalation(prev => prev ? { 
+          ...prev, 
+          ...updatedData,
+          updatedAt: new Date().toISOString()
+        } : null);
+        
+        // Add activity
+        const newActivity: Activity = {
+          id: `act-${Date.now()}`,
+          action: "Customer Details Updated",
+          timestamp: new Date().toISOString(),
+          details: "Customer information has been updated"
+        };
+        setActivities([newActivity, ...activities]);
+      }
+    } catch (error) {
+      console.error('Error updating customer issue:', error);
+      throw error; // Re-throw so the component can handle the error
+    }
+  };
+
   React.useEffect(() => {
     if (!id) return
     setLoading(true)
@@ -505,6 +540,8 @@ return (
             concern={escalation?.concern || ''}
             description={escalation?.description}
             status={escalation?.status || 'escalated'}
+            escalationId={escalation?._id || ''}
+            onUpdate={handleCustomerIssueUpdate}
           />
 
           <CommunicationTabs
