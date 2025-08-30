@@ -97,28 +97,7 @@ export default function AgentDashboardPage() {
 
   return (
     <div className="w-full p-6 space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Agent Dashboard</h1>
-            <p className="text-muted-foreground">
-              Monitor agent performance, status, and customer queue in real-time
-            </p>
-          </div>
-          
-          {/* Connection Status */}
-          <div className="flex items-center gap-2">
-            <Badge variant={connected ? "default" : "destructive"} className="flex items-center gap-1">
-              {connected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-              {connected ? "Connected" : "Disconnected"}
-            </Badge>
-            <div className="text-sm text-muted-foreground">
-              {onlineAgents}/{totalAgents} agents online
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
