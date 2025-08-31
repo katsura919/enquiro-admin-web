@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter, useParams } from "next/navigation"
 import api from "@/utils/api"
+import { useAuth } from "@/lib/auth"
 import { 
   AlertTriangle, 
   Clock, 
@@ -89,6 +90,7 @@ export default function EscalationDetailsPage() {
   const router = useRouter()
   const params = useParams()
   const { id } = params as { id: string }
+  const { user } = useAuth() // Get user from auth context
   const [escalation, setEscalation] = React.useState<Escalation | null>(null)
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([])
   const [emails, setEmails] = React.useState<EmailMessage[]>([])
@@ -114,7 +116,7 @@ export default function EscalationDetailsPage() {
         const notes = response.data.data.notes.map((note: any) => ({
           id: note._id,
           content: note.content,
-          author: note.author || "You", // If you have author info, use it
+          author: note.createdBy || "Unknown User", // Use createdBy field from backend
           createdAt: note.createdAt
         }));
         setCaseNotes(notes);
@@ -137,7 +139,13 @@ export default function EscalationDetailsPage() {
   const addCaseNote = async (content: string) => {
     if (!content.trim()) return;
     try {
-      const response = await api.post(`/notes/escalation/${id}`, { content });
+      // Get user name from auth context
+      const createdBy = user ? `${user.firstName} ${user.lastName}` : 'Unknown User';
+
+      const response = await api.post(`/notes/escalation/${id}`, { 
+        content,
+        createdBy 
+      });
       console.log('Add note response:', response);
       if (response.data.success && response.data.data) {
         fetchNotes();

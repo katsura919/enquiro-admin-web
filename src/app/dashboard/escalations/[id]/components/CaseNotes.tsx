@@ -33,6 +33,44 @@ export function CaseNotes({
     setNoteText("");
   };
 
+  // Simple function to render basic markdown formatting
+  const renderNoteContent = (content: string) => {
+    // Split by line breaks and render each line
+    const lines = content.split('\n');
+    
+    return lines.map((line, index) => {
+      // Handle bold text **text**
+      let formattedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      
+      // Handle italic text *text*
+      formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      
+      // Handle bullet points - lines starting with - or *
+      const isBulletPoint = line.trim().startsWith('- ') || line.trim().startsWith('* ');
+      
+      if (isBulletPoint) {
+        const bulletContent = line.trim().substring(2);
+        return (
+          <div key={index} className="flex items-start gap-2 ml-2">
+            <span className="text-xs mt-1">•</span>
+            <span dangerouslySetInnerHTML={{ __html: bulletContent }} />
+          </div>
+        );
+      }
+      
+      // Regular line
+      return (
+        <div key={index}>
+          {formattedLine ? (
+            <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+          ) : (
+            <br />
+          )}
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="space-y-4 ">
       <div className="flex items-center justify-between">
@@ -50,7 +88,7 @@ export function CaseNotes({
             placeholder="Type your note here..."
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
-            className="min-h-[100px] resize-none"
+            className="min-h-[120px] resize-none"
           />
           <div className="flex justify-end">
             <Button 
@@ -90,7 +128,9 @@ export function CaseNotes({
                   </div>
                 </div>
                 <div className="py-1">
-                  <p className="text-sm leading-relaxed">{note.content}</p>
+                  <div className="text-sm leading-relaxed space-y-1">
+                    {renderNoteContent(note.content)}
+                  </div>
                 </div>
                 <div className="flex items-center text-xs text-muted-foreground">
                   <Clock className="h-3 w-3 mr-1" />
