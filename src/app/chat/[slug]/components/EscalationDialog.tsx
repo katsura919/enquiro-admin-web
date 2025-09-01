@@ -97,7 +97,7 @@ export default function EscalationDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
-            Submit Support Ticket
+            Contact Info
           </DialogTitle>
         </DialogHeader>
 
@@ -193,28 +193,6 @@ export default function EscalationDialog({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="concern">Concern *</Label>
-              <Input
-                id="concern"
-                placeholder="Brief description of your concern"
-                value={formData.concern}
-                onChange={(e) => setFormData({ ...formData, concern: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Additional Details</Label>
-              <Textarea
-                id="description"
-                placeholder="Please provide any additional details that might help us assist you better"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-                className="resize-none"
-              />
-            </div>
-
             {formError && (
               <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center gap-2 text-destructive">
                 <AlertTriangle className="h-4 w-4" />
@@ -231,7 +209,7 @@ export default function EscalationDialog({
                 Cancel
               </Button>
               <Button type="submit">
-                Submit Ticket
+                Continue
               </Button>
             </DialogFooter>
           </form>

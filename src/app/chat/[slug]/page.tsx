@@ -400,8 +400,8 @@ export default function ChatPage() {
       return
     }
 
-    if (!formData.customerName || !formData.customerEmail || !formData.concern) {
-      setFormError("Name, Email, and Concern are required.")
+    if (!formData.customerName || !formData.customerEmail) {
+      setFormError("Name and Email are required.")
       return
     }
 
@@ -424,8 +424,8 @@ export default function ChatPage() {
         customerName: formData.customerName,
         customerEmail: formData.customerEmail,
         customerPhone: formData.customerPhone,
-        concern: formData.concern,
-        description: formData.description
+        concern: formData.concern || 'Live Chat Request',
+        description: formData.description || 'Customer requested live chat support'
       })
 
       setEscalationResponse(response.data)
