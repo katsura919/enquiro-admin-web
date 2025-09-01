@@ -4,6 +4,7 @@ import { GridBackground } from "@/components/ui/grid-background"
 import Link from "next/link"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
+import { ChatWidget } from "@/components/chat-widget"
 
 export default function Home() {
   return (
@@ -126,6 +127,14 @@ export default function Home() {
           </GridBackground>
               
         }
+      
+      {/* Chat Widget */}
+      <ChatWidget 
+        businessSlug="confirm" 
+        position="bottom-right"
+        primaryColor="#3b82f6"
+        title="Need Help?"
+      />
     </div>
   )
 }
