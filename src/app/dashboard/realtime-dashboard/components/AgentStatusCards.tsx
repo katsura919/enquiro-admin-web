@@ -100,7 +100,7 @@ export function AgentStatusCards({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {statusData.map((item, index) => (
-        <Card key={index} className="relative overflow-hidden">
+        <Card key={index} className="relative overflow-hidden border-border ">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               {item.title}

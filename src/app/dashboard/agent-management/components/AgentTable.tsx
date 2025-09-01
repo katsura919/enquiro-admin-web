@@ -91,7 +91,7 @@ export function AgentTable({
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-border">
       <Table>
         <TableHeader>
           <TableRow>

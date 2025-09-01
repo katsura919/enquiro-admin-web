@@ -130,7 +130,7 @@ export function AgentsTable({ filterOnline = false, agents: propAgents }: Agents
     );
 
   return (
-    <Card>
+    <Card className="w-full border-border">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">
