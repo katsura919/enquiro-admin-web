@@ -20,7 +20,8 @@ import {
   FileText,
   Users,
   Monitor,
-  Inbox
+  Inbox,
+  Building
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -59,7 +60,7 @@ const navigation = [
     category: "SETTINGS",
     items: [
       { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
-      { name: "Settings", href: "/dashboard/settings", icon: Settings },
+      { name: "Account", href: "/dashboard/settings", icon: Settings },
     ]
   }
 ]
