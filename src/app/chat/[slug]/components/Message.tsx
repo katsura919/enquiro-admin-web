@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
-import { User, Bot, CheckCircle2, Download, FileText, Image as ImageIcon, ExternalLink, Loader2, ZoomIn, X } from "lucide-react"
+import { User, Bot, CheckCircle2, Download, FileText, Image as ImageIcon, ExternalLink, Loader2, ZoomIn, X, ChevronRight } from "lucide-react"
 import { format } from "date-fns"
 import Markdown from "markdown-to-jsx"
 import Image from "next/image"
@@ -116,28 +116,12 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
   }
 
   const renderContentWithEscalationLink = (content: string) => {
-    const replaced = content.replace(/\[([^\]]+)\]\(escalate:\/\/now\)/g, "**@@ESCALATE_LINK@@**")
+    // Remove the escalation link from the content and just return clean markdown
+    const cleanContent = content.replace(/\[([^\]]+)\]\(escalate:\/\/now\)/g, "")
     return (
       <Markdown
         options={{
           overrides: {
-            strong: {
-              component: ({ children }) => {
-                const child = Array.isArray(children) ? children[0] : children;
-                if (child === "@@ESCALATE_LINK@@") {
-                  return (
-                    <Button
-                      variant="link"
-                      className="text-primary underline hover:text-primary/80 p-0 h-auto"
-                      onClick={onEscalationClick}
-                    >
-                      click here
-                    </Button>
-                  );
-                }
-                return <strong>{children}</strong>;
-              }
-            },
             a: {
               component: ({ href, children, ...props }) => (
                 <a
@@ -154,9 +138,14 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
           }
         }}
       >
-        {replaced}
+        {cleanContent}
       </Markdown>
     )
+  }
+
+  // Check if message contains escalation link
+  const hasEscalationLink = (content: string) => {
+    return /\[([^\]]+)\]\(escalate:\/\/now\)/g.test(content)
   }
 
   // System messages - centered like Facebook Messenger
@@ -340,6 +329,20 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
             {message.senderType === "customer" && <CheckCircle2 className="h-3 w-3" />}
           </div>
         </div>
+
+        {/* Escalation Card - Show below AI messages that contain escalation links */}
+        {message.senderType === "ai" && message.message && hasEscalationLink(message.message) && (
+          <div className="mt-3 max-w-sm">
+            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors" onClick={onEscalationClick}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Fill up details
+                </span>
+                <ChevronRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {message.senderType === "customer" && (
