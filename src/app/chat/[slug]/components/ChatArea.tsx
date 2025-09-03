@@ -68,81 +68,85 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
     }
 
     return (
-      <Card className="flex-1 flex flex-col border border-border/50 shadow-sm min-h-0">
+      <Card className="flex-1 flex flex-col border-0 shadow-none bg-transparent min-h-0">
         
         {/* Live Chat Mode Indicator */}
         {isLiveChatMode && (
-          <div className="px-4 py-3 border-b bg-muted/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium">Connected to live agent</span>
+          <div className="px-6 py-4 border-b bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50 flex items-center justify-between rounded-t-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Connected to live agent</span>
             </div>
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           </div>
         )}
 
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col rounded-xl">
           <div className="flex-1 overflow-y-auto">
-            <div className="p-4">
+            <div className="p-6">
               {waitingForAgent ? (
-                <div className="flex flex-col items-center justify-center min-h-[300px] py-12 space-y-6">
+                <div className="flex flex-col items-center justify-center min-h-[400px] py-12 space-y-8">
               <div className="flex flex-col items-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-                <span className="text-lg font-medium mb-2">Waiting for an available agent...</span>
-                <span className="text-muted-foreground text-sm text-center max-w-md">
-                  You will be connected as soon as an agent is available. Thank you for your patience.
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-6">
+                    <Loader2 className="h-8 w-8 animate-spin text-slate-600 dark:text-slate-300" />
+                  </div>
+                </div>
+                <span className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3">Connecting you to an agent</span>
+                <span className="text-slate-600 dark:text-slate-400 text-center max-w-md leading-relaxed">
+                  Please wait while we find an available agent to assist you. This usually takes just a moment.
                 </span>
               </div>
 
               {/* Escalation Details Card */}
               {escalationResponse && (
                 <div className="w-full max-w-md">
-                  <div className="rounded-lg border border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950 p-4">
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="bg-green-100 dark:bg-green-900 rounded-full p-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/50 bg-emerald-50 dark:bg-emerald-950/20 p-6 shadow-sm">
+                    <div className="flex items-start gap-4 mb-6">
+                      <div className="bg-emerald-100 dark:bg-emerald-900/50 rounded-full p-3">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">
+                        <h3 className="font-semibold text-emerald-900 dark:text-emerald-100 mb-2 text-lg">
                           Support Ticket Created
                         </h3>
-                        <p className="text-green-800 dark:text-green-200 text-xs">
-                          Your ticket has been submitted successfully
+                        <p className="text-emerald-800 dark:text-emerald-200 text-sm leading-relaxed">
+                          Your ticket has been submitted successfully and you're in the queue
                         </p>
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {/* Case Number */}
-                      <div className="flex items-center justify-between p-2 bg-background rounded border">
-                        <span className="text-xs font-medium text-muted-foreground">Case Number:</span>
-                        <div className="flex items-center gap-2">
-                          <code className="text-xs font-mono bg-muted px-2 py-1 rounded">
+                      <div className="flex items-center justify-between p-4 bg-white border border-emerald-200 dark:border-emerald-800">
+                        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Case Number:</span>
+                        <div className="flex items-center gap-3">
+                          <code className="text-sm font-mono bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-md text-slate-900 dark:text-slate-100">
                             {escalationResponse.caseNumber}
                           </code>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-6 w-6 p-0"
+                            className="h-8 w-8 p-0 hover:bg-emerald-100 dark:hover:bg-emerald-900/30"
                             onClick={() => copyToClipboard(escalationResponse.caseNumber)}
                           >
                             {copiedToClipboard ? (
-                              <CheckCircle2 className="h-3 w-3 text-green-600" />
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                             ) : (
-                              <Copy className="h-3 w-3" />
+                              <Copy className="h-4 w-4 text-slate-500" />
                             )}
                           </Button>
                         </div>
                       </div>
 
                       {/* Details */}
-                      <div className="space-y-2 text-xs text-green-800 dark:text-green-200">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-3 w-3" />
+                      <div className="space-y-3 text-sm text-emerald-800 dark:text-emerald-200">
+                        <div className="flex items-center gap-3">
+                          <Clock className="h-4 w-4" />
                           <span>Submitted: {format(new Date(escalationResponse.createdAt), 'MMM dd, HH:mm')}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="h-3 w-3" />
+                        <div className="flex items-center gap-3">
+                          <AlertCircle className="h-4 w-4" />
                           <span>Concern: {escalationResponse.concern}</span>
                         </div>
                       </div>
@@ -152,22 +156,40 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
               )}
             </div>
             ) : (
-              <div className="space-y-4">
-                {messages.map((msg, index) => (
-                  <Message 
-                    key={msg._id} 
-                    message={msg} 
-                    index={index} 
-                    onEscalationClick={onEscalationClick}
-                  />
-                ))}
+              <div className="space-y-6">
+                {messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center min-h-[400px] py-12">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-6">
+                        <Bot className="h-8 w-8 text-slate-600 dark:text-slate-300" />
+                      </div>
+                      <span className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3">
+                        How can I help?
+                      </span>
+                      <span className="text-slate-600 dark:text-slate-400 text-center max-w-md leading-relaxed">
+                        I'm here to assist you with any questions or concerns you may have. Feel free to ask me anything!
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  messages.map((msg, index) => (
+                    <Message 
+                      key={msg._id} 
+                      message={msg} 
+                      index={index} 
+                      onEscalationClick={onEscalationClick}
+                    />
+                  ))
+                )}
               </div>
             )}
 
             {loading && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="text-sm">AI is typing...</span>
+              <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 pl-14 mb-6">
+                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+                <span className="text-sm">AI is thinking...</span>
               </div>
             )}
             <div ref={chatEndRef} />
@@ -176,8 +198,8 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
         </div>
 
         {error && (
-          <div className="px-4 py-3 bg-destructive/10 border-t border-destructive/20">
-            <p className="text-destructive text-sm flex items-center gap-2">
+          <div className="px-6 py-4 bg-red-50 dark:bg-red-950/20 border-t border-red-200 dark:border-red-800/50 rounded-b-xl">
+            <p className="text-red-700 dark:text-red-300 text-sm flex items-center gap-3">
               <AlertTriangle className="h-4 w-4" />
               {error}
             </p>

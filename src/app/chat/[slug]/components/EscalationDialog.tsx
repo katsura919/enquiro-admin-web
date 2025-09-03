@@ -99,6 +99,9 @@ export default function EscalationDialog({
           <DialogTitle className="text-xl font-semibold">
             Contact Info
           </DialogTitle>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+            Please provide your contact information to connect with our live support team. This helps us serve you better and ensures we can follow up if needed.
+          </p>
         </DialogHeader>
 
         {escalationSuccess && escalationResponse ? (

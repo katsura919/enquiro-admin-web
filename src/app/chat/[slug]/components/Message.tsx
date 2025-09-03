@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -25,6 +25,7 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
   } | null>(null)
   const [imageLoading, setImageLoading] = useState<{ [key: string]: boolean }>({})
   const [imageDimensions, setImageDimensions] = useState<{ [key: string]: { width: number; height: number } }>({})
+  const [escalationTriggered, setEscalationTriggered] = useState(false)
 
   const getSkeletonDimensions = (fileName: string) => {
     // Try to infer dimensions from common image types/names
@@ -148,11 +149,24 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
     return /\[([^\]]+)\]\(escalate:\/\/now\)/g.test(content)
   }
 
+  // Auto-trigger escalation dialog when escalation link is detected (only once per message)
+  useEffect(() => {
+    if (message.senderType === "ai" && message.message && hasEscalationLink(message.message) && !escalationTriggered) {
+      // Small delay to ensure the message is fully rendered before showing dialog
+      const timer = setTimeout(() => {
+        onEscalationClick()
+        setEscalationTriggered(true) // Mark as triggered to prevent reopening
+      }, 500)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [message.message, message.senderType, onEscalationClick, escalationTriggered])
+
   // System messages - centered like Facebook Messenger
   if (message.senderType === "system") {
     return (
-      <div className="flex justify-center my-4">
-        <div className="text-xs text-muted-foreground text-center max-w-md px-4 py-2">
+      <div className="flex justify-center my-6">
+        <div className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-md px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-full border border-slate-200 dark:border-slate-700">
           {message.message}
         </div>
       </div>
@@ -161,7 +175,7 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
 
   return (
     <div 
-      className={`flex items-start gap-3 message-enter mb-4 ${
+      className={`flex items-start gap-4 message-enter mb-6 ${
         message.senderType === "ai" || message.senderType === "agent"
           ? "justify-start" 
           : "justify-end"
@@ -169,15 +183,15 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
     >
       {(message.senderType === "ai" || message.senderType === "agent") && (
         <div className="flex-shrink-0 mt-1">
-          <div className={`rounded-full p-2 ${
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
             message.senderType === "agent"
-              ? "bg-green-600"
-              : "bg-primary"
+              ? "bg-emerald-500 shadow-sm"
+              : "bg-slate-800 dark:bg-slate-200 shadow-sm"
           }`}>
             {message.senderType === "agent" ? (
               <User className="h-4 w-4 text-white" />
             ) : (
-              <Bot className="h-4 w-4 text-primary-foreground" />
+              <Bot className="h-4 w-4 text-white dark:text-slate-800" />
             )}
           </div>
         </div>
@@ -185,16 +199,16 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
       
       <div className={`
         relative group
-        ${message.senderType === "ai" || message.senderType === "agent" ? "ml-2" : "mr-2"}
-        ${message.senderType === "ai" || message.senderType === "agent" ? "max-w-[85%]" : "max-w-[85%]"}
+        ${message.senderType === "ai" || message.senderType === "agent" ? "mr-12" : "ml-12"}
+        ${message.senderType === "ai" || message.senderType === "agent" ? "max-w-[80%]" : "max-w-[80%]"}
       `}>
         <div className={`
-          px-4 py-3 rounded-2xl text-sm border relative
+          px-4 py-3 text-sm relative 
           ${message.senderType === "ai" 
-            ? "bg-muted border-border text-foreground rounded-tl-sm" 
+            ? " text-forground" 
             : message.senderType === "agent"
-            ? "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 text-green-900 dark:text-green-100 rounded-tl-sm"
-            : "bg-primary border-primary text-primary-foreground rounded-tr-sm"
+            ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-100 rounded-2xl rounded-bl-md"
+            : "bg-card text-foreground rounded-lg"
           }
         `}>
           {/* Attachments */}
@@ -317,28 +331,38 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
 
           {/* Text content - only show if there are no uploading attachments */}
           {message.message && !message.attachments?.some(att => !att.fileUrl) && (
-            <div className="prose prose-sm max-w-none break-words dark:prose-invert">
+            <div className="prose prose-sm max-w-none break-words dark:prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
               {message.senderType === "ai"
                 ? renderContentWithEscalationLink(message.message)
                 : message.message}
             </div>
           )}
           
-          <div className="flex items-center justify-end gap-2 mt-2 text-xs opacity-70">
-            <span>{format(new Date(message.createdAt), "HH:mm")}</span>
-            {message.senderType === "customer" && <CheckCircle2 className="h-3 w-3" />}
-          </div>
+          {message.senderType !== "ai" && (
+            <div className="flex items-center justify-end gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
+              <span>{format(new Date(message.createdAt), "HH:mm")}</span>
+              {message.senderType === "customer" && <CheckCircle2 className="h-3 w-3 text-slate-600 dark:text-slate-400" />}
+            </div>
+          )}
         </div>
 
         {/* Escalation Card - Show below AI messages that contain escalation links */}
         {message.senderType === "ai" && message.message && hasEscalationLink(message.message) && (
-          <div className="mt-3 max-w-sm">
-            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors" onClick={onEscalationClick}>
+          <div className="mt-4 max-w-sm">
+            <div 
+              className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 cursor-pointer hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-slate-600 transition-all duration-200 shadow-sm hover:shadow-md group" 
+              onClick={onEscalationClick}
+            >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                  Fill up details
-                </span>
-                <ChevronRight className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-600 flex items-center justify-center">
+                    <User className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                  </div>
+                  <span className="font-medium text-slate-700 dark:text-slate-200">
+                    Fill up details
+                  </span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-slate-600 dark:text-slate-300 group-hover:translate-x-0.5 transition-transform duration-200" />
               </div>
             </div>
           </div>
@@ -347,8 +371,8 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
 
       {message.senderType === "customer" && (
         <div className="flex-shrink-0 mt-1">
-          <div className="rounded-full p-2 bg-muted border border-border">
-            <User className="h-4 w-4 text-muted-foreground" />
+          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm">
+            <User className="h-4 w-4 text-slate-600 dark:text-slate-300" />
           </div>
         </div>
       )}

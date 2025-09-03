@@ -60,13 +60,13 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
     }
 
     return (
-      <div className="p-4 border-t bg-muted/30">
+      <div className="p-2">
         {/* File Preview */}
         {selectedFile && (
-          <div className={`mb-3 p-3 bg-background border border-border rounded-lg transition-opacity ${uploadLoading ? 'opacity-60' : ''}`}>
-            <div className="flex items-start gap-3">
+          <div className={`mb-4 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl transition-opacity ${uploadLoading ? 'opacity-60' : ''}`}>
+            <div className="flex items-start gap-4">
               {filePreview ? (
-                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
                   <Image
                     src={filePreview}
                     alt="Preview"
@@ -80,23 +80,23 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
                   )}
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
                   {uploadLoading ? (
-                    <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                    <Loader2 className="h-5 w-5 text-slate-500 animate-spin" />
                   ) : (
-                    <FileText className="h-6 w-6 text-muted-foreground" />
+                    <FileText className="h-6 w-6 text-slate-500" />
                   )}
                 </div>
               )}
               
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{selectedFile.name}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{selectedFile.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {formatFileSize(selectedFile.size)}
                   {uploadLoading && " • Uploading..."}
                 </p>
                 {selectedFile.type.startsWith('image/') && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-1">
                     <ImageIcon className="h-3 w-3" />
                     Image
                   </p>
@@ -109,9 +109,9 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
                 size="sm"
                 onClick={onFileClear}
                 disabled={uploadLoading}
-                className="h-8 w-8 p-0 flex-shrink-0"
+                className="h-8 w-8 p-0 flex-shrink-0 hover:bg-red-100 dark:hover:bg-red-900/30"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 text-red-500" />
               </Button>
             </div>
           </div>
@@ -136,13 +136,13 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
                 size="icon"
                 onClick={handleFileButtonClick}
                 disabled={disabled || uploadLoading}
-                className="shrink-0"
+                className="shrink-0 h-8 w-8 hover:bg-slate-200 dark:hover:bg-slate-700"
                 title="Attach file"
               >
                 {uploadLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
                 ) : (
-                  <Paperclip className="h-4 w-4" />
+                  <Paperclip className="h-4 w-4 text-slate-500" />
                 )}
               </Button>
             )}
@@ -153,25 +153,25 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
               onChange={(e) => onChange(e.target.value)}
               placeholder={selectedFile ? "Add a caption..." : placeholder}
               disabled={disabled}
-              className="flex-1 border-border focus-visible:ring-1 focus-visible:ring-ring"
+              className="flex-1 border-0 bg-card text-foreground h-10"
             />
             
             <Button 
               type="submit" 
               disabled={disabled || (!value.trim() && !selectedFile)}
               size="icon"
-              className="shrink-0"
+              className="shrink-0 h-10 w-10 bg-card hover:bg-slate-700 disabled:bg-card dark:disabled:bg-card dark:bg-card dark:hover:bg-slate-700"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <SendHorizontal className="h-4 w-4" />
+                <SendHorizontal className="h-5 w-5 text-foreground" />
               )}
             </Button>
           </div>
           
           {!isLiveChatMode && (
-            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 flex items-center gap-2 pl-2">
               <Paperclip className="h-3 w-3" />
               File uploads are available when chatting with an agent
             </p>
