@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 import api from "@/utils/api"
 import type { ChatMessage } from "@/types/ChatMessage"
 
@@ -44,6 +44,8 @@ interface EscalationFormData {
 
 export default function ChatPage() {
   const { slug } = useParams()
+  const searchParams = useSearchParams()
+  const isEmbed = searchParams.get('embed') === 'true'
   
   // Core chat state
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -475,11 +477,11 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen bg-background overflow-hidden">
+    <div className={`h-screen bg-background overflow-hidden ${isEmbed ? 'embed-mode' : ''}`}>
       {/* Main container */}
-      <div className="container mx-auto max-w-4xl p-4 h-full flex flex-col">
-        {/* Business Info */}
-        <BusinessInfo businessData={businessData} businessLoading={businessLoading} />
+      <div className={`${isEmbed ? 'h-full flex flex-col' : 'container mx-auto max-w-4xl p-4 h-full flex flex-col'}`}>
+        {/* Business Info - Hide in embed mode */}
+        {!isEmbed && <BusinessInfo businessData={businessData} businessLoading={businessLoading} />}
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col min-h-0">
@@ -521,6 +523,24 @@ export default function ChatPage() {
         {/* Toast Container */}
         <ToastContainer />
       </div>
+      
+      {/* Embed-specific styles */}
+      {isEmbed && (
+        <style jsx global>{`
+          body {
+            margin: 0;
+            overflow: hidden;
+          }
+          .embed-mode {
+            padding: 0;
+            margin: 0;
+          }
+          .embed-mode .container {
+            padding: 8px;
+            max-width: none;
+          }
+        `}</style>
+      )}
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { GridBackground } from "@/components/ui/grid-background"
 import Link from "next/link"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
-import { ChatWidget } from "@/components/chat-widget"
+import { ChatEmbedWidget } from "@/components/chat-embed"
 
 export default function Home() {
   return (
@@ -128,12 +128,13 @@ export default function Home() {
               
         }
       
-      {/* Chat Widget */}
-      <ChatWidget 
-        businessSlug="confirm" 
+      {/* Chat Embed Widget */}
+      <ChatEmbedWidget 
+        businessSlug="enquiro-business" 
         position="bottom-right"
         primaryColor="#3b82f6"
         title="Need Help?"
+        frontendUrl="http://localhost:3000"
       />
     </div>
   )
