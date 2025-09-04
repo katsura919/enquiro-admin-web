@@ -4,6 +4,7 @@ import { GridBackground } from "@/components/ui/grid-background"
 import Link from "next/link"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
+import {  Highlight } from "@/components/ui/hero-highlight";
 import { ChatEmbedWidget } from "@/components/chat-embed"
 
 export default function Home() {
@@ -27,32 +28,51 @@ export default function Home() {
             <Navbar />
 
             {/* Hero Section */}
+           
             <main className="flex-1 relative">
-              <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+           
+              <section className="w-full pt-20 pb-12 md:pt-5 md:py-24 lg:py-32 xl:py-48">
                 <div className="container px-4 md:px-6">
                   <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="space-y-2">
-                      <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
-                        Multi-Tenant AI Chatbot Platform
+                      <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600 pb-3">
+                        Transform Customer Experience with Intelligent AI-Powered Support
                       </h1>
-                      <p className="mx-auto max-w-[700px] text-gray-300 md:text-xl">
-                        Empower your organization with a smart AI assistant that learns from your knowledge base and knows when to escalate.
+                      
+                      <p className="mx-auto max-w-[700px] text-gray-300 md:text-xl ">
+                       
+                        All your{" "}
+                        <Highlight className="text-black dark:text-white p-2">
+                          Live Chat, Ticketing, CRM and Workforce
+                        </Highlight>
+                        {" "}in one platform.
+            
                       </p>
+                     
                     </div>
-                    <div className="space-x-4">
-                      <Link href="/register">
-                        <Button className="bg-blue-500 hover:bg-blue-600" size="lg">
-                          Get Started
-                          <ArrowRight className="ml-2 h-4 w-4" />
+                    <div className="flex flex-col sm:flex-row gap-4 sm:space-x-4 sm:space-y-0 space-y-4">
+                      <Link href="/auth/register" className="inline-block">
+                        <Button className="w-full group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0" size="lg">
+                          <span className="relative z-10 flex items-center justify-center">
+                            Get Started Free
+                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                          </span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </Button>
                       </Link>
-                      <Button variant="outline" size="lg" className="border-blue-500 text-blue-500 hover:bg-blue-500/10">
-                        Learn More
+                      <Button className="group relative bg-white/10 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-xl border-2 border-white/20 hover:border-white/40 hover:bg-white/20 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl" size="lg">
+                        <span className="flex items-center">
+                          Watch Demo
+                          <svg className="ml-2 w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                          </svg>
+                        </span>
                       </Button>
                     </div>
                   </div>
                 </div>
               </section>
+            
 
               {/* Features Section */}
               <section className="w-full py-12 md:py-24 lg:py-32">
