@@ -1,12 +1,14 @@
 "use client"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Bot, Brain, Users, GitMerge } from "lucide-react"
+import { ArrowRight, Users } from "lucide-react"
 import { GridBackground } from "@/components/ui/grid-background"
 import Link from "next/link"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import {  Highlight } from "@/components/ui/hero-highlight";
 import { ChatEmbedWidget } from "@/components/chat-embed"
+import Features from "@/components/landing/features"
+import LoadingScreen from "@/components/ui/loading-screen"
 import dynamic from "next/dynamic"
 import { useState, useEffect } from "react"
 
@@ -15,14 +17,24 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false })
 
 export default function Home() {
   const [animationData, setAnimationData] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Load animation data
   useEffect(() => {
     fetch('/animations/support.json')
       .then(response => response.json())
-      .then(data => setAnimationData(data))
-      .catch(error => console.error('Error loading animation:', error))
+      .then(data => {
+        setAnimationData(data)
+        // Small delay to ensure smooth loading experience
+        setTimeout(() => setIsLoading(false), 500)
+      })
+      .catch(error => {
+        console.error('Error loading animation:', error)
+        setIsLoading(false)
+      })
   }, [])
+
+
   return (
     <div className="min-h-screen w-full bg-black relative">
       {/* Black Basic Grid Background */}
@@ -38,7 +50,8 @@ export default function Home() {
         }}
       />
         {
-                    <GridBackground className="relative flex flex-col min-h-screen overflow-hidden">
+            <GridBackground className="relative flex flex-col min-h-screen overflow-hidden">
+
             {/* Navigation */}
             <Navbar />
 
@@ -46,7 +59,7 @@ export default function Home() {
            
             <main className="flex-1 relative">
            
-              <section className="w-full pt-20 pb-12 md:pt-5 md:py-24 lg:py-32 xl:py-48">
+              <section className="w-full pt-20 pb-5 md:pt-5 md:py-24 lg:py-32 xl:py-48">
                 <div className="container px-4 md:px-6">
                   <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="space-y-2">
@@ -57,25 +70,25 @@ export default function Home() {
                       <p className="mx-auto max-w-[700px] text-gray-300 text-base md:text-lg pb-5">
                        
                         All your{" "}
-                        <Highlight className="text-black dark:text-white p-2">
-                          Live Chat, Ticketing, CRM and Workforce
+                        <Highlight className="text-black dark:text-white p-1">
+                          Live Chat, AI Chatbot, CRM and Workforce Management tools
                         </Highlight>
-                        {" "}in one platform.
+                        {" "}unified in one powerful platform.
             
                       </p>
                      
                     </div>
 
-                    
+
                     {/* Lottie Animation */}
                     <div className="mt-10 flex justify-center">
-                      <div className="w-full max-w-2xl md:max-w-4xl lg:max-w-7xl">
+                      <div className="w-full max-w-2xl md:max-w-4xl lg:max-w-6xl">
                         {animationData && (
                           <Lottie 
                             animationData={animationData}
                             loop={true}
                             autoplay={true}
-                            className="w-full h-auto scale-110 md:scale-105 lg:scale-120"
+                            className="w-full h-auto scale-110 md:scale-105 lg:scale-110"
                           />
                         )}
                       </div>
@@ -86,39 +99,7 @@ export default function Home() {
             
 
               {/* Features Section */}
-              <section className="w-full py-12 md:py-24 lg:py-32">
-                <div className="container px-4 md:px-6">
-                  <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-                    <div className="flex flex-col items-center space-y-4 text-center p-6 bg-white/5 rounded-2xl backdrop-blur-sm border border-blue-500/20">
-                      <div className="p-4 bg-blue-500/10 rounded-full">
-                        <Bot className="h-8 w-8 text-blue-500" />
-                      </div>
-                      <h2 className="text-xl font-bold text-white">Smart AI Assistant</h2>
-                      <p className="text-gray-400">
-                        Powered by advanced AI to understand and respond to user queries with precision
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-center space-y-4 text-center p-6 bg-white/5 rounded-2xl backdrop-blur-sm border border-blue-500/20">
-                      <div className="p-4 bg-blue-500/10 rounded-full">
-                        <Brain className="h-8 w-8 text-blue-500" />
-                      </div>
-                      <h2 className="text-xl font-bold text-white">Knowledge Integration</h2>
-                      <p className="text-gray-400">
-                        Store and leverage your organization's knowledge base for more accurate responses
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-center space-y-4 text-center p-6 bg-white/5 rounded-2xl backdrop-blur-sm border border-blue-500/20">
-                      <div className="p-4 bg-blue-500/10 rounded-full">
-                        <GitMerge className="h-8 w-8 text-blue-500" />
-                      </div>
-                      <h2 className="text-xl font-bold text-white">Smart Escalation</h2>
-                      <p className="text-gray-400">
-                        Automatically identifies when to escalate complex inquiries to human experts
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
+              <Features />
 
               {/* Multi-tenant Section */}
               <section className="w-full py-12 md:py-24 lg:py-32">
