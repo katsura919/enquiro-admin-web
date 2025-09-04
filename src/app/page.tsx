@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Bot, Brain, Users, GitMerge } from "lucide-react"
 import { GridBackground } from "@/components/ui/grid-background"
@@ -6,8 +7,22 @@ import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
 import {  Highlight } from "@/components/ui/hero-highlight";
 import { ChatEmbedWidget } from "@/components/chat-embed"
+import dynamic from "next/dynamic"
+import { useState, useEffect } from "react"
+
+// Dynamically import Lottie to avoid SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false })
 
 export default function Home() {
+  const [animationData, setAnimationData] = useState(null)
+
+  // Load animation data
+  useEffect(() => {
+    fetch('/animations/support.json')
+      .then(response => response.json())
+      .then(data => setAnimationData(data))
+      .catch(error => console.error('Error loading animation:', error))
+  }, [])
   return (
     <div className="min-h-screen w-full bg-black relative">
       {/* Black Basic Grid Background */}
@@ -35,11 +50,11 @@ export default function Home() {
                 <div className="container px-4 md:px-6">
                   <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="space-y-2">
-                      <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600 pb-3">
+                      <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600 pb-5">
                         Transform Customer Experience with Intelligent AI-Powered Support
                       </h1>
                       
-                      <p className="mx-auto max-w-[700px] text-gray-300 md:text-xl ">
+                      <p className="mx-auto max-w-[700px] text-gray-300 text-base md:text-lg pb-5">
                        
                         All your{" "}
                         <Highlight className="text-black dark:text-white p-2">
@@ -50,24 +65,20 @@ export default function Home() {
                       </p>
                      
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 sm:space-x-4 sm:space-y-0 space-y-4">
-                      <Link href="/auth/register" className="inline-block">
-                        <Button className="w-full group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 border-0" size="lg">
-                          <span className="relative z-10 flex items-center justify-center">
-                            Get Started Free
-                            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                          </span>
-                          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        </Button>
-                      </Link>
-                      <Button className="group relative bg-white/10 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-xl border-2 border-white/20 hover:border-white/40 hover:bg-white/20 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl" size="lg">
-                        <span className="flex items-center">
-                          Watch Demo
-                          <svg className="ml-2 w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                          </svg>
-                        </span>
-                      </Button>
+
+                    
+                    {/* Lottie Animation */}
+                    <div className="mt-10 flex justify-center">
+                      <div className="w-full max-w-2xl md:max-w-4xl lg:max-w-7xl">
+                        {animationData && (
+                          <Lottie 
+                            animationData={animationData}
+                            loop={true}
+                            autoplay={true}
+                            className="w-full h-auto scale-110 md:scale-105 lg:scale-120"
+                          />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -153,8 +164,8 @@ export default function Home() {
         businessSlug="enquiro-business" 
         position="bottom-right"
         primaryColor="#3b82f6"
-        title="Need Help?"
-        frontendUrl="http://localhost:3000/"
+        title="Enquiro"
+        frontendUrl="https://enquiro.vercel.app/"
       />
     </div>
   )
