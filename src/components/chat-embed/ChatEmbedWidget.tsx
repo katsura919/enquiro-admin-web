@@ -95,17 +95,17 @@ export function ChatEmbedWidget({
           </div>
 
           {/* Chat Content */}
-          {!isMinimized && (
-            <div className="h-[calc(100%-60px)] relative">
-              <iframe
-                src={chatUrl}
-                className="w-full h-full border-0 rounded-b-lg"
-                title="Chat Widget"
-                allow="camera; microphone"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-              />
-            </div>
-          )}
+          <div 
+            className={`h-[calc(100%-60px)] relative ${isMinimized ? 'hidden' : ''}`}
+          >
+            <iframe
+              src={chatUrl}
+              className="w-full h-full border-0 rounded-b-lg"
+              title="Chat Widget"
+              allow="camera; microphone"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            />
+          </div>
         </div>
       )}
 
