@@ -28,7 +28,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Topbar from '@/components/Topbar'
 import { useAuth } from '@/lib/auth'
-import { PageSpinner } from '@/components/ui/spinner1'
+import LoadingScreen from "@/components/ui/loading-screen"
 
 const navigation = [
   {
@@ -133,13 +133,11 @@ export default function DashboardLayout({
 
   // If loading, show the spinner  
   // Show loading state while checking authentication
+  // Show loader while page is loading
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingScreen />
   }
+
   
   // Otherwise, show the full dashboard
   return (
