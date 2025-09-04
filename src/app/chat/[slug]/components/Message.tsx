@@ -14,9 +14,10 @@ interface MessageProps {
   message: ChatMessage
   index: number
   onEscalationClick: () => void
+  escalationInProgress?: boolean // Add this to prevent auto-trigger when escalation is already submitted
 }
 
-export default function Message({ message, index, onEscalationClick }: MessageProps) {
+export default function Message({ message, index, onEscalationClick, escalationInProgress = false }: MessageProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<{
     url: string
@@ -151,7 +152,13 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
 
   // Auto-trigger escalation dialog when escalation link is detected (only once per message)
   useEffect(() => {
-    if (message.senderType === "ai" && message.message && hasEscalationLink(message.message) && !escalationTriggered) {
+    if (
+      message.senderType === "ai" && 
+      message.message && 
+      hasEscalationLink(message.message) && 
+      !escalationTriggered && 
+      !escalationInProgress // Don't auto-trigger if escalation is already in progress
+    ) {
       // Small delay to ensure the message is fully rendered before showing dialog
       const timer = setTimeout(() => {
         onEscalationClick()
@@ -160,7 +167,7 @@ export default function Message({ message, index, onEscalationClick }: MessagePr
       
       return () => clearTimeout(timer)
     }
-  }, [message.message, message.senderType, onEscalationClick, escalationTriggered])
+  }, [message.message, message.senderType, onEscalationClick, escalationTriggered, escalationInProgress])
 
   // System messages - centered like Facebook Messenger
   if (message.senderType === "system") {

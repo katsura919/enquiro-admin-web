@@ -462,18 +462,16 @@ export default function ChatPage() {
     setEscalationVisible(false)
     setFormError(null) // Clear any form errors
     
-    // Only reset form data if not waiting for agent (to allow re-opening dialog for edits)
-    if (!waitingForAgent) {
-      setEscalationSuccess(false)
-      setEscalationResponse(null)
-      setFormData({
-        customerName: "",
-        customerEmail: "",
-        customerPhone: "",
-        concern: "",
-        description: "",
-      })
-    }
+    // Always reset form data and success state when dialog is closed
+    setEscalationSuccess(false)
+    setEscalationResponse(null)
+    setFormData({
+      customerName: "",
+      customerEmail: "",
+      customerPhone: "",
+      concern: "",
+      description: "",
+    })
   }
 
   return (
@@ -510,7 +508,11 @@ export default function ChatPage() {
         {/* Escalation Dialog */}
         <EscalationDialog
           open={escalationVisible}
-          onOpenChange={setEscalationVisible}
+          onOpenChange={(open) => {
+            if (!open) {
+              handleEscalationClose()
+            }
+          }}
           escalationSuccess={escalationSuccess}
           escalationResponse={escalationResponse}
           formData={formData}

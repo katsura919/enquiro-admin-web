@@ -178,6 +178,7 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
                       message={msg} 
                       index={index} 
                       onEscalationClick={onEscalationClick}
+                      escalationInProgress={!!escalationResponse || waitingForAgent || isLiveChatMode}
                     />
                   ))
                 )}
