@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { MessageCircle, X, Minus } from "lucide-react"
+import { MessageCircle, X, Minus, Loader2 } from "lucide-react"
 
 interface ChatEmbedWidgetProps {
   businessSlug: string
@@ -20,6 +20,7 @@ export function ChatEmbedWidget({
 }: ChatEmbedWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Position classes
   const positionClasses = {
@@ -39,12 +40,18 @@ export function ChatEmbedWidget({
     } else {
       setIsOpen(true)
       setIsMinimized(false)
+      setIsLoading(true) // Start loading when opening chat
     }
   }
 
   const closeChat = () => {
     setIsOpen(false)
     setIsMinimized(false)
+    setIsLoading(false) // Reset loading state when closing
+  }
+
+  const handleIframeLoad = () => {
+    setIsLoading(false) // Hide loader when iframe loads
   }
 
   return (
@@ -98,12 +105,30 @@ export function ChatEmbedWidget({
           <div 
             className={`h-[calc(100%-60px)] relative ${isMinimized ? 'hidden' : ''}`}
           >
+            {/* Loading Overlay */}
+            {isLoading && (
+              <div className="absolute inset-0 bg-white flex flex-col items-center justify-center z-10 rounded-b-lg">
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 
+                    className="w-8 h-8 animate-spin" 
+                    style={{ color: primaryColor }}
+                  />
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-700">Starting chat...</p>
+                    <p className="text-xs text-gray-500 mt-1">Please wait a moment</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <iframe
               src={chatUrl}
               className="w-full h-full border-0 rounded-b-lg"
               title="Chat Widget"
               allow="camera; microphone"
               sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+              onLoad={handleIframeLoad}
+              style={{ opacity: isLoading ? 0 : 1 }}
             />
           </div>
         </div>
