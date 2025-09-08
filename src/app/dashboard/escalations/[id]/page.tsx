@@ -12,9 +12,10 @@ import {
 import {
   ActivityFeed,
   CaseNotes,
-  CommunicationTabs,
   CustomerIssueCard,
 } from "./components"
+import { ConversationHistory } from "./components/ConversationHistory"
+import { EmailThread } from "./components/EmailThread"
 import { useState } from "react"
 import { EscalationHeader } from "./components/EscalationHeader"
 
@@ -552,22 +553,27 @@ return (
             onUpdate={handleCustomerIssueUpdate}
           />
 
-          <CommunicationTabs
+          <ConversationHistory
             chatMessages={chatMessages}
             loadingChats={loadingChats}
-            refreshingChats={refreshing}
+            refreshing={refreshing}
             handleRefreshChats={handleRefreshChats}
+            formatTime={formatTime}
+          />
+
+          <EmailThread
             emails={emails}
-            loadingEmails={loadingEmails}
-            refreshingEmails={refreshingEmails}
-            handleRefreshEmails={handleRefreshEmails}
-            onSendEmailReply={handleSendEmailReply}
+            loading={loadingEmails}
+            refreshing={refreshingEmails}
+            onRefresh={handleRefreshEmails}
+            onSendReply={handleSendEmailReply}
             onSendNewEmail={handleSendNewEmail}
             formatTime={formatTime}
             formatEmailDate={formatEmailDate}
             customerEmail={escalation?.customerEmail || ''}
             customerName={escalation?.customerName || ''}
             concernSubject={escalation?.concern || ''}
+            userEmail="katsuragik919@gmail.com"
           />
         </div>
 
