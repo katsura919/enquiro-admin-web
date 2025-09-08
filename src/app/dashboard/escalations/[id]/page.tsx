@@ -11,9 +11,9 @@ import {
 } from "lucide-react"
 import {
   ActivityFeed,
-  CaseNotes,
   CustomerIssueCard,
 } from "./components"
+import { CaseNotesPreview } from "./components/CaseNotesPreview"
 import { ConversationHistory } from "./components/ConversationHistory"
 import { EmailThread } from "./components/EmailThread"
 import { useState } from "react"
@@ -580,11 +580,12 @@ return (
         {/* Right Column */}
         <div className="lg:border-l lg:border-border/40">
           <div className="p-0 lg:p-4 space-y-6 md:space-y-8">
-            <CaseNotes 
+            <CaseNotesPreview 
               notes={caseNotes}
               onAddNote={addCaseNote}
               onDeleteNote={deleteNote}
               formatDate={formatDate}
+              maxDisplay={3}
             />            
             <ActivityFeed 
               activities={activities}
