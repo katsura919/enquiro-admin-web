@@ -57,10 +57,10 @@ const navigation = [
     ]
   },
   {
-    category: "SETTINGS",
+    category: "Account Management",
     items: [
       { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
-      { name: "Account", href: "/dashboard/settings", icon: Settings },
+      { name: "Settings ", href: "/dashboard/settings", icon: Settings },
     ]
   }
 ]

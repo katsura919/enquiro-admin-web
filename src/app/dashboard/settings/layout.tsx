@@ -21,16 +21,10 @@ import { Button } from "@/components/ui/button"
 
 const navigation = [
   {
-    name: "General",
+    name: "Account",
     href: "/dashboard/settings",
     icon: Settings,
     description: "Basic settings and preferences",
-  },
-  {
-    name: "Account",
-    href: "/dashboard/settings/account",
-    icon: User,
-    description: "Your personal account settings",
   },
   {
     name: "Business",
@@ -49,12 +43,6 @@ const navigation = [
     href: "/dashboard/settings/chatbot",
     icon: Bot,
     description: "Configure chatbot behavior",
-  },
-  {
-    name: "Notifications",
-    href: "/dashboard/settings/notifications",
-    icon: Bell,
-    description: "Notification preferences",
   },
   {
     name: "Security",
