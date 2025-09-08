@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FileText, AlertTriangle, Clock, CheckCircle } from "lucide-react"
@@ -60,7 +60,7 @@ export function EscalationCountCards({
       count: counts.total,
       status: "all" as const,
       icon: FileText,
-      textColor: "text-blue-700 dark:text-blue-300",
+      cardClass: "bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20",
       badgeColor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
     },
     {
@@ -68,7 +68,7 @@ export function EscalationCountCards({
       count: counts.escalated,
       status: "escalated" as const,
       icon: AlertTriangle,
-      textColor: "text-red-700 dark:text-red-300",
+      cardClass: "bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20",
       badgeColor: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
     },
     {
@@ -76,7 +76,7 @@ export function EscalationCountCards({
       count: counts.pending,
       status: "pending" as const,
       icon: Clock,
-      textColor: "text-yellow-700 dark:text-yellow-300",
+      cardClass: "bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/20 dark:to-yellow-800/20",
       badgeColor: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
     },
     {
@@ -84,7 +84,7 @@ export function EscalationCountCards({
       count: counts.resolved,
       status: "resolved" as const,
       icon: CheckCircle,
-      textColor: "text-green-700 dark:text-green-300",
+      cardClass: "bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/20 dark:to-green-800/20",
       badgeColor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
     }
   ]
@@ -102,19 +102,14 @@ export function EscalationCountCards({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {Array.from({ length: 4 }).map((_, index) => (
-          <Card key={index} className="bg-card border-lg transition-all duration-200 flex-1">
-            <CardContent className="p-5">
-              <div className="flex items-start justify-between mb-3">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-6 w-6" />
-              </div>
-              
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-16" />
-                <Skeleton className="h-5 w-24 rounded-full" />
-              </div>
+          <Card key={index} className="border-0 shadow-sm">
+            <CardHeader className="pb-3 px-6 pt-6">
+              <Skeleton className="h-5 w-32" />
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              <Skeleton className="h-8 w-20" />
             </CardContent>
           </Card>
         ))}
@@ -123,33 +118,26 @@ export function EscalationCountCards({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
       {cards.map((card) => (
         <Card
           key={card.status}
-          className="bg-card border-1g transition-all duration-200 cursor-pointer flex-1"
+          className={`border-0 shadow-sm ${card.cardClass} cursor-pointer transition-all duration-200 hover:shadow-md`}
           onClick={() => onCountClick?.(card.status)}
         >
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <span className={`text-sm font-medium ${card.textColor}`}>
-                {card.title}
-              </span>
-              <card.icon className={`h-6 w-6 ${card.textColor} flex-shrink-0`} />
-            </div>
-            
-            <div className="space-y-2">
-              <div className={`text-4xl font-bold leading-none ${card.textColor}`}>
-                {card.count.toLocaleString()}
-              </div>
-              
-              {card.status !== "all" && counts.total > 0 && (
-                <Badge variant="secondary" className={`text-xs ${card.badgeColor}`}>
-                  {((card.count / counts.total) * 100).toFixed(1)}% of total
-                </Badge>
-              )}
-            </div>
-            
+          <CardHeader className="pb-3 px-6 pt-6">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <card.icon className="h-4 w-4" />
+              {card.title}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <div className="text-2xl font-bold text-foreground mb-2">{card.count.toLocaleString()}</div>
+            {card.status !== "all" && counts.total > 0 && (
+              <Badge variant="secondary" className={`text-xs ${card.badgeColor}`}>
+                {((card.count / counts.total) * 100).toFixed(1)}% of total
+              </Badge>
+            )}
           </CardContent>
         </Card>
       ))}

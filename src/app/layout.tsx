@@ -6,8 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Chatbot Platform - Multi-Tenant Knowledge Management",
-  description: "A powerful multi-tenant AI chatbot platform that learns from your knowledge base and intelligently handles escalations.",
+  title: "Enquiro"
 };
 
 export default function RootLayout({

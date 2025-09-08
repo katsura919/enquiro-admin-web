@@ -163,6 +163,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --sidebar-text: oklch(0.205 0 0);
+  --card-color-one:
 }
 
 .dark {
