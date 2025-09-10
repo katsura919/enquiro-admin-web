@@ -4,87 +4,47 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Filter, Download, Trash2 } from "lucide-react"
+import { toast } from "@/hooks/useToast"
+import { agentService, type Agent, type CreateAgentData, type UpdateAgentData } from "@/services/agentService"
 import { 
   AgentTable, 
   AgentForm, 
   AgentStatsCards, 
-  DeleteAgentDialog,
-  type Agent 
+  DeleteAgentDialog
 } from "./components"
 
-// Dummy data for development
-const dummyAgents: Agent[] = [
-  {
-    _id: "1",
-    businessId: "bus1",
-    name: "John Smith",
-    email: "john.smith@company.com",
-    phone: "+1 (555) 123-4567",
-    profilePic: "",
-    role: "admin",
-    createdAt: "2024-01-15T08:30:00Z",
-    deletedAt: null
-  },
-  {
-    _id: "2",
-    businessId: "bus1",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@company.com",
-    phone: "+1 (555) 234-5678",
-    profilePic: "",
-    role: "supervisor",
-    createdAt: "2024-02-10T14:20:00Z",
-    deletedAt: null
-  },
-  {
-    _id: "3",
-    businessId: "bus1",
-    name: "Mike Chen",
-    email: "mike.chen@company.com",
-    phone: "+1 (555) 345-6789",
-    profilePic: "",
-    role: "agent",
-    createdAt: "2024-03-05T10:15:00Z",
-    deletedAt: null
-  },
-  {
-    _id: "4",
-    businessId: "bus1",
-    name: "Emily Davis",
-    email: "emily.davis@company.com",
-    phone: "+1 (555) 456-7890",
-    profilePic: "",
-    role: "agent",
-    createdAt: "2024-03-20T16:45:00Z",
-    deletedAt: null
-  },
-  {
-    _id: "5",
-    businessId: "bus1",
-    name: "David Wilson",
-    email: "david.wilson@company.com",
-    phone: "",
-    profilePic: "",
-    role: "agent",
-    createdAt: "2024-04-01T09:30:00Z",
-    deletedAt: "2024-04-15T12:00:00Z" // Soft deleted
-  }
-]
-
 export default function AgentManagementPage() {
-  const [agents, setAgents] = React.useState<Agent[]>(dummyAgents)
-  const [filteredAgents, setFilteredAgents] = React.useState<Agent[]>(dummyAgents)
+  const [agents, setAgents] = React.useState<Agent[]>([])
+  const [filteredAgents, setFilteredAgents] = React.useState<Agent[]>([])
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
   const [searchQuery, setSearchQuery] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<"all" | "active" | "inactive">("all")
   const [roleFilter, setRoleFilter] = React.useState<"all" | "admin" | "supervisor" | "agent">("all")
   const [loading, setLoading] = React.useState(false)
+  const [initialLoading, setInitialLoading] = React.useState(true)
   
   // Dialog states
   const [showAgentForm, setShowAgentForm] = React.useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false)
   const [editingAgent, setEditingAgent] = React.useState<Agent | null>(null)
   const [deletingAgent, setDeletingAgent] = React.useState<Agent | null>(null)
+
+  // Load agents on component mount
+  React.useEffect(() => {
+    loadAgents()
+  }, [])
+
+  const loadAgents = async () => {
+    try {
+      setInitialLoading(true)
+      const data = await agentService.getAgents()
+      setAgents(data)
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to load agents")
+    } finally {
+      setInitialLoading(false)
+    }
+  }
 
   // Filter agents based on search, status, and role
   React.useEffect(() => {
@@ -145,25 +105,20 @@ export default function AgentManagementPage() {
   const handleCreateAgent = async (data: any) => {
     setLoading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Get current user's business ID (you might need to get this from auth context)
+      const businessId = "bus1" // Replace with actual business ID from auth context
       
-      const newAgent: Agent = {
-        _id: Date.now().toString(),
-        businessId: "bus1",
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        profilePic: data.profilePic,
-        role: data.role,
-        createdAt: new Date().toISOString(),
-        deletedAt: null
+      const createData: CreateAgentData = {
+        ...data,
+        businessId
       }
-
+      
+      const newAgent = await agentService.createAgent(createData)
       setAgents(prev => [newAgent, ...prev])
-      console.log('Created agent:', newAgent)
-    } catch (error) {
-      console.error('Error creating agent:', error)
+      toast.success("Agent created successfully")
+      closeDialogs()
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to create agent")
     } finally {
       setLoading(false)
     }
@@ -174,26 +129,24 @@ export default function AgentManagementPage() {
 
     setLoading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      const updatedAgent: Agent = {
-        ...editingAgent,
+      const updateData: UpdateAgentData = {
         name: data.name,
         email: data.email,
         phone: data.phone,
-        profilePic: data.profilePic,
-        role: data.role
+        role: data.role,
+        profilePic: data.profilePic
       }
-
+      
+      const updatedAgent = await agentService.updateAgent(editingAgent._id, updateData)
       setAgents(prev =>
         prev.map(agent =>
           agent._id === editingAgent._id ? updatedAgent : agent
         )
       )
-      console.log('Updated agent:', updatedAgent)
-    } catch (error) {
-      console.error('Error updating agent:', error)
+      toast.success("Agent updated successfully")
+      closeDialogs()
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to update agent")
     } finally {
       setLoading(false)
     }
@@ -204,10 +157,8 @@ export default function AgentManagementPage() {
 
     setLoading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Soft delete
+      await agentService.deleteAgent(deletingAgent._id)
+      // Soft delete - update the deletedAt field
       setAgents(prev =>
         prev.map(agent =>
           agent._id === deletingAgent._id
@@ -215,9 +166,10 @@ export default function AgentManagementPage() {
             : agent
         )
       )
-      console.log('Deleted agent:', deletingAgent._id)
-    } catch (error) {
-      console.error('Error deleting agent:', error)
+      toast.success("Agent deleted successfully")
+      closeDialogs()
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete agent")
     } finally {
       setLoading(false)
     }
@@ -228,9 +180,10 @@ export default function AgentManagementPage() {
 
     setLoading(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
+      // Delete each selected agent
+      await Promise.all(selectedIds.map(id => agentService.deleteAgent(id)))
+      
+      // Update local state
       setAgents(prev =>
         prev.map(agent =>
           selectedIds.includes(agent._id)
@@ -239,9 +192,9 @@ export default function AgentManagementPage() {
         )
       )
       setSelectedIds([])
-      console.log('Bulk deleted agents:', selectedIds)
-    } catch (error) {
-      console.error('Error bulk deleting agents:', error)
+      toast.success(`${selectedIds.length} agent(s) deleted successfully`)
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete agents")
     } finally {
       setLoading(false)
     }
@@ -362,7 +315,7 @@ export default function AgentManagementPage() {
         onSelectItem={handleSelectItem}
         onEdit={openEditDialog}
         onDelete={openDeleteDialog}
-        loading={loading}
+        loading={loading || initialLoading}
       />
 
       {/* Dialogs */}
