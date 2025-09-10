@@ -43,16 +43,6 @@ export default function AgentManagementPage() {
     )
   }
 
-  // Redirect if not authenticated (this should be handled by layout, but just in case)
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-500">Please log in to access this page.</p>
-        </div>
-      </div>
-    )
-  }
 
   // Load agents when component mounts or user changes
   React.useEffect(() => {
