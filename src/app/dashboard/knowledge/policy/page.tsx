@@ -17,6 +17,7 @@ export default function PolicyPage() {
   const businessId = user?.businessId
   const [policies, setPolicies] = useState<Policy[]>([])
   const [policyTypes, setPolicyTypes] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedType, setSelectedType] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
@@ -35,6 +36,7 @@ export default function PolicyPage() {
   // Fetch policies and types on mount
   React.useEffect(() => {
     const fetchPolicies = async () => {
+      setLoading(true)
       try {
         const { data } = await api.get(`/policy/business/${businessId}`)
         if (data.success) setPolicies(data.policies)
@@ -48,10 +50,15 @@ export default function PolicyPage() {
         if (data.success) setPolicyTypes(data.types)
       } catch (err) {
         setPolicyTypes([])
+      } finally {
+        setLoading(false)
       }
     }
-    fetchPolicies()
-    fetchTypes()
+    
+    if (businessId) {
+      fetchPolicies()
+      fetchTypes()
+    }
   }, [businessId])
 
   // Filter policies based on search and filters
@@ -185,7 +192,11 @@ export default function PolicyPage() {
 
         {/* Policy List */}
         <div className="space-y-4">
-          {filteredPolicies.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center min-h-[400px] p-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredPolicies.length === 0 ? (
             <EmptyState 
               hasAnyPolicies={policies.length > 0} 
               onCreateClick={() => setIsCreateDialogOpen(true)} 

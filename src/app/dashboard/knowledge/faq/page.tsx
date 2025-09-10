@@ -19,6 +19,7 @@ export default function FAQPage() {
   const businessId = user?.businessId
   const [faqs, setFaqs] = useState<FAQ[]>([])
   const [categories, setCategories] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
@@ -37,6 +38,7 @@ export default function FAQPage() {
   // Fetch FAQs and categories on mount
   React.useEffect(() => {
     const fetchFAQs = async () => {
+      setLoading(true)
       try {
         const { data } = await api.get(`/faq/business/${businessId}`)
         if (data.success) setFaqs(data.faqs)
@@ -50,10 +52,15 @@ export default function FAQPage() {
         if (data.success) setCategories(data.categories)
       } catch (err) {
         setCategories([])
+      } finally {
+        setLoading(false)
       }
     }
-    fetchFAQs()
-    fetchCategories()
+    
+    if (businessId) {
+      fetchFAQs()
+      fetchCategories()
+    }
   }, [businessId])
 
   // Filter FAQs based on search and filters
@@ -181,7 +188,11 @@ export default function FAQPage() {
 
         {/* FAQ List */}
         <div className="space-y-4">
-          {filteredFAQs.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center min-h-[400px] p-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredFAQs.length === 0 ? (
             <EmptyState 
               hasAnyFAQs={faqs.length > 0} 
               onCreateClick={() => setIsCreateDialogOpen(true)} 

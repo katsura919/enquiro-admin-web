@@ -16,6 +16,7 @@ export default function ProductsPage() {
   const businessId = user?.businessId
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
@@ -41,6 +42,11 @@ export default function ProductsPage() {
   // Fetch products and categories from API
   useEffect(() => {
     const fetchProducts = async () => {
+      // Only show loading spinner on initial load or when changing major filters
+      if (products.length === 0 || selectedCategory !== "All" || showActiveOnly || showInStockOnly) {
+        setIsLoading(true)
+      }
+      
       try {
         const params: any = {}
         if (selectedCategory !== "All") params.category = selectedCategory
@@ -56,9 +62,14 @@ export default function ProductsPage() {
         setProducts(res.data.products || [])
       } catch (err) {
         setProducts([])
+      } finally {
+        setIsLoading(false)
       }
     }
-    fetchProducts()
+    
+    if (businessId) {
+      fetchProducts()
+    }
   }, [businessId, selectedCategory, showActiveOnly, showInStockOnly, searchTerm])
 
   useEffect(() => {
@@ -70,7 +81,10 @@ export default function ProductsPage() {
         setCategories([])
       }
     }
-    fetchCategories()
+    
+    if (businessId) {
+      fetchCategories()
+    }
   }, [businessId])
 
   // Filter products based on search and filters
@@ -248,7 +262,11 @@ export default function ProductsPage() {
           
         {/* Product List */}
         <div className="space-y-4">
-          {filteredProducts.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px] p-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredProducts.length === 0 ? (
             <EmptyState
               hasAnyProducts={products.length > 0}
               onCreateClick={() => setIsCreateDialogOpen(true)}

@@ -230,7 +230,11 @@ export default function ServicesPage() {
 
         {/* Service List */}
         <div className="space-y-4">
-          {filteredServices.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center min-h-[400px] p-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredServices.length === 0 ? (
             <EmptyState
               hasAnyServices={services.length > 0}
               onCreateClick={() => setIsCreateDialogOpen(true)}

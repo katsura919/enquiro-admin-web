@@ -11,7 +11,7 @@ interface EmptyStateProps {
 
 export default function EmptyState({ hasAnyServices, onCreateClick }: EmptyStateProps) {
   return (
-    <Card>
+    <Card className="border-none h-[60vh] flex items-center justify-center">
       <CardContent>
         <div className="text-center py-12">
           <Wrench className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
