@@ -11,7 +11,7 @@ interface EmptyStateProps {
 
 export default function EmptyState({ hasAnyFAQs, onCreateClick }: EmptyStateProps) {
   return (
-    <Card className="border-none h-[60vh] flex items-center justify-center">
+    <Card className="bg-card border-none h-[60vh] flex items-center justify-center">
       <CardContent>
         <div className="text-center py-12">
           <HelpCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
@@ -26,7 +26,6 @@ export default function EmptyState({ hasAnyFAQs, onCreateClick }: EmptyStateProp
           </p>
           {!hasAnyFAQs && (
             <Button onClick={onCreateClick}>
-              <Plus className="h-4 w-4 mr-2" />
               Create Your First FAQ
             </Button>
           )}
