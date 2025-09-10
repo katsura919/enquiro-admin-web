@@ -5,19 +5,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Upload, X, ChevronDown } from "lucide-react"
 import { Agent } from "./AgentTable"
 
 interface AgentFormData {
   name: string
   email: string
-  phone: string
-  role: string
   password: string
   confirmPassword: string
-  profilePic?: string
 }
 
 interface AgentFormProps {
@@ -32,11 +26,8 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
   const [formData, setFormData] = React.useState<AgentFormData>({
     name: "",
     email: "",
-    phone: "",
-    role: "agent",
     password: "",
-    confirmPassword: "",
-    profilePic: ""
+    confirmPassword: ""
   })
   const [errors, setErrors] = React.useState<Partial<AgentFormData>>({})
 
@@ -48,22 +39,16 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
         setFormData({
           name: agent.name,
           email: agent.email,
-          phone: agent.phone || "",
-          role: agent.role,
           password: "", // Don't populate password for editing
-          confirmPassword: "",
-          profilePic: agent.profilePic || ""
+          confirmPassword: ""
         })
       } else {
         // Creating new agent
         setFormData({
           name: "",
           email: "",
-          phone: "",
-          role: "agent",
           password: "",
-          confirmPassword: "",
-          profilePic: ""
+          confirmPassword: ""
         })
       }
       setErrors({})
@@ -81,10 +66,6 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
       newErrors.email = "Email is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Invalid email format"
-    }
-
-    if (!formData.role) {
-      newErrors.role = "Role is required"
     }
 
     // Password validation only for new agents or when password is provided
@@ -127,28 +108,6 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
     }
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // In a real app, you would upload to a server and get a URL
-      // For now, we'll use a placeholder
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, profilePic: reader.result as string }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -159,46 +118,9 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Profile Picture */}
-          <div className="flex flex-col items-center space-y-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={formData.profilePic} alt={formData.name} />
-              <AvatarFallback className="text-lg">
-                {formData.name ? getInitials(formData.name) : 'AG'}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div className="flex gap-2">
-              <Label htmlFor="profile-upload" className="cursor-pointer">
-                <div className="flex items-center gap-2 px-3 py-2 text-sm border rounded-md hover:bg-muted">
-                  <Upload className="h-4 w-4" />
-                  Upload Photo
-                </div>
-                <input
-                  id="profile-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </Label>
-              
-              {formData.profilePic && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleInputChange('profilePic', '')}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
-
           {/* Form Fields */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <div className="space-y-4">
+            <div>
               <Label htmlFor="name">Full Name *</Label>
               <Input
                 id="name"
@@ -210,7 +132,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
               {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
             </div>
 
-            <div className="col-span-2">
+            <div>
               <Label htmlFor="email">Email Address *</Label>
               <Input
                 id="email"
@@ -223,41 +145,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
               {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
             </div>
 
-            <div className="col-span-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="Enter phone number"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <Label htmlFor="role">Role *</Label>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    {formData.role ? formData.role.charAt(0).toUpperCase() + formData.role.slice(1) : "Select role"}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
-                  <DropdownMenuItem onClick={() => handleInputChange('role', 'agent')}>
-                    Agent
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleInputChange('role', 'supervisor')}>
-                    Supervisor
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleInputChange('role', 'admin')}>
-                    Admin
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {errors.role && <p className="text-sm text-destructive mt-1">{errors.role}</p>}
-            </div>
-
-            <div className="col-span-1">
+            <div>
               <Label htmlFor="password">
                 Password {!agent && '*'}
                 {agent && <span className="text-muted-foreground text-xs">(leave blank to keep current)</span>}
@@ -273,7 +161,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
               {errors.password && <p className="text-sm text-destructive mt-1">{errors.password}</p>}
             </div>
 
-            <div className="col-span-1">
+            <div>
               <Label htmlFor="confirmPassword">
                 Confirm Password {(!agent || formData.password) && '*'}
               </Label>

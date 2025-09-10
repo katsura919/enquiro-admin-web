@@ -40,7 +40,7 @@ export const agentService = {
 
   // Get agents by business ID
   getAgentsByBusiness: async (businessId: string): Promise<Agent[]> => {
-    const response = await api.get(`/agent/business/${businessId}`);
+    const response = await api.get(`/agent/${businessId}`);
     return response.data;
   },
 

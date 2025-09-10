@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Filter, Download, Trash2 } from "lucide-react"
 import { toast } from "@/hooks/useToast"
+import { useAuth } from "@/lib/auth"
 import { agentService, type Agent, type CreateAgentData, type UpdateAgentData } from "@/services/agentService"
 import { 
   AgentTable, 
@@ -14,6 +15,7 @@ import {
 } from "./components"
 
 export default function AgentManagementPage() {
+  const { user, isLoading: authLoading } = useAuth()
   const [agents, setAgents] = React.useState<Agent[]>([])
   const [filteredAgents, setFilteredAgents] = React.useState<Agent[]>([])
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
@@ -29,15 +31,43 @@ export default function AgentManagementPage() {
   const [editingAgent, setEditingAgent] = React.useState<Agent | null>(null)
   const [deletingAgent, setDeletingAgent] = React.useState<Agent | null>(null)
 
-  // Load agents on component mount
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Redirect if not authenticated (this should be handled by layout, but just in case)
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-500">Please log in to access this page.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Load agents when component mounts or user changes
   React.useEffect(() => {
-    loadAgents()
-  }, [])
+    if (user?.businessId) {
+      loadAgents()
+    }
+  }, [user?.businessId])
 
   const loadAgents = async () => {
     try {
       setInitialLoading(true)
-      const data = await agentService.getAgents()
+      // Load agents for the current user's business
+      const data = user?.businessId 
+        ? await agentService.getAgentsByBusiness(user.businessId)
+        : await agentService.getAgents()
       setAgents(data)
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to load agents")
@@ -103,14 +133,22 @@ export default function AgentManagementPage() {
 
   // CRUD operations
   const handleCreateAgent = async (data: any) => {
+    if (!user?.businessId) {
+      toast.error("Business ID not found. Please log in again.")
+      return
+    }
+
     setLoading(true)
     try {
-      // Get current user's business ID (you might need to get this from auth context)
-      const businessId = "bus1" // Replace with actual business ID from auth context
-      
       const createData: CreateAgentData = {
-        ...data,
-        businessId
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        businessId: user.businessId,
+        // Set default values for optional fields
+        phone: "",
+        role: "agent",
+        profilePic: ""
       }
       
       const newAgent = await agentService.createAgent(createData)
