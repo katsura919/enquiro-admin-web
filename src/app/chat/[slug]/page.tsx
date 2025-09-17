@@ -42,6 +42,11 @@ interface EscalationFormData {
   description: string
 }
 
+interface ContinuationData {
+  caseId: string
+  sessionId: string
+}
+
 export default function ChatPage() {
   const { slug } = useParams()
   const searchParams = useSearchParams()
@@ -75,6 +80,9 @@ export default function ChatPage() {
     description: "",
   })
   const [formError, setFormError] = useState<string | null>(null)
+  
+  // Case continuation state
+  const [continuationData, setContinuationData] = useState<ContinuationData | null>(null)
   
   // Live chat state
   const [waitingForAgent, setWaitingForAgent] = useState(false)
@@ -387,7 +395,57 @@ export default function ChatPage() {
     }
   }
 
-  // Handle escalation submission
+  // Handle escalation click - now supports both new and continuing cases
+  const handleEscalationClick = (escalationData?: { type: 'new' | 'continue', caseId?: string, sessionId?: string }) => {
+    if (escalationData?.type === 'continue' && escalationData.caseId && escalationData.sessionId) {
+      // Handle case continuation
+      setContinuationData({
+        caseId: escalationData.caseId,
+        sessionId: escalationData.sessionId
+      })
+      
+      // Set the session to the existing one for continuation
+      setSessionId(escalationData.sessionId)
+      
+      // Mark that we have an escalation response (simulate for continuation)
+      setEscalationResponse({
+        _id: escalationData.caseId,
+        businessId: businessData?._id || '',
+        sessionId: escalationData.sessionId,
+        caseNumber: 'CONTINUING', // This will be updated when we fetch the real case data
+        customerName: 'Returning Customer',
+        customerEmail: '',
+        customerPhone: '',
+        concern: 'Case Continuation',
+        description: 'Continuing existing case',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
+      
+      setWaitingForAgent(true)
+      
+      // Add system message about case continuation
+      const continuationMessage: ChatMessage = {
+        _id: `continuation-${Date.now()}`,
+        businessId: businessData?._id || '',
+        sessionId: escalationData.sessionId,
+        message: `Continuing your existing case. Connecting you to an available agent...`,
+        senderType: 'system',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, continuationMessage])
+      
+      // Request live chat with existing escalation
+      requestChat(escalationData.caseId, businessData?._id || '')
+      
+    } else {
+      // Handle new escalation - show the dialog
+      setEscalationVisible(true)
+    }
+  }
+
+  // Handle escalation form submission
   const handleEscalationSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
@@ -492,7 +550,7 @@ export default function ChatPage() {
             newMessage={newMessage}
             onMessageChange={setNewMessage}
             onSubmit={handleSubmit}
-            onEscalationClick={() => setEscalationVisible(true)}
+            onEscalationClick={handleEscalationClick}
             disabled={loading || businessLoading}
             placeholder={isConnectedToAgent ? "Type your message to the agent..." : "Type your message here..."}
             isLiveChatMode={isConnectedToAgent}

@@ -13,7 +13,7 @@ import type { ChatMessage } from "@/types/ChatMessage"
 interface MessageProps {
   message: ChatMessage
   index: number
-  onEscalationClick: () => void
+  onEscalationClick: (escalationData?: { type: 'new' | 'continue', caseId?: string, sessionId?: string }) => void
   escalationInProgress?: boolean // Add this to prevent auto-trigger when escalation is already submitted
 }
 
@@ -118,8 +118,10 @@ export default function Message({ message, index, onEscalationClick, escalationI
   }
 
   const renderContentWithEscalationLink = (content: string) => {
-    // Remove the escalation link from the content and just return clean markdown
-    const cleanContent = content.replace(/\[([^\]]+)\]\(escalate:\/\/now\)/g, "")
+    // Remove the escalation links from the content and just return clean markdown
+    const cleanContent = content
+      .replace(/\[([^\]]+)\]\(escalate:\/\/new\)/g, "")
+      .replace(/\[([^\]]+)\]\(escalate:\/\/continue\?[^)]+\)/g, "")
     return (
       <Markdown
         options={{
@@ -145,9 +147,34 @@ export default function Message({ message, index, onEscalationClick, escalationI
     )
   }
 
-  // Check if message contains escalation link
+  // Check if message contains escalation links
   const hasEscalationLink = (content: string) => {
-    return /\[([^\]]+)\]\(escalate:\/\/now\)/g.test(content)
+    return /\[([^\]]+)\]\(escalate:\/\/(new|continue(\?[^)]+)?)\)/g.test(content)
+  }
+
+  // Extract escalation type and data from content
+  const getEscalationData = (content: string) => {
+    // Check for continue escalation with case data
+    const continueMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/continue\?caseId=([^&]+)&sessionId=([^)]+)\)/)
+    if (continueMatch) {
+      return {
+        type: 'continue',
+        text: continueMatch[1],
+        caseId: continueMatch[2],
+        sessionId: continueMatch[3]
+      }
+    }
+
+    // Check for new escalation
+    const newMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/new\)/)
+    if (newMatch) {
+      return {
+        type: 'new',
+        text: newMatch[1]
+      }
+    }
+
+    return null
   }
 
   // Auto-trigger escalation dialog when escalation link is detected (only once per message)
@@ -161,7 +188,16 @@ export default function Message({ message, index, onEscalationClick, escalationI
     ) {
       // Small delay to ensure the message is fully rendered before showing dialog
       const timer = setTimeout(() => {
-        onEscalationClick()
+        const escalationData = message.message ? getEscalationData(message.message) : null
+        if (escalationData) {
+          onEscalationClick({
+            type: escalationData.type as 'new' | 'continue',
+            caseId: escalationData.caseId,
+            sessionId: escalationData.sessionId
+          })
+        } else {
+          onEscalationClick()
+        }
         setEscalationTriggered(true) // Mark as triggered to prevent reopening
       }, 500)
       
@@ -356,22 +392,69 @@ export default function Message({ message, index, onEscalationClick, escalationI
         {/* Escalation Card - Show below AI messages that contain escalation links */}
         {message.senderType === "ai" && message.message && hasEscalationLink(message.message) && (
           <div className="mt-4 max-w-sm">
-            <div 
-              className="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl p-4 cursor-pointer hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-slate-600 transition-all duration-200 shadow-sm hover:shadow-md group" 
-              onClick={onEscalationClick}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-600 flex items-center justify-center">
-                    <User className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+            {(() => {
+              const escalationData = getEscalationData(message.message)
+              const isReturningCustomer = escalationData?.type === 'continue'
+              
+              return (
+                <div 
+                  className={`border rounded-xl p-4 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md group ${
+                    isReturningCustomer 
+                      ? 'bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-emerald-200 dark:border-emerald-800 hover:from-emerald-100 hover:to-green-100 dark:hover:from-emerald-900/30 dark:hover:to-green-900/30'
+                      : 'bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-slate-700 border-slate-200 dark:border-slate-600 hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-slate-600'
+                  }`}
+                  onClick={() => {
+                    const escalationData = message.message ? getEscalationData(message.message) : null
+                    if (escalationData && escalationData.type === 'continue') {
+                      // For returning customers, handle continuing the case
+                      onEscalationClick({
+                        type: 'continue',
+                        caseId: escalationData.caseId,
+                        sessionId: escalationData.sessionId
+                      })
+                    } else {
+                      // For new customers, show the regular escalation dialog
+                      onEscalationClick({ type: 'new' })
+                    }
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        isReturningCustomer 
+                          ? 'bg-emerald-100 dark:bg-emerald-800'
+                          : 'bg-slate-100 dark:bg-slate-600'
+                      }`}>
+                        <User className={`h-4 w-4 ${
+                          isReturningCustomer 
+                            ? 'text-emerald-600 dark:text-emerald-300'
+                            : 'text-slate-600 dark:text-slate-300'
+                        }`} />
+                      </div>
+                      <div>
+                        <span className={`font-medium ${
+                          isReturningCustomer 
+                            ? 'text-emerald-700 dark:text-emerald-200'
+                            : 'text-slate-700 dark:text-slate-200'
+                        }`}>
+                          {isReturningCustomer ? 'Continue your case' : 'Fill up details'}
+                        </span>
+                        {isReturningCustomer && escalationData && (
+                          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+                            Resume conversation
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className={`h-4 w-4 group-hover:translate-x-0.5 transition-transform duration-200 ${
+                      isReturningCustomer 
+                        ? 'text-emerald-600 dark:text-emerald-300'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`} />
                   </div>
-                  <span className="font-medium text-slate-700 dark:text-slate-200">
-                    Fill up details
-                  </span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-slate-600 dark:text-slate-300 group-hover:translate-x-0.5 transition-transform duration-200" />
-              </div>
-            </div>
+              )
+            })()}
           </div>
         )}
       </div>

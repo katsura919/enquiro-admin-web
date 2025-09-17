@@ -17,7 +17,7 @@ interface ChatAreaProps {
   newMessage: string
   onMessageChange: (value: string) => void
   onSubmit: (e: React.FormEvent) => void
-  onEscalationClick: () => void
+  onEscalationClick: (escalationData?: { type: 'new' | 'continue', caseId?: string, sessionId?: string }) => void
   disabled: boolean
   placeholder?: string
   isLiveChatMode?: boolean
