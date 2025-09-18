@@ -43,10 +43,12 @@ interface EscalationFormData {
 }
 
 export default function ChatPage() {
-  const { slug } = useParams()
-  const searchParams = useSearchParams()
-  const isEmbed = searchParams.get('embed') === 'true'
-  
+  const params = useParams();
+  // Defensive: params.slug may be undefined
+  const slug = typeof params.slug === "string" ? params.slug : Array.isArray(params.slug) ? params.slug[0] : "";
+  const searchParams = useSearchParams();
+  const isEmbed = searchParams.get('embed') === 'true';
+
   // Core chat state
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [newMessage, setNewMessage] = useState("")
@@ -80,7 +82,6 @@ export default function ChatPage() {
   const [waitingForAgent, setWaitingForAgent] = useState(false)
   const [chatRoom, setChatRoom] = useState<string | null>(null)
   const [isConnectedToAgent, setIsConnectedToAgent] = useState(false)
-  console.log("isConnectedToAgent:", isConnectedToAgent)
   
   // Refs
   const chatEndRef = useRef<HTMLDivElement | null>(null)
@@ -88,58 +89,43 @@ export default function ChatPage() {
 
   const apiEndpoint = `/ask/chat/${slug}`
 
-  // Live chat hook
-  const { requestChat } = useLiveChat({
-    waitingForAgent,
-    escalationResponse,
-    businessData,
-    onChatStarted: (data) => {
-      console.log('[CHAT] onChatStarted received:', data);
-      setWaitingForAgent(false)
-      setChatRoom(data.room)
-      setIsConnectedToAgent(true)
-      console.log('[CHAT] Setting chatRoom to:', data.room);
-      console.log('[CHAT] Switched to live chat mode with agent')
-    },
-    onNewMessage: (data) => {
-      // Handle incoming messages from agent
-      if (data.senderType === 'agent') {
-        const agentMessage: ChatMessage = {
-          _id: data._id,
-          businessId: data.businessId,
-          sessionId: data.sessionId,
-          message: data.message,
-          messageType: data.messageType || 'text',
-          attachments: data.attachments || [],
-          senderType: 'agent',
-          agentId: data.agentId,
-          createdAt: data.createdAt,
-          updatedAt: data.createdAt,
-        }
-        setMessages(prev => [...prev, agentMessage])
-        console.log('[CHAT] Received message from agent:', data.message)
+  // --- useLiveChat callbacks with useCallback to avoid stale closures ---
+  const handleChatStarted = useCallback((data: any) => {
+    setWaitingForAgent(false)
+    setChatRoom(data.room)
+    setIsConnectedToAgent(true)
+  }, [])
+
+  const handleNewMessage = useCallback((data: any) => {
+    if (data.senderType === 'agent') {
+      const agentMessage: ChatMessage = {
+        _id: data._id,
+        businessId: data.businessId,
+        sessionId: data.sessionId,
+        message: data.message,
+        messageType: data.messageType || 'text',
+        attachments: data.attachments || [],
+        senderType: 'agent',
+        agentId: data.agentId,
+        createdAt: data.createdAt,
+        updatedAt: data.createdAt,
       }
-    },
-    onSystemMessage: (data) => {
-      // Handle system messages from backend
-      console.log('[CHAT] System message received:', data);
-      
-      // Check for duplicate messages by message content and timestamp (within 1 second)
-      const now = new Date().getTime();
-      const isDuplicate = messages.some(msg => 
-        msg.senderType === 'system' && 
+      setMessages(prev => [...prev, agentMessage])
+    }
+  }, [])
+
+  const handleSystemMessage = useCallback((data: any) => {
+    setMessages(prev => {
+      const now = Date.now();
+      const isDuplicate = prev.some(msg =>
+        msg.senderType === 'system' &&
         msg.message === data.message &&
         msg.systemMessageType === data.systemMessageType &&
-        Math.abs(now - new Date(msg.createdAt).getTime()) < 1000 // within 1 second
+        Math.abs(now - new Date(msg.createdAt).getTime()) < 1000
       );
-      
-      if (isDuplicate) {
-        console.log('[CHAT] Skipping duplicate system message:', data.message);
-        return;
-      }
-      
+      if (isDuplicate) return prev;
       const systemMessage: ChatMessage = {
-        _id: data._id || `system-${Date.now()}`,
+        _id: data._id || `system-${now}`,
         businessId: data.businessId || businessData?._id || '',
         sessionId: data.sessionId || sessionId || '',
         message: data.message,
@@ -149,39 +135,49 @@ export default function ChatPage() {
         createdAt: data.createdAt || new Date().toISOString(),
         updatedAt: data.updatedAt || new Date().toISOString(),
       }
-      setMessages(prev => [...prev, systemMessage])
-      console.log('[CHAT] Added system message to chat:', data.message)
-    },
-    onAgentDisconnectedDuringChat: (data) => {
-      console.log('[CHAT] Agent disconnected during active chat:', data);
-      // Add system message about agent disconnection
-      const disconnectionMessage: ChatMessage = {
-        _id: `agent-disconnected-${Date.now()}`,
-        businessId: businessData?._id || '',
-        sessionId: sessionId || '',
-        message: data.message || 'Agent has disconnected. You will be reassigned to another agent.',
-        senderType: 'system',
-        systemMessageType: 'agent_left',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setMessages(prev => [...prev, disconnectionMessage])
-      // Reset connection state but keep waiting for reassignment
-      setIsConnectedToAgent(false)
-      setChatRoom(null)
-      setWaitingForAgent(true) // Keep waiting for reassignment
-    },
-    onChatEnded: (data) => {
-      console.log('[CHAT] onChatEnded received:', data);
-      setIsConnectedToAgent(false)
-      setChatRoom(null)
-      setWaitingForAgent(false)
-      console.log('[CHAT] Agent disconnected, switched back to AI mode')
+      return [...prev, systemMessage];
+    });
+  }, [businessData?._id, sessionId])
+
+  const handleAgentDisconnected = useCallback((data: any) => {
+    const disconnectionMessage: ChatMessage = {
+      _id: `agent-disconnected-${Date.now()}`,
+      businessId: businessData?._id || '',
+      sessionId: sessionId || '',
+      message: data.message || 'Agent has disconnected. You will be reassigned to another agent.',
+      senderType: 'system',
+      systemMessageType: 'agent_left',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     }
+    setMessages(prev => [...prev, disconnectionMessage])
+    setIsConnectedToAgent(false)
+    setChatRoom(null)
+    setWaitingForAgent(true)
+  }, [businessData?._id, sessionId])
+
+  const handleChatEnded = useCallback(() => {
+    setIsConnectedToAgent(false)
+    setChatRoom(null)
+    setWaitingForAgent(false)
+  }, [])
+
+  // --- useLiveChat hook ---
+  const { requestChat } = useLiveChat({
+    waitingForAgent,
+    escalationResponse,
+    businessData,
+    onChatStarted: handleChatStarted,
+    onNewMessage: handleNewMessage,
+    onSystemMessage: handleSystemMessage,
+    onAgentDisconnectedDuringChat: handleAgentDisconnected,
+    onChatEnded: handleChatEnded,
   })
 
+  // --- Effects ---
   // Load business data
   useEffect(() => {
+    if (!slug) return;
     setBusinessLoading(true)
     api
       .get(`/business/slug/${slug}`)
@@ -197,31 +193,27 @@ export default function ChatPage() {
 
   // Focus input when not loading
   useEffect(() => {
-    if (!loading) inputRef.current?.focus()
+    if (!loading && inputRef.current) inputRef.current.focus()
   }, [loading])
 
+  // --- Handlers ---
   // Handle file selection
   const handleFileSelect = (file: File) => {
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    if (file.size > 10 * 1024 * 1024) {
       toast.error("File size must be less than 10MB")
       return
     }
-
     const allowedTypes = [
       'image/jpeg', 'image/png', 'image/gif', 'image/webp',
       'application/pdf', 'application/msword', 
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'text/plain'
     ]
-
     if (!allowedTypes.includes(file.type)) {
       toast.error("File type not supported. Please upload images, PDFs, or documents.")
       return
     }
-
     setSelectedFile(file)
-    
-    // Create preview for images
     if (file.type.startsWith('image/')) {
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -231,7 +223,6 @@ export default function ChatPage() {
     } else {
       setFilePreview(null)
     }
-
     toast.success(`File "${file.name}" selected`)
   }
 
@@ -258,7 +249,7 @@ export default function ChatPage() {
       messageType: selectedFile ? (selectedFile.type.startsWith('image/') ? 'image' : 'file') : 'text',
       attachments: selectedFile ? [{
         fileName: selectedFile.name,
-        fileUrl: '', // Will be set after upload
+        fileUrl: '',
         fileSize: selectedFile.size,
         mimeType: selectedFile.type,
         uploadedAt: new Date().toISOString()
@@ -275,19 +266,8 @@ export default function ChatPage() {
     clearFile()
 
     try {
-      // Debug logging to see what's happening
-      console.log('[SUBMIT] Chat state:', { 
-        isConnectedToAgent,
-        escalationResponse: !!escalationResponse,
-        hasFile: !!fileToSend
-      });
-
-      // If connected to agent, send message via chat controller
       if (isConnectedToAgent) {
-        console.log('[SUBMIT] Sending to agent via chat endpoint');
-        
         if (fileToSend) {
-          // Send file message
           const formData = new FormData()
           formData.append('file', fileToSend)
           formData.append('businessId', businessData?._id || '')
@@ -297,23 +277,18 @@ export default function ChatPage() {
           if (messageToSend.trim()) {
             formData.append('message', messageToSend)
           }
-
           const response = await api.post('/chat/send-message-with-file', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
           })
-          
-          // Update the message with the actual file URL
           setMessages(prev => prev.map(msg => 
             msg._id === userMessage._id 
               ? { ...msg, attachments: response.data.data.attachments }
               : msg
           ))
-          
           toast.success("File uploaded successfully!")
         } else {
-          // Send text message
           await api.post('/chat/send-message', {
             businessId: businessData?._id,
             sessionId,
@@ -326,12 +301,10 @@ export default function ChatPage() {
         return
       }
 
-      console.log('[SUBMIT] Sending to AI via ask endpoint');
       // For AI messages, we don't support file uploads yet, only text
       if (fileToSend) {
         toast.error("File uploads are only available when chatting with an agent. Please escalate to upload files.")
         setLoading(false)
-        // Remove the message from UI since upload failed
         setMessages(prev => prev.filter(msg => msg._id !== userMessage._id))
         return
       }
@@ -344,7 +317,6 @@ export default function ChatPage() {
           content: message 
         })),
       }
-      
       if (!sessionId) {
         body.customerDetails = {
           name: "Guest",
@@ -354,7 +326,6 @@ export default function ChatPage() {
       } else {
         body.sessionId = sessionId
       }
-      
       const response = await api.post(apiEndpoint, body)
       const aiMessage: ChatMessage = {
         _id: `${Date.now()}-response`,
@@ -366,17 +337,12 @@ export default function ChatPage() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
-      setMessages((prev) => [...prev, aiMessage])
-      
+      setMessages(prev => [...prev, aiMessage])
       if (!sessionId && response.data.sessionId) {
         setSessionId(response.data.sessionId)
       }
     } catch (err) {
-      console.error('Error sending message:', err)
-      
-      // Remove the failed message from UI
       setMessages(prev => prev.filter(msg => msg._id !== userMessage._id))
-      
       if (fileToSend) {
         toast.error("Failed to upload file. Please try again.")
       } else {
@@ -396,29 +362,24 @@ export default function ChatPage() {
       setFormError("No active session. Please start a conversation first.")
       return
     }
-
     if (!businessData?._id) {
       setFormError("Business information not available.")
       return
     }
-
     if (!formData.customerName || !formData.customerEmail) {
       setFormError("Name and Email are required.")
       return
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.customerEmail)) {
       setFormError("Please enter a valid email address.")
       return
     }
-
     const phoneRegex = /^\+?[\d\s-]{10,}$/
     if (formData.customerPhone && !phoneRegex.test(formData.customerPhone)) {
       setFormError("Please enter a valid phone number.")
       return
     }
-
     try {
       const response = await api.post('/escalation', {
         businessId: businessData._id,
@@ -429,12 +390,9 @@ export default function ChatPage() {
         concern: formData.concern || 'Live Chat Request',
         description: formData.description || 'Customer requested live chat support'
       })
-
       setEscalationResponse(response.data)
       setEscalationSuccess(true)
       setWaitingForAgent(true)
-      
-      // Add system message about escalation
       const escalationMessage: ChatMessage = {
         _id: `escalation-${Date.now()}`,
         businessId: businessData._id,
@@ -445,13 +403,8 @@ export default function ChatPage() {
         updatedAt: new Date().toISOString(),
       }
       setMessages(prev => [...prev, escalationMessage])
-      
-      // Request live chat
       requestChat(response.data._id, businessData._id)
-
-      // Close the dialog immediately after successful submission
       setEscalationVisible(false)
-      
     } catch (error: any) {
       setFormError(error.response?.data?.error || "Failed to submit escalation. Please try again.")
     }
@@ -460,9 +413,7 @@ export default function ChatPage() {
   // Handle escalation dialog close
   const handleEscalationClose = () => {
     setEscalationVisible(false)
-    setFormError(null) // Clear any form errors
-    
-    // Always reset form data and success state when dialog is closed
+    setFormError(null)
     setEscalationSuccess(false)
     setEscalationResponse(null)
     setFormData({
@@ -476,15 +427,10 @@ export default function ChatPage() {
 
   return (
     <div className={`h-screen bg-background overflow-hidden ${isEmbed ? 'embed-mode' : ''}`}>
-      {/* Main container */}
       <div className={`${isEmbed ? 'h-full flex flex-col' : 'container mx-auto max-w-4xl p-4 h-full flex flex-col'}`}>
-        {/* Business Info - Hide in embed mode */}
         {!isEmbed && <BusinessInfo businessData={businessData} businessLoading={businessLoading} />}
-
-        {/* Chat Area */}
         <div className="flex-1 flex flex-col min-h-0">
           <ChatArea
-            ref={chatEndRef}
             messages={messages}
             waitingForAgent={waitingForAgent}
             loading={loading}
@@ -504,11 +450,10 @@ export default function ChatPage() {
             uploadLoading={uploadLoading}
           />
         </div>
-
-        {/* Escalation Dialog */}
+        <div ref={chatEndRef} />
         <EscalationDialog
           open={escalationVisible}
-          onOpenChange={(open) => {
+          onOpenChange={(open: boolean) => {
             if (!open) {
               handleEscalationClose()
             }
@@ -521,28 +466,22 @@ export default function ChatPage() {
           onSubmit={handleEscalationSubmit}
           onClose={handleEscalationClose}
         />
-
-        {/* Toast Container */}
         <ToastContainer />
       </div>
-      
-      {/* Embed-specific styles */}
-      {isEmbed && (
-        <style jsx global>{`
-          body {
-            margin: 0;
-            overflow: hidden;
-          }
-          .embed-mode {
-            padding: 0;
-            margin: 0;
-          }
-          .embed-mode .container {
-            padding: 8px;
-            max-width: none;
-          }
-        `}</style>
-      )}
+      <style jsx global>{`
+        body {
+          margin: 0;
+          overflow: hidden;
+        }
+        .embed-mode {
+          padding: 0;
+          margin: 0;
+        }
+        .embed-mode .container {
+          padding: 8px;
+          max-width: none;
+        }
+      `}</style>
     </div>
   )
 }
