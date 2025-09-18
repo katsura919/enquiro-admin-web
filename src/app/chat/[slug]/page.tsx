@@ -56,7 +56,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
   
-  // File upload state
+  // File upload state...
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
   const [uploadLoading, setUploadLoading] = useState(false)
