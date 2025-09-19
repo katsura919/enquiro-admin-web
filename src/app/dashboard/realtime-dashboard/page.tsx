@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { AgentStatusOverview } from './components/AgentStatusOverview';
 import { AgentsTable } from './components/AgentsTable';
 import { AgentStatusCards } from './components/AgentStatusCards';
+import { QueueMonitor } from './components/QueueMonitor';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -100,8 +101,8 @@ export default function AgentDashboardPage() {
 
 
       {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Agent Status Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* Agent Status Cards - spans 4 columns */}
         <div className="lg:col-span-4">
           <AgentStatusCards 
             agents={agents}
@@ -112,30 +113,10 @@ export default function AgentDashboardPage() {
           />
         </div>
         
-        {/* Customer Queue Card - matching the agent status card design */}
-        <Card className="relative overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Waiting
-            </CardTitle>
-            <div className="p-2 rounded-full text-orange-600 bg-orange-50 dark:bg-orange-950 dark:text-orange-400">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold">{queueData.waiting}</div>
-              <Badge variant="default" className="text-xs">
-                +0
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              In queue
-            </p>
-          </CardContent>
-        </Card>
+        {/* Queue Monitor - spans 1 column */}
+        <div className="lg:col-span-1">
+          <QueueMonitor queueData={queueData} />
+        </div>
       </div>
 
       {/* Main Content */}
