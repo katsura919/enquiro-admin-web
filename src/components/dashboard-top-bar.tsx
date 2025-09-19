@@ -102,7 +102,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
             className="h-8 w-8 p-0 cursor-pointer"
             onClick={onMenuToggle}
           >
-            <Menu className="h-5 w-5 text-muted-foreground" />
+            <Menu className="h-5 w-5 text-foreground" />
           </Button>
         )}
 
@@ -112,7 +112,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
             {/* Home/dashboard always first */}
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <NextLink href="/dashboard">
+                <NextLink href="/dashboard" className="text-foreground">
                   Overview
                 </NextLink>
               </BreadcrumbLink>
@@ -154,7 +154,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
           size="sm"
           className="hidden md:flex h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent"
         >
-          <Search className="h-4 w-4 text-muted-foreground" />
+          <Search className="h-4 w-4 text-foreground" />
         </Button>
 
         {/* Notifications */}
@@ -163,7 +163,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
           size="sm"
           className="h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent relative"
         >
-          <Bell className="h-4 w-4 text-muted-foreground" />
+          <Bell className="h-4 w-4 text-foreground" />
           {/* Notification dot */}
           <div className="absolute -top-1 -right-1 h-2 w-2 bg-destructive rounded-full"></div>
         </Button>
@@ -181,7 +181,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
               size="sm"
               className="hidden sm:flex h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent"
             >
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-foreground" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">

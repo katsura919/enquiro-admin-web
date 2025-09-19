@@ -26,7 +26,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import ProtectedRoute from '@/components/ProtectedRoute'
-import Topbar from '@/components/Topbar'
+import Topbar from '@/components/dashboard-top-bar'
 import { useAuth } from '@/lib/auth'
 import LoadingScreen from "@/components/ui/loading-screen"
 

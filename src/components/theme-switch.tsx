@@ -54,7 +54,7 @@ export function ThemeSwitch() {
       {/* Light mode icon */}
       <Sun 
         className={cn(
-          "h-4 w-4 text-muted-foreground transition-all duration-500 ease-out transform-gpu",
+          "h-4 w-4 text-foreground transition-all duration-500 ease-out transform-gpu",
           isDark 
             ? "scale-0 rotate-180 opacity-0 translate-y-1" 
             : "scale-100 rotate-0 opacity-100 translate-y-0 animate-in spin-in-180 zoom-in-75 duration-500"
@@ -64,7 +64,7 @@ export function ThemeSwitch() {
       {/* Dark mode icon */}
       <Moon 
         className={cn(
-          "absolute h-4 w-4 text-muted-foreground transition-all duration-500 ease-out transform-gpu",
+          "absolute h-4 w-4 text-foreground transition-all duration-500 ease-out transform-gpu",
           isDark 
             ? "scale-100 rotate-0 opacity-100 translate-y-0 animate-in spin-in-180 zoom-in-75 duration-500" 
             : "scale-0 -rotate-180 opacity-0 -translate-y-1"
