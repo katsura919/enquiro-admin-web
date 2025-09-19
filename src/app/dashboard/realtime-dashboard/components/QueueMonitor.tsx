@@ -38,26 +38,15 @@ export function QueueMonitor({ queueData: propQueueData }: QueueMonitorProps) {
   }, [propQueueData]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center">
-          <Users className="h-5 w-5 mr-2" />
-          Customer Queue
+    <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
+      <CardHeader className="pb-3 px-6 pt-6">
+        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <Clock className="h-4 w-4" />
+          Waiting in Queue
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-full">
-              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Waiting</p>
-              <p className="text-xs text-muted-foreground">In queue</p>
-            </div>
-          </div>
-          <div className="text-2xl font-bold">{queueData.waiting}</div>
-        </div>
+      <CardContent className="px-6 pb-6">
+        <div className="text-2xl font-bold text-foreground">{queueData.waiting}</div>
       </CardContent>
     </Card>
   );
