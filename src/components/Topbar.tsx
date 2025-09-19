@@ -51,6 +51,8 @@ const getPageInfo = (pathname: string) => {
       return { title: 'Settings', icon: Settings }
     case 'business':
       return { title: 'Business Settings', icon: Settings }
+    case 'realtime-dashboard':
+      return { title: 'Real-time Dashboard', icon: Settings }
     default:
       return { title: 'Dashboard', icon: LayoutDashboard }
   }
@@ -70,6 +72,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     policy: { label: 'Policy Management'},
     sessions: { label: 'Chat Sessions'},
     escalations: { label: 'Escalations'},
+    realtimedashboard: { label: 'Real-time Dashboard' },
     settings: { label: 'General'},
     business: { label: 'Business '},
     account: { label: 'Account '},
