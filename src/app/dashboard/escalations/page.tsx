@@ -66,7 +66,7 @@ export default function EscalationsPage() {
     const queryParams = new URLSearchParams({
       status: status,
       page: page.toString(),
-      limit: '10'
+      limit: '13'
     })
     
     // Add search parameter if it exists
@@ -113,11 +113,6 @@ export default function EscalationsPage() {
   console.log("Rendering with escalations:", escalations)
   return (
     <div className="p-6 w-full">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Escalation Management</h1>
-        <p className="text-muted-foreground">Monitor and manage customer escalations</p>
-      </div>
 
       {/* Count Cards */}
       {businessId && (
