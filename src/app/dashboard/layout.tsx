@@ -21,7 +21,11 @@ import {
   Users,
   Monitor,
   Inbox,
-  Building
+  Building,
+  Building2,
+  Bot,
+  Shield,
+  CreditCard
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -49,6 +53,7 @@ const navigation = [
         ]
       },
       { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
+      { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
     ]
   },
   {
@@ -59,10 +64,13 @@ const navigation = [
     ]
   },
   {
-    category: "Account Management",
+    category: "Settings",
     items: [
-      { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
-      { name: "Settings ", href: "/dashboard/settings", icon: Settings },
+      { name: "Account & Security", href: "/dashboard/settings", icon: Settings },
+      { name: "Business", href: "/dashboard/settings/business", icon: Building2 },
+      { name: "Team Management", href: "/dashboard/settings/team", icon: Users },
+      { name: "Chatbot", href: "/dashboard/settings/chatbot", icon: Bot },
+      { name: "Billing", href: "/dashboard/settings/billing", icon: CreditCard },
     ]
   }
 ]

@@ -42,7 +42,7 @@ export default function ProductFilters({
   outOfStockCount
 }: ProductFiltersProps) {
   return (
-    <Card className="bg-card border-none mb-4">
+    <Card className="bg-none border-none mb-4">
       <CardContent className="p-4">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
