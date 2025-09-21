@@ -17,7 +17,7 @@ interface ChatAreaProps {
   newMessage: string
   onMessageChange: (value: string) => void
   onSubmit: (e: React.FormEvent) => void
-  onEscalationClick: (escalationData?: { type: 'new' | 'continue', caseId?: string, sessionId?: string }) => void
+  onEscalationClick: (escalationData?: { type: 'new' | 'continue' | 'form', caseId?: string, sessionId?: string }) => void
   disabled: boolean
   placeholder?: string
   isLiveChatMode?: boolean
@@ -33,6 +33,8 @@ interface ChatAreaProps {
   onFileSelect?: (file: File) => void
   onFileClear?: () => void
   uploadLoading?: boolean
+  chatbotName?: string
+  chatbotIcon?: string
 }
 
 const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
@@ -53,7 +55,9 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
     filePreview,
     onFileSelect,
     onFileClear,
-    uploadLoading = false
+    uploadLoading = false,
+    chatbotName = "AI Assistant",
+    chatbotIcon
   }, chatEndRef) => {
     const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
@@ -161,10 +165,18 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
                   <div className="flex flex-col items-center justify-center min-h-[400px] py-12">
                     <div className="flex flex-col items-center text-center">
                       <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-6">
-                        <Bot className="h-8 w-8 text-slate-600 dark:text-slate-300" />
+                        {chatbotIcon ? (
+                          <img 
+                            src={chatbotIcon} 
+                            alt={chatbotName}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <Bot className="h-8 w-8 text-slate-600 dark:text-slate-300" />
+                        )}
                       </div>
                       <span className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-3">
-                        How can I help?
+                        Hi! I'm {chatbotName}
                       </span>
                       <span className="text-slate-600 dark:text-slate-400 text-center max-w-md leading-relaxed">
                         I'm here to assist you with any questions or concerns you may have. Feel free to ask me anything!

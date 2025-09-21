@@ -9,6 +9,7 @@ import type { ChatMessage } from "@/types/ChatMessage"
 import BusinessInfo from "./components/BusinessInfo"
 import ChatArea from "./components/ChatArea"
 import EscalationDialog from "./components/EscalationDialog"
+import SupportRequestDialog from "./components/SupportRequestDialog"
 import { useLiveChat } from "./components/useLiveChat"
 import { ToastContainer } from "@/components/ui/toast"
 import { toast } from "@/hooks/useToast"
@@ -32,6 +33,16 @@ interface BusinessData {
   name: string
   description: string
   logo: string
+}
+
+interface ChatbotSettings {
+  _id: string
+  businessId: string
+  chatbotName: string
+  chatbotIcon: string
+  enableLiveChat: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 interface EscalationFormData {
@@ -68,7 +79,11 @@ export default function ChatPage() {
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
   const [businessLoading, setBusinessLoading] = useState(true)
   
-  // Escalation state
+  // Chatbot settings
+  const [chatbotSettings, setChatbotSettings] = useState<ChatbotSettings | null>(null)
+  const [chatbotSettingsLoading, setChatbotSettingsLoading] = useState(false)
+  
+  // Escalation state (for live chat)
   const [escalationVisible, setEscalationVisible] = useState(false)
   const [escalationSuccess, setEscalationSuccess] = useState(false)
   const [escalationResponse, setEscalationResponse] = useState<EscalationResponse | null>(null)
@@ -80,6 +95,19 @@ export default function ChatPage() {
     description: "",
   })
   const [formError, setFormError] = useState<string | null>(null)
+  
+  // Support request state (for form-only when live chat disabled)
+  const [supportRequestVisible, setSupportRequestVisible] = useState(false)
+  const [supportRequestSuccess, setSupportRequestSuccess] = useState(false)
+  const [supportRequestResponse, setSupportRequestResponse] = useState<EscalationResponse | null>(null)
+  const [supportRequestFormData, setSupportRequestFormData] = useState<EscalationFormData>({
+    customerName: "",
+    customerEmail: "",
+    customerPhone: "",
+    concern: "",
+    description: "",
+  })
+  const [supportRequestFormError, setSupportRequestFormError] = useState<string | null>(null)
   
   // Case continuation state
   const [continuationData, setContinuationData] = useState<ContinuationData | null>(null)
@@ -185,6 +213,40 @@ export default function ChatPage() {
       setChatRoom(null)
       setWaitingForAgent(false)
       console.log('[CHAT] Agent disconnected, switched back to AI mode')
+    },
+    onChatError: (data) => {
+      console.log('[CHAT] Chat error received:', data);
+      
+      if (data.type === 'live_chat_disabled') {
+        // Live chat is disabled for this business
+        setWaitingForAgent(false)
+        setIsConnectedToAgent(false)
+        setChatRoom(null)
+        
+        // Add system message explaining live chat is not available
+        const errorMessage: ChatMessage = {
+          _id: `chat-error-${Date.now()}`,
+          businessId: businessData?._id || '',
+          sessionId: sessionId || '',
+          message: data.message || 'Live chat is not available. Please fill out the form to submit your request.',
+          senderType: 'system',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+      } else {
+        // Other chat errors
+        const errorMessage: ChatMessage = {
+          _id: `chat-error-${Date.now()}`,
+          businessId: businessData?._id || '',
+          sessionId: sessionId || '',
+          message: data.message || 'An error occurred with the chat connection.',
+          senderType: 'system',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+      }
     }
   })
 
@@ -193,9 +255,27 @@ export default function ChatPage() {
     setBusinessLoading(true)
     api
       .get(`/business/slug/${slug}`)
-      .then((res) => setBusinessData(res.data))
-      .catch(() => setBusinessData(null))
-      .finally(() => setBusinessLoading(false))
+      .then((res) => {
+        setBusinessData(res.data)
+        // Fetch chatbot settings after getting business data
+        if (res.data?._id) {
+          setChatbotSettingsLoading(true)
+          return api.get(`/chatbot-settings/${res.data._id}`)
+        }
+      })
+      .then((chatbotRes) => {
+        if (chatbotRes?.data?.success) {
+          setChatbotSettings(chatbotRes.data.data)
+        }
+      })
+      .catch((error) => {
+        console.error('Error loading business or chatbot settings:', error)
+        setBusinessData(null)
+      })
+      .finally(() => {
+        setBusinessLoading(false)
+        setChatbotSettingsLoading(false)
+      })
   }, [slug])
 
   // Auto scroll to bottom
@@ -395,8 +475,8 @@ export default function ChatPage() {
     }
   }
 
-  // Handle escalation click - now supports both new and continuing cases
-  const handleEscalationClick = (escalationData?: { type: 'new' | 'continue', caseId?: string, sessionId?: string }) => {
+  // Handle escalation click - now supports new, continue, and form escalations
+  const handleEscalationClick = (escalationData?: { type: 'new' | 'continue' | 'form', caseId?: string, sessionId?: string }) => {
     if (escalationData?.type === 'continue' && escalationData.caseId && escalationData.sessionId) {
       // Handle case continuation
       setContinuationData({
@@ -440,12 +520,101 @@ export default function ChatPage() {
       requestChat(escalationData.caseId, businessData?._id || '')
       
     } else {
-      // Handle new escalation - show the dialog
-      setEscalationVisible(true)
+      // Check if live chat is enabled to determine which dialog to show
+      const liveChatEnabled = chatbotSettings?.enableLiveChat !== false
+      
+      if (liveChatEnabled) {
+        // Show live chat escalation dialog
+        setEscalationVisible(true)
+      } else {
+        // Show support request form (form-only mode)
+        setSupportRequestVisible(true)
+      }
     }
   }
 
-  // Handle escalation form submission
+  // Handle support request form submission (when live chat is disabled)
+  const handleSupportRequestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSupportRequestFormError(null)
+
+    if (!sessionId) {
+      setSupportRequestFormError("No active session. Please start a conversation first.")
+      return
+    }
+
+    if (!businessData?._id) {
+      setSupportRequestFormError("Business information not available.")
+      return
+    }
+
+    if (!supportRequestFormData.customerName || !supportRequestFormData.customerEmail) {
+      setSupportRequestFormError("Name and Email are required.")
+      return
+    }
+
+    if (!supportRequestFormData.concern || !supportRequestFormData.description) {
+      setSupportRequestFormError("Concern and Description are required.")
+      return
+    }
+
+    if (supportRequestFormData.concern.trim().length < 5) {
+      setSupportRequestFormError("Please provide a more detailed concern (at least 5 characters).")
+      return
+    }
+
+    if (supportRequestFormData.description.trim().length < 10) {
+      setSupportRequestFormError("Please provide a more detailed description (at least 10 characters).")
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(supportRequestFormData.customerEmail)) {
+      setSupportRequestFormError("Please enter a valid email address.")
+      return
+    }
+
+    const phoneRegex = /^\+?[\d\s-]{10,}$/
+    if (supportRequestFormData.customerPhone && !phoneRegex.test(supportRequestFormData.customerPhone)) {
+      setSupportRequestFormError("Please enter a valid phone number.")
+      return
+    }
+
+    try {
+      const response = await api.post('/escalation', {
+        businessId: businessData._id,
+        sessionId,
+        customerName: supportRequestFormData.customerName,
+        customerEmail: supportRequestFormData.customerEmail,
+        customerPhone: supportRequestFormData.customerPhone,
+        concern: supportRequestFormData.concern,
+        description: supportRequestFormData.description
+      })
+
+      setSupportRequestResponse(response.data)
+      setSupportRequestSuccess(true)
+      
+      // Add system message about successful form submission
+      const formSubmissionMessage: ChatMessage = {
+        _id: `support-request-${Date.now()}`,
+        businessId: businessData._id,
+        sessionId: sessionId || '',
+        message: response.data.message || `Your support request has been submitted successfully. Case Number: ${response.data.caseNumber}. Our team will review your request and get back to you.`,
+        senderType: 'system',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, formSubmissionMessage])
+
+      // Close the dialog immediately after successful submission
+      setSupportRequestVisible(false)
+      
+    } catch (error: any) {
+      setSupportRequestFormError(error.response?.data?.error || "Failed to submit support request. Please try again.")
+    }
+  }
+
+  // Handle escalation form submission (for live chat)
   const handleEscalationSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormError(null)
@@ -490,9 +659,11 @@ export default function ChatPage() {
 
       setEscalationResponse(response.data)
       setEscalationSuccess(true)
+      
+      // Live chat enabled - proceed with normal flow
       setWaitingForAgent(true)
       
-      // Add system message about escalation
+      // Add system message about escalation with live chat
       const escalationMessage: ChatMessage = {
         _id: `escalation-${Date.now()}`,
         businessId: businessData._id,
@@ -532,12 +703,36 @@ export default function ChatPage() {
     })
   }
 
+  // Handle support request dialog close
+  const handleSupportRequestClose = () => {
+    setSupportRequestVisible(false)
+    setSupportRequestFormError(null) // Clear any form errors
+    
+    // Always reset form data and success state when dialog is closed
+    setSupportRequestSuccess(false)
+    setSupportRequestResponse(null)
+    setSupportRequestFormData({
+      customerName: "",
+      customerEmail: "",
+      customerPhone: "",
+      concern: "",
+      description: "",
+    })
+  }
+
   return (
     <div className={`h-screen bg-background overflow-hidden ${isEmbed ? 'embed-mode' : ''}`}>
       {/* Main container */}
       <div className={`${isEmbed ? 'h-full flex flex-col' : 'container mx-auto max-w-4xl p-4 h-full flex flex-col'}`}>
         {/* Business Info - Hide in embed mode */}
-        {!isEmbed && <BusinessInfo businessData={businessData} businessLoading={businessLoading} />}
+        {!isEmbed && (
+          <BusinessInfo 
+            businessData={businessData} 
+            businessLoading={businessLoading}
+            chatbotSettings={chatbotSettings}
+            chatbotSettingsLoading={chatbotSettingsLoading}
+          />
+        )}
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col min-h-0">
@@ -560,10 +755,12 @@ export default function ChatPage() {
             onFileSelect={handleFileSelect}
             onFileClear={clearFile}
             uploadLoading={uploadLoading}
+            chatbotName={chatbotSettings?.chatbotName}
+            chatbotIcon={chatbotSettings?.chatbotIcon}
           />
         </div>
 
-        {/* Escalation Dialog */}
+        {/* Escalation Dialog (for live chat) */}
         <EscalationDialog
           open={escalationVisible}
           onOpenChange={(open) => {
@@ -578,6 +775,23 @@ export default function ChatPage() {
           formError={formError}
           onSubmit={handleEscalationSubmit}
           onClose={handleEscalationClose}
+        />
+
+        {/* Support Request Dialog (for form-only when live chat disabled) */}
+        <SupportRequestDialog
+          open={supportRequestVisible}
+          onOpenChange={(open) => {
+            if (!open) {
+              handleSupportRequestClose()
+            }
+          }}
+          requestSuccess={supportRequestSuccess}
+          requestResponse={supportRequestResponse}
+          formData={supportRequestFormData}
+          setFormData={setSupportRequestFormData}
+          formError={supportRequestFormError}
+          onSubmit={handleSupportRequestSubmit}
+          onClose={handleSupportRequestClose}
         />
 
         {/* Toast Container */}

@@ -27,6 +27,8 @@ interface EscalationResponse {
   _id: string
   createdAt: string
   updatedAt: string
+  enableLiveChat?: boolean
+  message?: string
 }
 
 interface EscalationFormData {
@@ -113,10 +115,13 @@ export default function EscalationDialog({
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-green-900 dark:text-green-100 mb-2">
-                    Ticket Created Successfully!
+                    {escalationResponse.enableLiveChat !== false ? "Ticket Created Successfully!" : "Request Submitted Successfully!"}
                   </h3>
                   <p className="text-green-800 dark:text-green-200 text-sm">
-                    Thank you for submitting your ticket. Our support team will contact you shortly via your provided contact information.
+                    {escalationResponse.enableLiveChat !== false 
+                      ? "Thank you for submitting your ticket. Our support team will contact you shortly via your provided contact information."
+                      : escalationResponse.message || "Thank you for your submission. We'll review your request and respond via email within 24 hours."
+                    }
                   </p>
                 </div>
               </div>
@@ -157,7 +162,7 @@ export default function EscalationDialog({
 
             <DialogFooter>
               <Button onClick={() => onOpenChange(false)}>
-                Continue Waiting
+                {escalationResponse.enableLiveChat !== false ? "Continue Waiting" : "Continue Chatting"}
               </Button>
             </DialogFooter>
           </div>
