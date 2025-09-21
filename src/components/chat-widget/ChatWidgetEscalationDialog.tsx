@@ -26,6 +26,8 @@ interface EscalationResponse {
   _id: string
   createdAt: string
   updatedAt: string
+  enableLiveChat?: boolean
+  message?: string
 }
 
 interface EscalationFormData {
@@ -99,10 +101,13 @@ export default function ChatWidgetEscalationDialog({
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-green-900 dark:text-green-100 mb-1">
-                    Request Submitted!
+                    {escalationResponse.enableLiveChat !== false ? "Request Submitted!" : "Request Submitted!"}
                   </h3>
                   <p className="text-green-800 dark:text-green-200 text-xs">
-                    You'll be connected to an agent shortly.
+                    {escalationResponse.enableLiveChat !== false 
+                      ? "You'll be connected to an agent shortly."
+                      : escalationResponse.message || "We'll review your request and respond via email within 24 hours."
+                    }
                   </p>
                 </div>
               </div>
@@ -144,7 +149,7 @@ export default function ChatWidgetEscalationDialog({
 
             <DialogFooter>
               <Button onClick={() => onOpenChange(false)} className="w-full">
-                Continue Waiting
+                {escalationResponse.enableLiveChat !== false ? "Continue Waiting" : "Continue Chatting"}
               </Button>
             </DialogFooter>
           </div>

@@ -13,7 +13,7 @@ import type { ChatMessage } from "@/types/ChatMessage"
 interface MessageProps {
   message: ChatMessage
   index: number
-  onEscalationClick: (escalationData?: { type: 'new' | 'continue', caseId?: string, sessionId?: string }) => void
+  onEscalationClick: (escalationData?: { type: 'new' | 'continue' | 'form', caseId?: string, sessionId?: string }) => void
   escalationInProgress?: boolean // Add this to prevent auto-trigger when escalation is already submitted
 }
 
@@ -118,10 +118,11 @@ export default function Message({ message, index, onEscalationClick, escalationI
   }
 
   const renderContentWithEscalationLink = (content: string) => {
-    // Remove the escalation links from the content and just return clean markdown
+    // Remove all escalation links from the content and just return clean markdown
     const cleanContent = content
       .replace(/\[([^\]]+)\]\(escalate:\/\/new\)/g, "")
       .replace(/\[([^\]]+)\]\(escalate:\/\/continue\?[^)]+\)/g, "")
+      .replace(/\[([^\]]+)\]\(escalate:\/\/form(\?[^)]*)?\)/g, "")
     return (
       <Markdown
         options={{
@@ -149,7 +150,7 @@ export default function Message({ message, index, onEscalationClick, escalationI
 
   // Check if message contains escalation links
   const hasEscalationLink = (content: string) => {
-    return /\[([^\]]+)\]\(escalate:\/\/(new|continue(\?[^)]+)?)\)/g.test(content)
+    return /\[([^\]]+)\]\(escalate:\/\/(new|continue(\?[^)]+)?|form(\?[^)]+)?)\)/g.test(content)
   }
 
   // Extract escalation type and data from content
@@ -165,7 +166,17 @@ export default function Message({ message, index, onEscalationClick, escalationI
       }
     }
 
-    // Check for new escalation
+    // Check for form-only escalation
+    const formMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/form(\?caseId=([^)]+))?\)/)
+    if (formMatch) {
+      return {
+        type: 'form',
+        text: formMatch[1],
+        caseId: formMatch[3] || undefined
+      }
+    }
+
+    // Check for new escalation (live chat)
     const newMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/new\)/)
     if (newMatch) {
       return {
@@ -191,7 +202,7 @@ export default function Message({ message, index, onEscalationClick, escalationI
         const escalationData = message.message ? getEscalationData(message.message) : null
         if (escalationData) {
           onEscalationClick({
-            type: escalationData.type as 'new' | 'continue',
+            type: escalationData.type as 'new' | 'continue' | 'form',
             caseId: escalationData.caseId,
             sessionId: escalationData.sessionId
           })
