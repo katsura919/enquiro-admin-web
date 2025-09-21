@@ -30,6 +30,8 @@ interface EscalationResponse {
   _id: string
   createdAt: string
   updatedAt: string
+  enableLiveChat?: boolean
+  message?: string
 }
 
 interface EscalationFormData {
@@ -162,6 +164,40 @@ export default function ChatWidget({
       setIsConnectedToAgent(false)
       setChatRoom(null)
       setWaitingForAgent(false)
+    },
+    onChatError: (data) => {
+      console.log('[CHAT_WIDGET] Chat error received:', data);
+      
+      if (data.type === 'live_chat_disabled') {
+        // Live chat is disabled for this business
+        setWaitingForAgent(false)
+        setIsConnectedToAgent(false)
+        setChatRoom(null)
+        
+        // Add system message explaining live chat is not available
+        const errorMessage: ChatMessage = {
+          _id: `chat-error-${Date.now()}`,
+          businessId: businessData?._id || '',
+          sessionId: sessionId || '',
+          message: data.message || 'Live chat is not available. Your concern has been submitted and will be handled via email.',
+          senderType: 'system',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+      } else {
+        // Other chat errors
+        const errorMessage: ChatMessage = {
+          _id: `chat-error-${Date.now()}`,
+          businessId: businessData?._id || '',
+          sessionId: sessionId || '',
+          message: data.message || 'An error occurred with the chat connection.',
+          senderType: 'system',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setMessages(prev => [...prev, errorMessage])
+      }
     }
   })
 
@@ -301,20 +337,41 @@ export default function ChatWidget({
 
       setEscalationResponse(response.data)
       setEscalationSuccess(true)
-      setWaitingForAgent(true)
       
-      const escalationMessage: ChatMessage = {
-        _id: `escalation-${Date.now()}`,
-        businessId: businessData._id,
-        sessionId: sessionId || '',
-        message: `Your support request has been submitted. Case Number: ${response.data.caseNumber}. You will be connected to an available agent shortly.`,
-        senderType: 'system',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      // Check if live chat is enabled for this business
+      const liveChatEnabled = response.data.enableLiveChat !== false
+      
+      if (liveChatEnabled) {
+        // Live chat enabled - proceed with normal flow
+        setWaitingForAgent(true)
+        
+        const escalationMessage: ChatMessage = {
+          _id: `escalation-${Date.now()}`,
+          businessId: businessData._id,
+          sessionId: sessionId || '',
+          message: `Your support request has been submitted. Case Number: ${response.data.caseNumber}. You will be connected to an available agent shortly.`,
+          senderType: 'system',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setMessages(prev => [...prev, escalationMessage])
+        
+        requestChat(response.data._id, businessData._id)
+      } else {
+        // Live chat disabled - form-only mode
+        const formSubmissionMessage: ChatMessage = {
+          _id: `form-submission-${Date.now()}`,
+          businessId: businessData._id,
+          sessionId: sessionId || '',
+          message: response.data.message || `Your support request has been submitted. Case Number: ${response.data.caseNumber}. We'll respond via email within 24 hours.`,
+          senderType: 'system',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setMessages(prev => [...prev, formSubmissionMessage])
+        
+        // Don't set waitingForAgent or request chat in form-only mode
       }
-      setMessages(prev => [...prev, escalationMessage])
-      
-      requestChat(response.data._id, businessData._id)
       setEscalationVisible(false)
       
     } catch (error: any) {
