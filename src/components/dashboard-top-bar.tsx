@@ -73,7 +73,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     sessions: { label: 'Chat Sessions'},
     escalations: { label: 'Escalations'},
     realtimedashboard: { label: 'Real-time Dashboard' },
-    settings: { label: 'General'},
+    settings: { label: 'Settings'},
     business: { label: 'Business '},
     account: { label: 'Account '},
     register: { label: 'Register'},
@@ -82,6 +82,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     auth: { label: 'Auth' },
     agents: { label: 'Agents' },
     security: { label: 'Security' },
+    chatbot: { label: 'Chatbot' },
   };
   // Breadcrumb import
   // prettier-ignore

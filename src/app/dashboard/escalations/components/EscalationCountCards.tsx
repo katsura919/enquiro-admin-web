@@ -106,10 +106,16 @@ export function EscalationCountCards({
         {Array.from({ length: 4 }).map((_, index) => (
           <Card key={index} className="border-0 shadow-sm">
             <CardHeader className="pb-3 px-6 pt-6">
-              <Skeleton className="h-5 w-32" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-24" />
+              </div>
             </CardHeader>
             <CardContent className="px-6 pb-6">
-              <Skeleton className="h-8 w-20" />
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-5 w-20" />
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -126,18 +132,23 @@ export function EscalationCountCards({
           onClick={() => onCountClick?.(card.status)}
         >
           <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
               <card.icon className="h-4 w-4" />
               {card.title}
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground mb-2">{card.count.toLocaleString()}</div>
-            {card.status !== "all" && counts.total > 0 && (
-              <Badge variant="secondary" className={`text-xs ${card.badgeColor}`}>
-                {((card.count / counts.total) * 100).toFixed(1)}% of total
-              </Badge>
-            )}
+            <div className="flex items-center justify-between">
+              <div className="text-2xl font-bold text-foreground">{card.count.toLocaleString()}</div>
+              {card.status !== "all" && counts.total > 0 && (
+                <div className="flex items-center gap-1 text-foreground">
+                  <span className="text-xs">↗</span>
+                  <span className="text-sm font-medium">
+                    {((card.count / counts.total) * 100).toFixed(1)}%
+                  </span>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       ))}
