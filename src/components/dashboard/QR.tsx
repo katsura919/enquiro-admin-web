@@ -30,19 +30,9 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
   
   const chatUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/chat/${businessSlug}`
 
-  // Create default logo using Lucide icon as data URL
+  // Create default logo using Cloudinary image
   const createDefaultLogo = () => {
-    const svg = `
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="24" height="24" rx="4" fill="#3B82F6"/>
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" 
-              fill="white" stroke="none"/>
-        <circle cx="9" cy="12" r="1" fill="#3B82F6"/>
-        <circle cx="12" cy="12" r="1" fill="#3B82F6"/>
-        <circle cx="15" cy="12" r="1" fill="#3B82F6"/>
-      </svg>
-    `
-    return "data:image/svg+xml;base64," + btoa(svg)
+    return "https://res.cloudinary.com/drpxke63n/image/upload/v1743856498/profile_pics/mmqglrsd1ndyqnllpxsp.png"
   }
 
   const handleCopy = () => {
@@ -75,6 +65,7 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
   }
 
   const logoToUse = businessLogo || createDefaultLogo()
+
 
   return (
     <Card className="lg:col-span-2 border-0 shadow-sm bg-card/50 backdrop-blur">
