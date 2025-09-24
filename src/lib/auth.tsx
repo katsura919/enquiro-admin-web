@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  console.log(user)
 
   useEffect(() => {
     // Check for stored token and fetch user info
@@ -54,6 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const response = await api.get('/user/info');
       setUser(response.data);
       localStorage.setItem('user', JSON.stringify(response.data));
+
+
     } catch (error) {
       console.log('Failed to fetch user info, clearing authentication data');
       setUser(null);

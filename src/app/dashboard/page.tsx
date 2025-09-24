@@ -21,15 +21,22 @@ import {
 import { useAuth } from "@/lib/auth"
 import Link from "next/link"
 import QR from "@/components/dashboard/QR"
+import api from "@/utils/api"
+
+interface BusinessData {
+  _id: string
+  name: string
+  slug: string
+  description: string
+  category: string
+  address: string
+  logo?: string
+  createdAt: string
+  updatedAt: string
+}
 
 // Mock data - replace with actual data from your backend
 const dashboardData = {
-  business: {
-    name: "My Business",
-    slug: "my-business",
-    logo: "/api/placeholder/100/100", // This would come from your business settings
-  },
-  
   // Chat & Sessions
   sessions: {
     total: 1284,
@@ -85,6 +92,27 @@ const dashboardData = {
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const [businessData, setBusinessData] = useState<BusinessData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Fetch business data
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      if (!user?.businessId) return
+
+      try {
+        setLoading(true)
+        const response = await api.get(`/business/${user.businessId}`)
+        setBusinessData(response.data)
+      } catch (error) {
+        console.error("Error fetching business data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchBusinessData()
+  }, [user?.businessId])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -93,6 +121,27 @@ export default function DashboardPage() {
       case 'offline': return 'bg-gray-500'
       default: return 'bg-blue-500'
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full mx-auto p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!businessData) {
+    return (
+      <div className="w-full mx-auto p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-muted-foreground">Unable to load business data</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -152,9 +201,10 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-3 mb-8">
         {/* Chat Interface */}
         <QR 
-          businessSlug={dashboardData.business.slug} 
-          businessLogo={dashboardData.business.logo}
-          businessName={dashboardData.business.name}
+          key={businessData._id} // Force re-render when business data changes
+          businessSlug={businessData.slug} 
+          businessLogo={businessData.logo}
+          businessName={businessData.name}
         />
 
         {/* Agent Status */}
