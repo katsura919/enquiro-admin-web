@@ -10,6 +10,7 @@ import BusinessInfo from "./components/BusinessInfo"
 import ChatArea from "./components/ChatArea"
 import EscalationDialog from "./components/EscalationDialog"
 import SupportRequestDialog from "./components/SupportRequestDialog"
+import AgentRatingDialog from "./components/AgentRatingDialog"
 import { useLiveChat } from "./components/useLiveChat"
 import { ToastContainer } from "@/components/ui/toast"
 import { toast } from "@/hooks/useToast"
@@ -112,6 +113,13 @@ export default function ChatPage() {
   // Case continuation state
   const [continuationData, setContinuationData] = useState<ContinuationData | null>(null)
   
+  // Agent rating state
+  const [ratingDialogVisible, setRatingDialogVisible] = useState(false)
+  const [ratingSuccess, setRatingSuccess] = useState(false)
+  const [ratingLoading, setRatingLoading] = useState(false)
+  const [currentAgentInfo, setCurrentAgentInfo] = useState<{ id: string, name?: string, email?: string } | null>(null)
+  const [chatEndedNormally, setChatEndedNormally] = useState(false)
+  
   // Live chat state
   const [waitingForAgent, setWaitingForAgent] = useState(false)
   const [chatRoom, setChatRoom] = useState<string | null>(null)
@@ -121,8 +129,46 @@ export default function ChatPage() {
   // Refs
   const chatEndRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const ratingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const apiEndpoint = `/ask/chat/${slug}`
+
+  // Agent rating functions
+  const submitAgentRating = async (rating: number, feedback: string) => {
+    if (!escalationResponse || !currentAgentInfo) {
+      console.error('Missing data for rating submission')
+      return
+    }
+
+    setRatingLoading(true)
+    try {
+      await api.post('/agent-rating', {
+        businessId: businessData?._id,
+        sessionId: sessionId,
+        agentId: currentAgentInfo.id,
+        caseNumber: escalationResponse.caseNumber,
+        rating: rating,
+        feedback: feedback || null
+      })
+      
+      setRatingSuccess(true)
+      // Auto-close the success dialog after 3 seconds
+      setTimeout(() => {
+        setRatingDialogVisible(false)
+        setRatingSuccess(false)
+      }, 3000)
+    } catch (error) {
+      console.error('Failed to submit rating:', error)
+      toast.error('Failed to submit rating. Please try again.')
+    } finally {
+      setRatingLoading(false)
+    }
+  }
+
+  const handleRatingSkip = () => {
+    setRatingDialogVisible(false)
+    setRatingSuccess(false)
+  }
 
   // Live chat hook
   const { requestChat } = useLiveChat({
@@ -134,6 +180,14 @@ export default function ChatPage() {
       setWaitingForAgent(false)
       setChatRoom(data.room)
       setIsConnectedToAgent(true)
+      
+      // Capture agent info for rating
+      setCurrentAgentInfo({
+        id: data.agentId,
+        name: undefined, // Will be populated from agent messages
+        email: undefined
+      })
+      
       console.log('[CHAT] Setting chatRoom to:', data.room);
       console.log('[CHAT] Switched to live chat mode with agent')
     },
@@ -153,6 +207,20 @@ export default function ChatPage() {
           updatedAt: data.createdAt,
         }
         setMessages(prev => [...prev, agentMessage])
+        
+        // Update agent info if available in the message data
+        if (data.agentId && (data.agentName || data.agentEmail)) {
+          setCurrentAgentInfo(prev => prev ? {
+            ...prev,
+            name: data.agentName || prev.name,
+            email: data.agentEmail || prev.email
+          } : {
+            id: data.agentId,
+            name: data.agentName,
+            email: data.agentEmail
+          })
+        }
+        
         console.log('[CHAT] Received message from agent:', data.message)
       }
     },
@@ -206,12 +274,34 @@ export default function ChatPage() {
       setIsConnectedToAgent(false)
       setChatRoom(null)
       setWaitingForAgent(true) // Keep waiting for reassignment
+      
+      // Don't show rating for unexpected disconnections
+      setChatEndedNormally(false)
     },
     onChatEnded: (data) => {
       console.log('[CHAT] onChatEnded received:', data);
       setIsConnectedToAgent(false)
       setChatRoom(null)
       setWaitingForAgent(false)
+      setChatEndedNormally(true)
+      
+      // Show rating dialog after a short delay if conditions are met:
+      // 1. We have agent info
+      // 2. We have escalation response (valid chat session)
+      // 3. Chat ended normally (not due to errors or disconnections)
+      // 4. User was actually connected to an agent
+      if (currentAgentInfo && escalationResponse && chatEndedNormally && !ratingDialogVisible) {
+        // Clear any existing timeout
+        if (ratingTimeoutRef.current) {
+          clearTimeout(ratingTimeoutRef.current)
+        }
+        
+        ratingTimeoutRef.current = setTimeout(() => {
+          setRatingDialogVisible(true)
+          ratingTimeoutRef.current = null
+        }, 2000) // 2 second delay to let users process the chat ending
+      }
+      
       console.log('[CHAT] Agent disconnected, switched back to AI mode')
     },
     onChatError: (data) => {
@@ -287,6 +377,15 @@ export default function ChatPage() {
   useEffect(() => {
     if (!loading) inputRef.current?.focus()
   }, [loading])
+
+  // Cleanup rating timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (ratingTimeoutRef.current) {
+        clearTimeout(ratingTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Handle file selection
   const handleFileSelect = (file: File) => {
@@ -701,6 +800,16 @@ export default function ChatPage() {
       concern: "",
       description: "",
     })
+    
+    // Reset rating state and clear timeout
+    setRatingDialogVisible(false)
+    setRatingSuccess(false)
+    setCurrentAgentInfo(null)
+    setChatEndedNormally(false)
+    if (ratingTimeoutRef.current) {
+      clearTimeout(ratingTimeoutRef.current)
+      ratingTimeoutRef.current = null
+    }
   }
 
   // Handle support request dialog close
@@ -792,6 +901,18 @@ export default function ChatPage() {
           formError={supportRequestFormError}
           onSubmit={handleSupportRequestSubmit}
           onClose={handleSupportRequestClose}
+        />
+
+        {/* Agent Rating Dialog */}
+        <AgentRatingDialog
+          open={ratingDialogVisible}
+          onOpenChange={setRatingDialogVisible}
+          agentInfo={currentAgentInfo}
+          caseNumber={escalationResponse?.caseNumber}
+          onSubmit={submitAgentRating}
+          onSkip={handleRatingSkip}
+          loading={ratingLoading}
+          success={ratingSuccess}
         />
 
         {/* Toast Container */}
