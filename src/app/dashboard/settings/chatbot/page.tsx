@@ -211,9 +211,8 @@ export default function ChatbotSettingsPage() {
   }
 
   return (
-    <ScrollArea className="h-screen">
-      <div className="w-full p-8">
-
+    <ScrollArea className="h-[90vh]">
+ 
         {/* Success Message */}
         {isSuccess && (
           <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
@@ -250,15 +249,9 @@ export default function ChatbotSettingsPage() {
                 </div>
               </div>
 
-              {/* Collapsible Settings Section */}
-              <div 
-                className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                  settingsData.enableLiveChat 
-                    ? 'max-h-[1000px] opacity-100' 
-                    : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="space-y-6 pt-2">
+              {/* Settings Section - Only show when live chat is enabled */}
+              {settingsData.enableLiveChat && (
+                <div className="space-y-6 pt-2 border-t border-border/50 mt-6">
                   {/* Chatbot Name */}
                   <div className="space-y-3">
                     <Label htmlFor="chatbotName" className="text-sm font-medium text-foreground">
@@ -379,31 +372,31 @@ export default function ChatbotSettingsPage() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Save Button - Only show if there are changes */}
-                  {hasChanges() && (
-                    <div className="pt-6 border-t border-border">
-                      <Button 
-                        onClick={handleSave} 
-                        disabled={isSaving}
-                        className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto w-full"
-                      >
-                        {isSaving ? (
-                          <>
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Changes
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
+
+              {/* Save Button outside collapsible section - Always show if there are changes */}
+              {hasChanges() && (
+                <div className="pt-6 border-t border-border">
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isSaving}
+                    className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto w-full"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
 
               {/* Disabled State Preview - Only show when live chat is disabled */}
               {!settingsData.enableLiveChat && (
@@ -520,7 +513,7 @@ export default function ChatbotSettingsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+
     </ScrollArea>
   )
 }
