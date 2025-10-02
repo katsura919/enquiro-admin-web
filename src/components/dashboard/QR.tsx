@@ -19,7 +19,7 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
   const [copied, setCopied] = useState(false)
   const [showCustomization, setShowCustomization] = useState(false)
   const [qrSettings, setQrSettings] = useState({
-    size: 200,
+    size: 300,
     bgColor: "#ffffff",
     fgColor: "#000000",
     level: "M" as "L" | "M" | "Q" | "H",
@@ -30,9 +30,9 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
   
   const chatUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/chat/${businessSlug}`
 
-  // Create default logo using Cloudinary image
+  // Create default logo using local logo file
   const createDefaultLogo = () => {
-    return "https://res.cloudinary.com/drpxke63n/image/upload/v1743856498/profile_pics/mmqglrsd1ndyqnllpxsp.png"
+    return "/logo-blue.png"
   }
 
   const handleCopy = () => {
@@ -41,27 +41,91 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const downloadQR = () => {
+  const downloadQR = async () => {
     const svg = qrRef.current?.querySelector('svg')
     if (!svg) return
 
-    const svgData = new XMLSerializer().serializeToString(svg)
+    // Create a canvas for the QR code
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    const img = new Image()
+    if (!ctx) return
 
-    canvas.width = qrSettings.size
-    canvas.height = qrSettings.size
+    canvas.width = qrSettings.size + (qrSettings.includeMargin ? 40 : 0)
+    canvas.height = qrSettings.size + (qrSettings.includeMargin ? 40 : 0)
 
-    img.onload = () => {
-      ctx?.drawImage(img, 0, 0)
+    // Fill background
+    ctx.fillStyle = qrSettings.bgColor
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    try {
+      // Convert SVG to image
+      const svgData = new XMLSerializer().serializeToString(svg)
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+      const svgUrl = URL.createObjectURL(svgBlob)
+
+      // Load and draw the QR code
+      const qrImg = new Image()
+      await new Promise((resolve, reject) => {
+        qrImg.onload = resolve
+        qrImg.onerror = reject
+        qrImg.src = svgUrl
+      })
+
+      ctx.drawImage(qrImg, 0, 0, canvas.width, canvas.height)
+
+      // If logo is enabled, load and draw the logo
+      if (qrSettings.includeLogo) {
+        const logoImg = new Image()
+        logoImg.crossOrigin = 'anonymous'
+        
+        await new Promise((resolve, reject) => {
+          logoImg.onload = resolve
+          logoImg.onerror = () => {
+            console.warn('Logo failed to load, continuing without logo')
+            resolve(null)
+          }
+          // Use absolute URL for the logo
+          const logoSrc = logoToUse.startsWith('http') ? logoToUse : `${window.location.origin}${logoToUse}`
+          logoImg.src = logoSrc
+        })
+
+        if (logoImg.complete && logoImg.naturalHeight !== 0) {
+          const logoSize = qrSettings.size * 0.2
+          const logoX = (canvas.width - logoSize) / 2
+          const logoY = (canvas.height - logoSize) / 2
+
+          // Draw white background circle for logo
+          ctx.fillStyle = '#ffffff'
+          ctx.beginPath()
+          ctx.arc(canvas.width / 2, canvas.height / 2, logoSize / 2 + 4, 0, 2 * Math.PI)
+          ctx.fill()
+
+          // Draw logo
+          ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize)
+        }
+      }
+
+      // Clean up
+      URL.revokeObjectURL(svgUrl)
+
+      // Download the canvas as image
       const link = document.createElement('a')
       link.download = `qr-code-${businessSlug}.png`
-      link.href = canvas.toDataURL()
+      link.href = canvas.toDataURL('image/png')
       link.click()
-    }
 
-    img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
+    } catch (error) {
+      console.error('Error downloading QR code:', error)
+      // Fallback to simple SVG download
+      const svgData = new XMLSerializer().serializeToString(svg)
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(svgBlob)
+      const link = document.createElement('a')
+      link.download = `qr-code-${businessSlug}.svg`
+      link.href = url
+      link.click()
+      URL.revokeObjectURL(url)
+    }
   }
 
   const logoToUse = businessLogo || createDefaultLogo()
@@ -155,19 +219,6 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
                 <h4 className="font-medium text-foreground">QR Code Settings</h4>
               </div>
               
-              {/* Size Control */}
-              <div className="space-y-2">
-                <Label className="text-sm">Size: {qrSettings.size}px</Label>
-                <input
-                  type="range"
-                  min="120"
-                  max="300"
-                  value={qrSettings.size}
-                  onChange={(e) => setQrSettings(prev => ({ ...prev, size: parseInt(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                />
-              </div>
-
               {/* Colors */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -245,21 +296,6 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-4 border-t border-border/50">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/settings/business">
-              <Building2 className="h-4 w-4 mr-2" />
-              Business Settings
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/settings/business">
-              <Shield className="h-4 w-4 mr-2" />
-              Configure Chat
-            </Link>
-          </Button>
-        </div>
       </CardContent>
     </Card>
   )

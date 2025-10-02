@@ -92,6 +92,7 @@ const dashboardData = {
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  console.log(user)
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
   const [loading, setLoading] = useState(true)
 
