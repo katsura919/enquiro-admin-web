@@ -31,8 +31,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import ProtectedRoute from '@/components/ProtectedRoute'
-import Topbar from '@/components/dashboard-top-bar'
+import ProtectedRoute from '@/components/protected-route'
+import Topbar from '@/components/dashboard/dashboard-top-bar'
 import { useAuth } from '@/lib/auth'
 import LoadingScreen from "@/components/ui/loading-screen"
 

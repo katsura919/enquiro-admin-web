@@ -7,7 +7,7 @@ import { Eye, EyeOff, Bot } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth"
-import AuthRedirect from "@/components/AuthRedirect"
+import AuthRedirect from "@/components/auth-redirect"
 
 export default function LoginPage() {
   const router = useRouter()

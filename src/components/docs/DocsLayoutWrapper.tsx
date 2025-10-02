@@ -1,8 +1,8 @@
 "use client"
 
 import React from 'react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import Navbar from '@/components/hero-page/nav-bar'
+import Footer from '@/components/hero-page/footer'
 import { DocsSidebar } from '@/components/docs/DocsSidebar'
 import { DocsLayout } from '@/components/docs/DocsLayout'
 import { TableOfContents } from '@/components/docs/TableOfContents'
