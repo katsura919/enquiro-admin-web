@@ -48,7 +48,7 @@ export default function Navbar() {
               src="/logo-blue.png"
               alt="Enquiro Logo"
               width={35}
-              height={35}
+              height={30}
               className="mr-2"
             />
             <span className="font-bold text-xl text-white">Enquiro</span>

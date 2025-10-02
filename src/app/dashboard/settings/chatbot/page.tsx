@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { MessageSquare, Save, Upload, Eye, Camera, X, Check, Bot, ZoomIn, ZoomOut, RotateCw, Globe, Settings, Palette, Copy, Download } from "lucide-react"
+import { MessageSquare, Save, Upload, Eye, Camera, X, Check, Bot, ZoomIn, ZoomOut, RotateCw, Globe, Settings, Palette, Copy, Download, AlertTriangle } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import { useAuth } from "@/lib/auth"
 import api from "@/utils/api"
@@ -37,6 +38,7 @@ interface BusinessData {
 
 export default function ChatbotSettingsPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const businessId = user?.businessId
   const fileInputRef = useRef<HTMLInputElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -69,6 +71,15 @@ export default function ChatbotSettingsPage() {
     includeMargin: true,
     includeLogo: true
   })
+  const [initialQrSettings, setInitialQrSettings] = useState({
+    size: 300,
+    bgColor: "#ffffff",
+    fgColor: "#000000",
+    level: "M" as "L" | "M" | "Q" | "H",
+    includeMargin: true,
+    includeLogo: true
+  })
+  const [isSavingQr, setIsSavingQr] = useState(false)
   const [copied, setCopied] = useState(false)
   const qrRef = useRef<HTMLDivElement>(null)
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
@@ -80,6 +91,11 @@ export default function ChatbotSettingsPage() {
   const [imageRotation, setImageRotation] = useState(0)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 })
+
+  // Unsaved changes protection
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null)
+  const [navigationBlocked, setNavigationBlocked] = useState(false)
 
   // Fetch chatbot settings
   useEffect(() => {
@@ -121,14 +137,140 @@ export default function ChatbotSettingsPage() {
     fetchBusinessData()
   }, [user?.businessId])
 
-  // Check if there are changes
+  // Fetch QR settings
+  useEffect(() => {
+    const fetchQRSettings = async () => {
+      if (!businessId) return
+      
+      try {
+        const response = await api.get(`/qr-settings/${businessId}`)
+        if (response.data.success) {
+          const settings = response.data.data
+          const qrData = {
+            size: 300, // Keep size fixed
+            bgColor: settings.bgColor || "#ffffff",
+            fgColor: settings.fgColor || "#000000",
+            level: (settings.errorCorrectionLevel || "M") as "L" | "M" | "Q" | "H",
+            includeMargin: true, // Keep margin fixed
+            includeLogo: settings.includeLogo !== undefined ? settings.includeLogo : true
+          }
+          setQrSettings(qrData)
+          setInitialQrSettings(qrData)
+        }
+      } catch (error) {
+        console.error("Error fetching QR settings:", error)
+      }
+    }
+
+    fetchQRSettings()
+  }, [businessId])
+
+  // Check if there are changes - defined early for use in effects
   const hasChanges = () => {
-    return (
+    const chatbotChanged = (
       settingsData.chatbotName !== initialSettings.chatbotName ||
       settingsData.chatbotIcon !== initialSettings.chatbotIcon ||
       settingsData.enableLiveChat !== initialSettings.enableLiveChat
     )
+    
+    const qrChanged = (
+      qrSettings.bgColor !== initialQrSettings.bgColor ||
+      qrSettings.fgColor !== initialQrSettings.fgColor ||
+      qrSettings.level !== initialQrSettings.level ||
+      qrSettings.includeLogo !== initialQrSettings.includeLogo
+    )
+    
+    return chatbotChanged || qrChanged
   }
+
+  // Protect against closing tab/browser with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChanges()) {
+        e.preventDefault()
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?'
+        return 'You have unsaved changes. Are you sure you want to leave?'
+      }
+    }
+
+    // More comprehensive link interception
+    const handleClick = (e: MouseEvent) => {
+      if (!hasChanges()) return
+
+      console.log('Navigation blocked - unsaved changes detected')
+      const target = e.target as HTMLElement
+      const link = target.closest('a, [role="button"], button')
+      
+      if (link) {
+        // Get the intended destination
+        let destination = ''
+        let shouldBlock = false
+        
+        if (link.tagName === 'A') {
+          const anchor = link as HTMLAnchorElement
+          destination = anchor.href
+          shouldBlock = true
+        } else if (link.getAttribute('data-href')) {
+          destination = link.getAttribute('data-href') || ''
+          shouldBlock = true
+        } else if (link.textContent?.toLowerCase().includes('dashboard') || 
+                   link.className.includes('nav') || 
+                   link.getAttribute('role') === 'button') {
+          // Likely a navigation element even without explicit href
+          shouldBlock = true
+          destination = window.location.origin + '/dashboard'
+        }
+        
+        if (shouldBlock) {
+          // Check if it's a navigation link (not same-page anchor or external with target="_blank")
+          const isExternalBlank = link.getAttribute('target') === '_blank'
+          const isSamePage = destination.includes('#') && destination.split('#')[0] === window.location.href.split('#')[0]
+          
+          if (!isExternalBlank && !isSamePage) {
+            e.preventDefault()
+            e.stopPropagation()
+            setPendingNavigation(destination || '/dashboard')
+            setShowUnsavedDialog(true)
+            return false
+          }
+        }
+      }
+
+      // Additional catch-all for any navigation attempts
+      if (target.closest('[data-radix-collection-item]') || // Radix navigation items
+          target.closest('.sidebar') || // Sidebar navigation
+          target.closest('[role="menuitem"]') || // Menu items
+          target.textContent?.toLowerCase().includes('dashboard')) {
+        e.preventDefault()
+        e.stopPropagation()
+        setPendingNavigation('/dashboard')
+        setShowUnsavedDialog(true)
+        return false
+      }
+    }
+
+    // Intercept browser navigation (back/forward buttons)
+    const handlePopState = (e: PopStateEvent) => {
+      if (hasChanges()) {
+        e.preventDefault()
+        window.history.pushState(null, '', window.location.href)
+        setShowUnsavedDialog(true)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('click', handleClick, true) // Use capture phase
+    window.addEventListener('popstate', handlePopState)
+    
+    // Push current state to enable popstate detection
+    window.history.pushState(null, '', window.location.href)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('click', handleClick, true)
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [settingsData, qrSettings, initialSettings, initialQrSettings])
 
   const handleInputChange = (field: keyof ChatbotSettings, value: string | boolean) => {
     setSettingsData(prev => ({ ...prev, [field]: value }))
@@ -143,24 +285,36 @@ export default function ChatbotSettingsPage() {
     if (!businessId) return
     
     setIsSaving(true)
+    setIsSavingQr(true)
     setIsSuccess(false)
     
     try {
-      const response = await api.put(`/chatbot-settings/${businessId}`, {
+      // Save chatbot settings
+      const chatbotResponse = await api.put(`/chatbot-settings/${businessId}`, {
         chatbotName: settingsData.chatbotName,
         chatbotIcon: settingsData.chatbotIcon,
         enableLiveChat: settingsData.enableLiveChat
       })
       
-      if (response.data.success) {
+      // Save QR settings
+      const qrResponse = await api.put(`/qr-settings/${businessId}`, {
+        bgColor: qrSettings.bgColor,
+        fgColor: qrSettings.fgColor,
+        includeLogo: qrSettings.includeLogo,
+        errorCorrectionLevel: qrSettings.level
+      })
+      
+      if (chatbotResponse.data.success && qrResponse.data.success) {
         setInitialSettings(settingsData) // Update initial settings after successful save
+        setInitialQrSettings(qrSettings) // Update initial QR settings after successful save
         setIsSuccess(true)
         setTimeout(() => setIsSuccess(false), 3000)
       }
     } catch (error) {
-      console.error("Error updating chatbot settings:", error)
+      console.error("Error updating settings:", error)
     } finally {
       setIsSaving(false)
+      setIsSavingQr(false)
     }
   }
 
@@ -239,6 +393,45 @@ export default function ChatbotSettingsPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
+  }
+
+  // Navigation protection functions
+  const handleNavigation = (url: string) => {
+    if (hasChanges()) {
+      setPendingNavigation(url)
+      setShowUnsavedDialog(true)
+    } else {
+      if (url.startsWith('/')) {
+        router.push(url)
+      } else {
+        window.location.href = url
+      }
+    }
+  }
+
+  const confirmNavigation = () => {
+    if (pendingNavigation) {
+      if (pendingNavigation.startsWith('/') || pendingNavigation.includes(window.location.origin)) {
+        // Internal navigation - use Next.js router
+        const path = pendingNavigation.startsWith('/') 
+          ? pendingNavigation 
+          : pendingNavigation.replace(window.location.origin, '')
+        router.push(path)
+      } else {
+        // External navigation - use window.location
+        window.location.href = pendingNavigation
+      }
+    }
+    setShowUnsavedDialog(false)
+    setPendingNavigation(null)
+  }
+
+  const cancelNavigation = () => {
+    console.log('Navigation cancelled by user')
+    setShowUnsavedDialog(false)
+    setPendingNavigation(null)
+    // If this was from browser back/forward, we need to maintain current state
+    window.history.pushState(null, '', window.location.href)
   }
 
   // QR Code functions
@@ -330,7 +523,7 @@ export default function ChatbotSettingsPage() {
   }
 
   return (
-    <ScrollArea className="h-[90vh]">
+    <ScrollArea className="h-[90vh] w-full">
  
         {/* Success Message */}
         {isSuccess && (
@@ -658,7 +851,7 @@ export default function ChatbotSettingsPage() {
                     disabled={isSaving}
                     className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto w-full"
                   >
-                    {isSaving ? (
+                    {(isSaving || isSavingQr) ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Saving...
@@ -698,6 +891,34 @@ export default function ChatbotSettingsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Unsaved Changes Confirmation Dialog */}
+        <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                Unsaved Changes
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <p className="text-muted-foreground">
+                You have unsaved changes to your chatbot and QR code settings. 
+                Are you sure you want to leave without saving?
+              </p>
+            </div>
+
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={cancelNavigation}>
+                Stay on Page
+              </Button>
+              <Button variant="destructive" onClick={confirmNavigation}>
+                Leave Without Saving
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Image Upload Modal */}
         <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
