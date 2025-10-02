@@ -170,7 +170,7 @@ export default function EscalationsPage() {
           >
             Previous
           </Button>
-          <span className="px-3 py-1 text-sm text-muted-foreground bg-muted rounded">
+          <span className="px-3 py-1 text-sm text-muted-foreground rounded">
             Page {page} of {totalPages}
           </span>
           <Button 

@@ -178,7 +178,7 @@ export function EscalationTable({
   
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px] p-12">
+      <div className="flex items-center justify-center min-h-[549px] p-12">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     )
@@ -190,17 +190,6 @@ export function EscalationTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[60px]">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  ref={(el) => {
-                    if (el) el.indeterminate = isIndeterminate
-                  }}
-                  onChange={handleSelectAll}
-                  className="rounded border border-input bg-background"
-                />
-              </TableHead>
               <SortableHeader field="caseNumber">Case #</SortableHeader>
               <SortableHeader field="customerName">Customer</SortableHeader>
               <SortableHeader field="customerEmail">Email</SortableHeader>
@@ -210,7 +199,22 @@ export function EscalationTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedEscalations.map((escalation, index) => {
+            {escalations.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-[500px]">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="rounded-full bg-muted p-6 mb-4">
+                      <Mail className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">No Escalations Found</h3>
+                    <p className="text-muted-foreground max-w-md">
+                      There are currently no escalations to display.
+                    </p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedEscalations.map((escalation, index) => {
               const statusInfo = getStatusInfo(escalation.status)
               return (
                 <ContextMenu key={escalation._id}>
@@ -219,14 +223,6 @@ export function EscalationTable({
                       className="cursor-pointer hover:bg-muted/50"
                       onClick={() => onRowClick(escalation._id)}
                     >
-                      <TableCell onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(escalation._id)}
-                          onChange={() => handleSelectItem(escalation._id)}
-                          className="rounded border border-input bg-background"
-                        />
-                      </TableCell>
                       <TableCell className="font-mono text-sm font-medium">
                         {escalation.caseNumber}
                       </TableCell>
@@ -268,7 +264,7 @@ export function EscalationTable({
                   </ContextMenuContent>
                 </ContextMenu>
               )
-            })}
+            }))}
           </TableBody>
         </Table>
       </div>

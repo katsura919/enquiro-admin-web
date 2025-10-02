@@ -69,9 +69,7 @@ const navigation = [
     items: [
       { name: "Account & Security", href: "/dashboard/settings", icon: Settings },
       { name: "Business", href: "/dashboard/settings/business", icon: Building2 },
-      { name: "Team Management", href: "/dashboard/settings/team", icon: Users },
       { name: "Chatbot", href: "/dashboard/settings/chatbot", icon: Bot },
-      { name: "Billing", href: "/dashboard/settings/billing", icon: CreditCard },
     ]
   }
 ]
