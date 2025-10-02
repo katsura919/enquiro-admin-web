@@ -46,14 +46,14 @@ export default function ChatbotSettingsPage() {
   const [initialSettings, setInitialSettings] = useState<ChatbotSettings>({
     businessId: businessId || "",
     chatbotName: "AI Assistant",
-    chatbotIcon: "/default-chatbot-icon.svg",
+    chatbotIcon: "/logo-blue.png",
     enableLiveChat: true
   })
   
   const [settingsData, setSettingsData] = useState<ChatbotSettings>({
     businessId: businessId || "",
     chatbotName: "AI Assistant",
-    chatbotIcon: "/default-chatbot-icon.svg",
+    chatbotIcon: "/logo-blue.png",
     enableLiveChat: true
   })
   
@@ -388,8 +388,8 @@ export default function ChatbotSettingsPage() {
   }
 
   const handleRemoveIcon = () => {
-    setIconPreview("/default-chatbot-icon.svg")
-    setSettingsData(prev => ({ ...prev, chatbotIcon: "/default-chatbot-icon.svg" }))
+    setIconPreview("/logo-blue.png")
+    setSettingsData(prev => ({ ...prev, chatbotIcon: "/logo-blue.png" }))
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -471,7 +471,7 @@ export default function ChatbotSettingsPage() {
 
       ctx.drawImage(qrImg, 0, 0, canvas.width, canvas.height)
 
-      if (qrSettings.includeLogo && iconPreview) {
+      if (qrSettings.includeLogo && logoToUse) {
         const logoImg = new Image()
         logoImg.crossOrigin = 'anonymous'
         
@@ -481,7 +481,7 @@ export default function ChatbotSettingsPage() {
             console.warn('Logo failed to load, continuing without logo')
             resolve(null)
           }
-          const logoSrc = iconPreview.startsWith('http') ? iconPreview : `${window.location.origin}${iconPreview}`
+          const logoSrc = logoToUse.startsWith('http') ? logoToUse : `${window.location.origin}${logoToUse}`
           logoImg.src = logoSrc
         })
 
@@ -511,6 +511,14 @@ export default function ChatbotSettingsPage() {
     }
   }
 
+  // Create default logo using local logo file (same as QR.tsx)
+  const createDefaultLogo = () => {
+    return "/logo-blue.png"
+  }
+
+  // QR code should use business logo, not chatbot icon
+  const logoToUse = businessData?.logo || createDefaultLogo()
+
   if (isLoading) {
     return (
       <div className="p-8 flex items-center justify-center">
@@ -539,14 +547,14 @@ export default function ChatbotSettingsPage() {
           {/* Chatbot Settings Card */}
           <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-foreground">Chatbot Settings</CardTitle>
+              <CardTitle className="text-xl text-foreground">Chatbot & QR Settings</CardTitle>
               <p className="text-sm text-muted-foreground">Customize your AI assistant's name, appearance, and features</p>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* QR Code Section */}
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium text-foreground">Public Chat QR Code</Label>
+                  <Label className="text-sm font-medium text-foreground">Chat QR Code</Label>
                   <p className="text-xs text-muted-foreground mt-1">
                     Share your chat interface with customers using this QR code
                   </p>
@@ -555,7 +563,7 @@ export default function ChatbotSettingsPage() {
                 {/* URL Section */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-foreground">
-                    Your public chat URL
+                    Chat Page URL
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -590,8 +598,8 @@ export default function ChatbotSettingsPage() {
                         fgColor={qrSettings.fgColor}
                         level={qrSettings.level}
                         includeMargin={qrSettings.includeMargin}
-                        imageSettings={qrSettings.includeLogo && iconPreview ? {
-                          src: iconPreview,
+                        imageSettings={qrSettings.includeLogo ? {
+                          src: logoToUse,
                           height: qrSettings.size * 0.2,
                           width: qrSettings.size * 0.2,
                           excavate: true,
@@ -616,7 +624,7 @@ export default function ChatbotSettingsPage() {
                   <div className="flex-1 space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50">
                     <div className="flex items-center gap-2 mb-4">
                       <Palette className="h-4 w-4" />
-                      <h4 className="font-medium text-foreground">QR Code Settings</h4>
+                      <h4 className="font-medium text-foreground">Customization</h4>
                     </div>
                       
                       {/* Colors */}
@@ -768,7 +776,7 @@ export default function ChatbotSettingsPage() {
                           >
                             <Camera className="h-3 w-3" />
                           </Button>
-                          {iconPreview && iconPreview !== "/default-chatbot-icon.svg" && (
+                          {iconPreview && iconPreview !== "/logo-blue.png" && (
                             <Button
                               variant="ghost"
                               size="sm"
