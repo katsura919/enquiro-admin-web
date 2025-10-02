@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
@@ -169,8 +170,14 @@ export default function DashboardLayout({
               )}
             >
               {/* Logo icon */}
-              <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
-                <span className="text-white font-bold text-sm">E</span>
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
+                <Image
+                  src="/logo-blue.png"
+                  alt="Enquiro Logo"
+                  width={32}
+                  height={32}
+                  className="rounded-lg"
+                />
               </div>
               {/* Brand name */}                
               <span 

@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react"
+import Image from "next/image"
 import { useAuth } from "@/lib/auth"
 import { 
   Navbar as AceternityNavbar,
@@ -43,6 +44,13 @@ export default function Navbar() {
             href="/"
             className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-white"
           >
+            <Image
+              src="/logo-blue.png"
+              alt="Enquiro Logo"
+              width={35}
+              height={35}
+              className="mr-2"
+            />
             <span className="font-bold text-xl text-white">Enquiro</span>
           </a>
         </div>
@@ -106,6 +114,13 @@ export default function Navbar() {
             href="/"
             className="relative z-20 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-white"
           >
+            <Image
+              src="/logo-blue.png"
+              alt="Enquiro Logo"
+              width={32}
+              height={32}
+              className="mr-2"
+            />
             <span className="font-bold text-xl text-white">Enquiro</span>
           </a>
 
