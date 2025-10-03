@@ -3,13 +3,17 @@
 import * as React from "react";
 
 import { useState } from "react"
-import { Dialog } from "@/components/ui/dialog"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import FAQHeader from "./components/FAQHeader"
 import FAQFilters from "./components/FAQFilters"
 import FAQCard from "./components/FAQCard"
 import FAQDialog from "./components/FAQDialog"
 import EmptyState from "./components/EmptyState"
-import { FAQ, FormData, categories } from "./components/types"
+import FAQPagination from "./components/FAQPagination"
+import { FAQ, FormData, FAQResponse } from "./components/types"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import api from "@/utils/api";
 import { useAuth } from "@/lib/auth"
 
@@ -25,6 +29,12 @@ export default function FAQPage() {
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingFAQ, setEditingFAQ] = useState<FAQ | null>(null)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalFAQs, setTotalFAQs] = useState(0)
+  const [itemsPerPage] = useState(10)
 
   // Form state for creating/editing FAQ
   const [formData, setFormData] = useState<FormData>({
@@ -35,45 +45,68 @@ export default function FAQPage() {
     isActive: true
   })
 
-  // Fetch FAQs and categories on mount
-  React.useEffect(() => {
-    const fetchFAQs = async () => {
-      setLoading(true)
-      try {
-        const { data } = await api.get(`/faq/business/${businessId}`)
-        if (data.success) setFaqs(data.faqs)
-      } catch (err) {
-        setFaqs([])
-      }
-    }
-    const fetchCategories = async () => {
-      try {
-        const { data } = await api.get(`/faq/business/${businessId}/categories`)
-        if (data.success) setCategories(data.categories)
-      } catch (err) {
-        setCategories([])
-      } finally {
-        setLoading(false)
-      }
-    }
+  // Fetch FAQs with current filters and pagination
+  const fetchFAQs = React.useCallback(async () => {
+    if (!businessId) return
     
-    if (businessId) {
-      fetchFAQs()
-      fetchCategories()
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString()
+      })
+      
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim())
+      }
+      
+      if (selectedCategory && selectedCategory !== 'All') {
+        params.append('category', selectedCategory)
+      }
+      
+      if (showActiveOnly) {
+        params.append('isActive', 'true')
+      }
+      
+      const { data }: { data: FAQResponse } = await api.get(`/faq/business/${businessId}?${params}`)
+      
+      if (data.success) {
+        setFaqs(data.faqs)
+        setTotalFAQs(data.total)
+        setTotalPages(data.totalPages)
+      }
+    } catch (err) {
+      setFaqs([])
+      setTotalFAQs(0)
+      setTotalPages(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [businessId, currentPage, itemsPerPage, searchTerm, selectedCategory, showActiveOnly])
+
+  // Fetch categories separately (doesn't need pagination)
+  const fetchCategories = React.useCallback(async () => {
+    if (!businessId) return
+    
+    try {
+      const { data } = await api.get(`/faq/business/${businessId}/categories`)
+      if (data.success) setCategories(data.categories)
+    } catch (err) {
+      setCategories([])
     }
   }, [businessId])
 
-  // Filter FAQs based on search and filters
-  const filteredFAQs = faqs.filter(faq => {
-    const matchesSearch = faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         faq.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    const matchesCategory = selectedCategory === "All" || faq.category === selectedCategory
-    const matchesActiveStatus = !showActiveOnly || faq.isActive
-    
-    return matchesSearch && matchesCategory && matchesActiveStatus
-  })
+  // Fetch FAQs when dependencies change
+  React.useEffect(() => {
+    fetchFAQs()
+  }, [fetchFAQs])
+
+  // Fetch categories on mount
+  React.useEffect(() => {
+    fetchCategories()
+  }, [fetchCategories])
+
+
 
   const handleFormChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -90,7 +123,10 @@ export default function FAQPage() {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       })
       if (data.success && data.faq) {
-        setFaqs([data.faq, ...faqs])
+        // Refresh the FAQ list to get updated data with proper pagination
+        fetchFAQs()
+        // Also refresh categories in case a new category was added
+        fetchCategories()
         resetForm()
       }
     } catch (err) {}
@@ -119,7 +155,10 @@ export default function FAQPage() {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       })
       if (data.success && data.faq) {
-        setFaqs(faqs.map(faq => (faq._id || faq.id) === data.faq._id ? data.faq : faq))
+        // Refresh the FAQ list to get updated data
+        fetchFAQs()
+        // Also refresh categories in case the category was changed
+        fetchCategories()
         resetForm()
       }
     } catch (err) {}
@@ -129,7 +168,8 @@ export default function FAQPage() {
     try {
       const { data } = await api.delete(`/faq/${id}`)
       if (data.success) {
-        setFaqs(faqs.filter(faq => (faq._id || faq.id) !== id))
+        // Refresh the FAQ list to get updated data and handle pagination properly
+        fetchFAQs()
       }
     } catch (err) {}
   }
@@ -140,7 +180,8 @@ export default function FAQPage() {
     try {
       const { data } = await api.put(`/faq/${id}`, { ...faq, isActive: !faq.isActive })
       if (data.success && data.faq) {
-        setFaqs(faqs.map(f => (f._id || f.id) === id ? data.faq : f))
+        // Refresh the FAQ list to get updated data
+        fetchFAQs()
       }
     } catch (err) {}
   }
@@ -159,8 +200,11 @@ export default function FAQPage() {
     }
   }
 
-  const activeCount = faqs.filter(f => f.isActive).length
-  const inactiveCount = faqs.filter(f => !f.isActive).length
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
+
 
   return (
     <div className="p-6">
@@ -168,46 +212,92 @@ export default function FAQPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-
         
-        <FAQFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          showActiveOnly={showActiveOnly}
-          onActiveOnlyChange={setShowActiveOnly}
-          categories={categories}
-          totalFAQs={faqs.length}
-          filteredCount={filteredFAQs.length}
-          activeCount={activeCount}
-          inactiveCount={inactiveCount}
-        />
-        
-        <FAQHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
-
-        {/* FAQ List */}
-        <div className="space-y-4">
-          {loading ? (
-            <div className="flex items-center justify-center min-h-[400px] p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : filteredFAQs.length === 0 ? (
-            <EmptyState 
-              hasAnyFAQs={faqs.length > 0} 
-              onCreateClick={() => setIsCreateDialogOpen(true)} 
+        {/* Responsive Layout: Vertical on mobile, Horizontal on desktop */}
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
+          
+          {/* Left Sidebar: Search and Filters - Fixed */}
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="space-y-6 bg-card p-6 rounded-lg ">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">FAQ Manager</h2>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    New FAQ
+                  </Button>
+                </DialogTrigger>
+              </div>
+              
+              <FAQFilters
+              searchTerm={searchTerm}
+              onSearchChange={(value) => {
+                setSearchTerm(value)
+                setCurrentPage(1) // Reset to first page when searching
+              }}
+              selectedCategory={selectedCategory}
+              onCategoryChange={(value) => {
+                setSelectedCategory(value)
+                setCurrentPage(1) // Reset to first page when filtering
+              }}
+              showActiveOnly={showActiveOnly}
+              onActiveOnlyChange={(value) => {
+                setShowActiveOnly(value)
+                setCurrentPage(1) // Reset to first page when filtering
+              }}
+              categories={categories}
+              totalFAQs={totalFAQs}
+              filteredCount={faqs.length}
+              activeCount={faqs.filter(f => f.isActive).length}
+              inactiveCount={faqs.filter(f => !f.isActive).length}
             />
-          ) : (
-            filteredFAQs.map((faq) => (
-              <FAQCard
-                key={faq.id}
-                faq={faq}
-                onEdit={handleEditFAQ}
-                onDelete={handleDeleteFAQ}
-                onToggleStatus={toggleFAQStatus}
-              />
-            ))
-          )}
+            </div>
+          </div>
+
+          {/* Right Main Content: FAQ List and Pagination */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Scrollable FAQ List Container */}
+            <div className="flex-1 flex flex-col min-h-0 rounded-b-md">
+              <ScrollArea className="h-[calc(100vh-180px)] rounded-lg">
+                <div className="space-y-4 pr-4 pb-2">
+                  {loading ? (
+                    <div className="flex items-center justify-center min-h-[400px] p-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-none"></div>
+                    </div>
+                  ) : faqs.length === 0 ? (
+                    <EmptyState 
+                      hasAnyFAQs={totalFAQs > 0} 
+                      onCreateClick={() => setIsCreateDialogOpen(true)} 
+                    />
+                  ) : (
+                    faqs.map((faq: FAQ) => (
+                      <FAQCard
+                        key={faq._id || faq.id}
+                        faq={faq}
+                        onEdit={handleEditFAQ}
+                        onDelete={handleDeleteFAQ}
+                        onToggleStatus={toggleFAQStatus}
+                      />
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Fixed Pagination at Bottom */}
+              {faqs.length > 0 && (
+                <div className="flex-shrink-0 bg-background ">
+                  <FAQPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    totalItems={totalFAQs}
+                    itemsPerPage={itemsPerPage}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <FAQDialog

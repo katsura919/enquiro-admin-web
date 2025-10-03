@@ -18,6 +18,18 @@ export interface FormData {
   isActive: boolean
 }
 
+export interface FAQResponse {
+  success: boolean
+  faqs: FAQ[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  searchTerm: string | null
+  category: string | null
+  isActive: boolean | null
+}
+
 
 
 export const categories = ["Account Management", "Billing", "Support", "Technical", "General"]
