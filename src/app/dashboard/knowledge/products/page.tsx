@@ -1,11 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog } from "@/components/ui/dialog"
-import ProductHeader from "./components/ProductHeader"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import ProductFilters from "./components/ProductFilters"
 import ProductTable from "./components/ProductTable"
 import ProductDialog from "./components/ProductDialog"
+import ProductPagination from "./components/ProductPagination"
 import EmptyState from "./components/EmptyState"
 import { Product, ProductFormData } from "./components/types"
 import api from "@/utils/api"
@@ -22,8 +25,8 @@ export default function ProductsPage() {
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [showInStockOnly, setShowInStockOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageLimit, setPageLimit] = useState(10)
   const [totalPages, setTotalPages] = useState(0)
+  const pageLimit = 13
   const [totalProducts, setTotalProducts] = useState(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -246,47 +249,94 @@ export default function ProductsPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-        <ProductFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          showActiveOnly={showActiveOnly}
-          onActiveOnlyChange={setShowActiveOnly}
-          showInStockOnly={showInStockOnly}
-          onInStockOnlyChange={setShowInStockOnly}
-          categories={["All", ...categories]}
-          totalProducts={totalProducts}
-          filteredCount={products.length}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          pageLimit={pageLimit}
-          onPageLimitChange={setPageLimit}
-        />
-
-        <ProductHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
+        
+        {/* Responsive Layout: Vertical on mobile, Horizontal on desktop */}
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
           
-        {/* Product List */}
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center min-h-[400px] p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          {/* Left Sidebar: Search and Filters - Fixed */}
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="space-y-6 bg-card p-6 rounded-lg">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Product Manager</h2>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    New Product
+                  </Button>
+                </DialogTrigger>
+              </div>
+              
+              <ProductFilters
+                searchTerm={searchTerm}
+                onSearchChange={(value) => {
+                  setSearchTerm(value)
+                  setCurrentPage(1) // Reset to first page when searching
+                }}
+                selectedCategory={selectedCategory}
+                onCategoryChange={(value) => {
+                  setSelectedCategory(value)
+                  setCurrentPage(1) // Reset to first page when filtering
+                }}
+                showActiveOnly={showActiveOnly}
+                onActiveOnlyChange={(value) => {
+                  setShowActiveOnly(value)
+                  setCurrentPage(1) // Reset to first page when filtering
+                }}
+                showInStockOnly={showInStockOnly}
+                onInStockOnlyChange={(value) => {
+                  setShowInStockOnly(value)
+                  setCurrentPage(1) // Reset to first page when filtering
+                }}
+                categories={["All", ...categories]}
+                totalProducts={totalProducts}
+                filteredCount={products.length}
+              />
             </div>
-          ) : products.length === 0 ? (
-            <EmptyState
-              hasAnyProducts={totalProducts > 0}
-              onCreateClick={() => setIsCreateDialogOpen(true)}
-            />
-          ) : (
-            <ProductTable
-              products={products}
-              onEdit={handleEditProduct}
-              onDelete={handleDeleteProduct}
-              onToggleStatus={toggleProductStatus}
-            />
-          )}
+          </div>
+
+          {/* Right Main Content: Product List */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Scrollable Product List Container */}
+            <div className="flex-1 flex flex-col min-h-0 rounded-b-md">
+              <ScrollArea className="h-[calc(100vh-180px)] rounded-lg">
+                <div className="space-y-4 pr-4 pb-2">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center min-h-[400px] p-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-none"></div>
+                    </div>
+                  ) : products.length === 0 ? (
+                    <EmptyState
+                      hasAnyProducts={totalProducts > 0}
+                      onCreateClick={() => setIsCreateDialogOpen(true)}
+                    />
+                  ) : (
+                    <ProductTable
+                      products={products}
+                      onEdit={handleEditProduct}
+                      onDelete={handleDeleteProduct}
+                      onToggleStatus={toggleProductStatus}
+                    />
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Fixed Pagination at Bottom */}
+              {products.length > 0 && (
+                <div className="flex-shrink-0 bg-background">
+                  <ProductPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    totalItems={totalProducts}
+                    itemsPerPage={pageLimit}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+
         <ProductDialog
           isOpen={isCreateDialogOpen}
           onClose={resetForm}
