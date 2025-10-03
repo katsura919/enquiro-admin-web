@@ -18,10 +18,11 @@ interface ProductFiltersProps {
   categories: string[]
   totalProducts: number
   filteredCount: number
-  activeCount: number
-  inactiveCount: number
-  inStockCount: number
-  outOfStockCount: number
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  pageLimit: number
+  onPageLimitChange: (limit: number) => void
 }
 
 export default function ProductFilters({
@@ -36,10 +37,11 @@ export default function ProductFilters({
   categories,
   totalProducts,
   filteredCount,
-  activeCount,
-  inactiveCount,
-  inStockCount,
-  outOfStockCount
+  currentPage,
+  totalPages,
+  onPageChange,
+  pageLimit,
+  onPageLimitChange
 }: ProductFiltersProps) {
   return (
     <Card className="bg-none border-none mb-4">
@@ -90,13 +92,49 @@ export default function ProductFilters({
         </div>
         
         <div className="flex items-center justify-between mt-4 pt-4 border-t">
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredCount} of {totalProducts} products
-          </p>
-          <div className="flex gap-4 text-sm text-muted-foreground">
-            <span>{activeCount} active • {inactiveCount} inactive</span>
-            <span>{inStockCount} in stock • {outOfStockCount} out of stock</span>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              Showing {filteredCount} of {totalProducts} products
+            </p>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm text-muted-foreground">Per page:</Label>
+              <select 
+                className="bg-card px-2 py-1 border border-input rounded text-sm"
+                value={pageLimit}
+                onChange={(e) => onPageLimitChange(Number(e.target.value))}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
           </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 text-sm border border-input rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
+              >
+                Previous
+              </button>
+              
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              <button
+                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 text-sm border border-input rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

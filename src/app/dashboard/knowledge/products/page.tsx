@@ -21,6 +21,10 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [showInStockOnly, setShowInStockOnly] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageLimit, setPageLimit] = useState(10)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalProducts, setTotalProducts] = useState(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
@@ -39,38 +43,39 @@ export default function ProductsPage() {
 
 
 
+  // Fetch products function
+  const fetchProducts = async () => {
+    setIsLoading(true)
+    
+    try {
+      const params: any = {
+        page: currentPage,
+        limit: pageLimit
+      }
+      if (selectedCategory !== "All") params.category = selectedCategory
+      if (showActiveOnly) params.isActive = true
+      if (showInStockOnly) params.inStock = true
+      if (searchTerm.trim()) params.search = searchTerm.trim()
+      
+      const res = await api.get(`/product/business/${businessId}`, { params })
+      setProducts(res.data.products || [])
+      setTotalProducts(res.data.total || 0)
+      setTotalPages(res.data.totalPages || 0)
+    } catch (err) {
+      setProducts([])
+      setTotalProducts(0)
+      setTotalPages(0)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Fetch products and categories from API
   useEffect(() => {
-    const fetchProducts = async () => {
-      // Only show loading spinner on initial load or when changing major filters
-      if (products.length === 0 || selectedCategory !== "All" || showActiveOnly || showInStockOnly) {
-        setIsLoading(true)
-      }
-      
-      try {
-        const params: any = {}
-        if (selectedCategory !== "All") params.category = selectedCategory
-        if (showActiveOnly) params.isActive = true
-        if (showInStockOnly) params.inStock = true
-        if (searchTerm.length > 1) {
-          // Use search endpoint
-          const res = await api.get(`/product/business/${businessId}/search`, { params: { query: searchTerm } })
-          setProducts(res.data.products || [])
-          return
-        }
-        const res = await api.get(`/product/business/${businessId}`, { params })
-        setProducts(res.data.products || [])
-      } catch (err) {
-        setProducts([])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    
     if (businessId) {
       fetchProducts()
     }
-  }, [businessId, selectedCategory, showActiveOnly, showInStockOnly, searchTerm])
+  }, [businessId, selectedCategory, showActiveOnly, showInStockOnly, searchTerm, currentPage, pageLimit])
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -87,18 +92,12 @@ export default function ProductsPage() {
     }
   }, [businessId])
 
-  // Filter products based on search and filters
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
-    const matchesActiveStatus = !showActiveOnly || product.isActive
-    const matchesStockStatus = !showInStockOnly || product.quantity > 0
-    
-    return matchesSearch && matchesCategory && matchesActiveStatus && matchesStockStatus
-  })
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (currentPage > 1) {
+      setCurrentPage(1)
+    }
+  }, [selectedCategory, showActiveOnly, showInStockOnly, searchTerm])
 
   const handleFormChange = (field: keyof ProductFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -119,13 +118,14 @@ export default function ProductsPage() {
         quantity: Number(formData.quantity),
         isActive: formData.isActive
       }
-      // Flatten price for backend
-      // price is already set above
       const res = await api.post(`/product`, payload)
       if (res.data && res.data.product) {
-        setProducts(prev => [res.data.product, ...prev])
+        // Go to first page and refetch data to show new product immediately
+        setCurrentPage(1)
+        resetForm()
+        // Refetch data to show the new product
+        await fetchProducts()
       }
-      resetForm()
     } catch (err) {
       console.log(err)
     }
@@ -164,6 +164,7 @@ export default function ProductsPage() {
       const productId = editingProduct._id || editingProduct.id
       const res = await api.put(`/product/${productId}`, payload)
       if (res.data && res.data.product) {
+        // Update the product in current page
         setProducts(prev => prev.map(product => {
           const pid = product._id || product.id
           return pid === productId ? res.data.product : product
@@ -178,10 +179,20 @@ export default function ProductsPage() {
   const handleDeleteProduct = async (id: string) => {
     try {
       await api.delete(`/product/${id}`)
-      setProducts(prev => prev.filter(product => {
-        const pid = product._id || product.id
-        return pid !== id
-      }))
+      // Remove from current page and adjust pagination if needed
+      setProducts(prev => {
+        const filtered = prev.filter(product => {
+          const pid = product._id || product.id
+          return pid !== id
+        })
+        // If page becomes empty and we're not on page 1, go to previous page
+        if (filtered.length === 0 && currentPage > 1) {
+          setCurrentPage(currentPage - 1)
+        }
+        return filtered
+      })
+      // Update total count
+      setTotalProducts(prev => Math.max(0, prev - 1))
     } catch (err) {
       // handle error
     }
@@ -229,11 +240,6 @@ export default function ProductsPage() {
     }
   }
 
-  const activeCount = products.filter(p => p.isActive).length
-  const inactiveCount = products.filter(p => !p.isActive).length
-  const inStockCount = products.filter(p => p.quantity > 0).length
-  const outOfStockCount = products.filter(p => p.quantity === 0).length
-
   return (
     <div className="p-6">
       <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
@@ -250,12 +256,13 @@ export default function ProductsPage() {
           showInStockOnly={showInStockOnly}
           onInStockOnlyChange={setShowInStockOnly}
           categories={["All", ...categories]}
-          totalProducts={products.length}
-          filteredCount={filteredProducts.length}
-          activeCount={activeCount}
-          inactiveCount={inactiveCount}
-          inStockCount={inStockCount}
-          outOfStockCount={outOfStockCount}
+          totalProducts={totalProducts}
+          filteredCount={products.length}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageLimit={pageLimit}
+          onPageLimitChange={setPageLimit}
         />
 
         <ProductHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
@@ -266,14 +273,14 @@ export default function ProductsPage() {
             <div className="flex items-center justify-center min-h-[400px] p-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : products.length === 0 ? (
             <EmptyState
-              hasAnyProducts={products.length > 0}
+              hasAnyProducts={totalProducts > 0}
               onCreateClick={() => setIsCreateDialogOpen(true)}
             />
           ) : (
             <ProductTable
-              products={filteredProducts}
+              products={products}
               onEdit={handleEditProduct}
               onDelete={handleDeleteProduct}
               onToggleStatus={toggleProductStatus}
