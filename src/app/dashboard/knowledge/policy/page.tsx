@@ -2,13 +2,16 @@
 import * as React from "react"
 import { useState } from "react"
 import api from "@/utils/api"
-import { Dialog } from "@/components/ui/dialog"
-import PolicyHeader from "./components/PolicyHeader"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import PolicyFilters from "./components/PolicyFilters"
 import PolicyCard from "./components/PolicyCard"
 import PolicyDialog from "./components/PolicyDialog"
+import PolicyPagination from "./components/PolicyPagination"
 import EmptyState from "./components/EmptyState"
 import { Policy, PolicyFormData, mockPolicies } from "./components/types"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/lib/auth"
 
 export default function PolicyPage() {
@@ -192,70 +195,93 @@ export default function PolicyPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-
         
-        <PolicyFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedType={selectedType}
-          onTypeChange={setSelectedType}
-          showActiveOnly={showActiveOnly}
-          onActiveOnlyChange={setShowActiveOnly}
-          policyTypes={policyTypes.map(type => ({ value: type, label: type }))}
-          totalPolicies={total}
-          filteredCount={policies.length}
-          activeCount={activeCount}
-          inactiveCount={inactiveCount}
-        />
-        
-        <PolicyHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
-
-        {/* Policy List */}
-        <div className="space-y-4">
-          {loading ? (
-            <div className="flex items-center justify-center min-h-[400px] p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : policies.length === 0 ? (
-            <EmptyState 
-              hasAnyPolicies={total > 0} 
-              onCreateClick={() => setIsCreateDialogOpen(true)} 
-            />
-          ) : (
-            policies.map((policy) => (
-              <PolicyCard
-                key={policy._id || policy.id}
-                policy={policy}
-                onEdit={handleEditPolicy}
-                onDelete={handleDeletePolicy}
-                onToggleStatus={togglePolicyStatus}
+        {/* Responsive Layout: Vertical on mobile, Horizontal on desktop */}
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
+          
+          {/* Left Sidebar: Search and Filters - Fixed */}
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="space-y-6 bg-card p-6 rounded-lg ">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Policy Manager</h2>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    New Policy
+                  </Button>
+                </DialogTrigger>
+              </div>
+              
+              <PolicyFilters
+                searchTerm={searchTerm}
+                onSearchChange={(value) => {
+                  setSearchTerm(value)
+                  setPage(1) // Reset to first page when searching
+                }}
+                selectedType={selectedType}
+                onTypeChange={(value) => {
+                  setSelectedType(value)
+                  setPage(1) // Reset to first page when filtering
+                }}
+                showActiveOnly={showActiveOnly}
+                onActiveOnlyChange={(value) => {
+                  setShowActiveOnly(value)
+                  setPage(1) // Reset to first page when filtering
+                }}
+                policyTypes={policyTypes.map(type => ({ value: type, label: type }))}
+                totalPolicies={total}
+                filteredCount={policies.length}
+                activeCount={activeCount}
+                inactiveCount={inactiveCount}
               />
-            ))
-          )}
-        </div>
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-4 mt-6">
-            <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {page} of {totalPages} ({total} total policies)
-            </span>
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page === totalPages}
-              className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Next
-            </button>
+            </div>
           </div>
-        )}
+
+          {/* Right Main Content: Policy List and Pagination */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Scrollable Policy List Container */}
+            <div className="flex-1 flex flex-col min-h-0 rounded-b-md">
+              <ScrollArea className="h-[calc(100vh-180px)] rounded-lg">
+                <div className="space-y-4 pr-4 pb-2">
+                  {loading ? (
+                    <div className="flex items-center justify-center min-h-[400px] p-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-none"></div>
+                    </div>
+                  ) : policies.length === 0 ? (
+                    <EmptyState 
+                      hasAnyPolicies={total > 0} 
+                      onCreateClick={() => setIsCreateDialogOpen(true)} 
+                    />
+                  ) : (
+                    policies.map((policy) => (
+                      <PolicyCard
+                        key={policy._id || policy.id}
+                        policy={policy}
+                        onEdit={handleEditPolicy}
+                        onDelete={handleDeletePolicy}
+                        onToggleStatus={togglePolicyStatus}
+                      />
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Fixed Pagination at Bottom */}
+              {policies.length > 0 && (
+                <div className="flex-shrink-0 bg-background">
+                  <PolicyPagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    totalItems={total}
+                    itemsPerPage={limit}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         <PolicyDialog
           isOpen={isCreateDialogOpen}
