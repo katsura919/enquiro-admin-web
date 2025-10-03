@@ -321,18 +321,16 @@ export default function ProductsPage() {
                 </div>
               </ScrollArea>
 
-              {/* Fixed Pagination at Bottom */}
-              {products.length > 0 && (
-                <div className="flex-shrink-0 bg-background">
-                  <ProductPagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    totalItems={totalProducts}
-                    itemsPerPage={pageLimit}
-                  />
-                </div>
-              )}
+              {/* Fixed Pagination at Bottom - Always Rendered */}
+              <div className="flex-shrink-0 bg-background">
+                <ProductPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  totalItems={totalProducts}
+                  itemsPerPage={pageLimit}
+                />
+              </div>
             </div>
           </div>
         </div>

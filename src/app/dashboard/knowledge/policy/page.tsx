@@ -267,18 +267,16 @@ export default function PolicyPage() {
                 </div>
               </ScrollArea>
 
-              {/* Fixed Pagination at Bottom */}
-              {policies.length > 0 && (
-                <div className="flex-shrink-0 bg-background">
-                  <PolicyPagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
-                    totalItems={total}
-                    itemsPerPage={limit}
-                  />
-                </div>
-              )}
+              {/* Fixed Pagination at Bottom - Always Rendered */}
+              <div className="flex-shrink-0 bg-background">
+                <PolicyPagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                  totalItems={total}
+                  itemsPerPage={limit}
+                />
+              </div>
             </div>
           </div>
         </div>

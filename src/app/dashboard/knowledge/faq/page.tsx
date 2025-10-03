@@ -284,18 +284,16 @@ export default function FAQPage() {
                 </div>
               </ScrollArea>
 
-              {/* Fixed Pagination at Bottom */}
-              {faqs.length > 0 && (
-                <div className="flex-shrink-0 bg-background ">
-                  <FAQPagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                    totalItems={totalFAQs}
-                    itemsPerPage={itemsPerPage}
-                  />
-                </div>
-              )}
+              {/* Fixed Pagination at Bottom - Always Rendered */}
+              <div className="flex-shrink-0 bg-background">
+                <FAQPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  totalItems={totalFAQs}
+                  itemsPerPage={itemsPerPage}
+                />
+              </div>
             </div>
           </div>
         </div>
