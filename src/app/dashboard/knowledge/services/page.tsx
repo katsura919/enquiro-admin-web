@@ -5,11 +5,14 @@
 import { useState, useEffect } from "react"
 import {useAuth } from "@/lib/auth"
 import api from "@/utils/api"
-import { Dialog } from "@/components/ui/dialog"
-import ServiceHeader from "./components/ServiceHeader"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import ServiceFilters from "./components/ServiceFilters"
 import ServiceTable from "./components/ServiceTable"
 import ServiceDialog from "./components/ServiceDialog"
+import ServicePagination from "./components/ServicePagination"
 import EmptyState from "./components/EmptyState"
 import { Service, ServiceFormData, mockServices, categories, normalizeService } from "./components/types"
 
@@ -25,8 +28,8 @@ export default function ServicesPage() {
   const [selectedPricingType, setSelectedPricingType] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageLimit, setPageLimit] = useState(10)
   const [totalPages, setTotalPages] = useState(0)
+  const pageLimit = 12
   const [totalServices, setTotalServices] = useState(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
@@ -253,50 +256,92 @@ export default function ServicesPage() {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()
       }}>
-
-
-        <ServiceFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          selectedPricingType={selectedPricingType}
-          onPricingTypeChange={setSelectedPricingType}
-          showActiveOnly={showActiveOnly}
-          onActiveOnlyChange={setShowActiveOnly}
-          categories={["All", ...categories]}
-          totalServices={totalServices}
-          filteredCount={services.length}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          pageLimit={pageLimit}
-          onPageLimitChange={setPageLimit}
-        />
-
-        <ServiceHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
-
-        {error && <div className="text-red-500 mb-2">{error}</div>}
-
-        {/* Service List */}
-        <div className="space-y-4">
-          {loading ? (
-            <div className="flex items-center justify-center min-h-[400px] p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        
+        {/* Responsive Layout: Vertical on mobile, Horizontal on desktop */}
+        <div className="flex flex-col lg:flex-row gap-6 h-full">
+          
+          {/* Left Sidebar: Search and Filters - Fixed */}
+          <div className="lg:w-80 flex-shrink-0">
+            <div className="space-y-6 bg-card p-6 rounded-lg">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Service Manager</h2>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4" />
+                    New Service
+                  </Button>
+                </DialogTrigger>
+              </div>
+              
+              <ServiceFilters
+                searchTerm={searchTerm}
+                onSearchChange={(value) => {
+                  setSearchTerm(value)
+                  setCurrentPage(1) // Reset to first page when searching
+                }}
+                selectedCategory={selectedCategory}
+                onCategoryChange={(value) => {
+                  setSelectedCategory(value)
+                  setCurrentPage(1) // Reset to first page when filtering
+                }}
+                selectedPricingType={selectedPricingType}
+                onPricingTypeChange={(value) => {
+                  setSelectedPricingType(value)
+                  setCurrentPage(1) // Reset to first page when filtering
+                }}
+                showActiveOnly={showActiveOnly}
+                onActiveOnlyChange={(value) => {
+                  setShowActiveOnly(value)
+                  setCurrentPage(1) // Reset to first page when filtering
+                }}
+                categories={["All", ...categories]}
+                totalServices={totalServices}
+                filteredCount={services.length}
+              />
             </div>
-          ) : services.length === 0 ? (
-            <EmptyState
-              hasAnyServices={totalServices > 0}
-              onCreateClick={() => setIsCreateDialogOpen(true)}
-            />
-          ) : (
-            <ServiceTable
-              services={services}
-              onEdit={handleEditService}
-              onDelete={handleDeleteService}
-              onToggleStatus={toggleServiceStatus}
-            />
-          )}
+          </div>
+
+          {/* Right Main Content: Service List */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {error && <div className="text-red-500 mb-2">{error}</div>}
+            
+            {/* Scrollable Service List Container */}
+            <div className="flex-1 flex flex-col min-h-0 rounded-b-md">
+              <ScrollArea className="h-[calc(100vh-180px)] rounded-lg">
+                <div className="space-y-4 pr-4 pb-2">
+                  {loading ? (
+                    <div className="flex items-center justify-center min-h-[400px] p-12">
+                      <div className="animate-spin rounded-full h-12 w-12 border-none"></div>
+                    </div>
+                  ) : services.length === 0 ? (
+                    <EmptyState
+                      hasAnyServices={totalServices > 0}
+                      onCreateClick={() => setIsCreateDialogOpen(true)}
+                    />
+                  ) : (
+                    <ServiceTable
+                      services={services}
+                      onEdit={handleEditService}
+                      onDelete={handleDeleteService}
+                      onToggleStatus={toggleServiceStatus}
+                    />
+                  )}
+                </div>
+              </ScrollArea>
+
+              {/* Fixed Pagination at Bottom - Always Rendered */}
+              <div className="flex-shrink-0 bg-background">
+                <ServicePagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  totalItems={totalServices}
+                  itemsPerPage={pageLimit}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         <ServiceDialog

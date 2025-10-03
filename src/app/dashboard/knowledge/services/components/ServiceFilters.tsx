@@ -1,6 +1,5 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -18,11 +17,6 @@ interface ServiceFiltersProps {
   categories: string[]
   totalServices: number
   filteredCount: number
-  currentPage: number
-  totalPages: number
-  onPageChange: (page: number) => void
-  pageLimit: number
-  onPageLimitChange: (limit: number) => void
 }
 
 export default function ServiceFilters({
@@ -36,111 +30,76 @@ export default function ServiceFilters({
   onActiveOnlyChange,
   categories,
   totalServices,
-  filteredCount,
-  currentPage,
-  totalPages,
-  onPageChange,
-  pageLimit,
-  onPageLimitChange
+  filteredCount
 }: ServiceFiltersProps) {
   return (
-    <Card className="bg-card border-none mb-4">
-      <CardContent className="p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search services by name or description..."
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="bg-card pl-10"
-              />
-            </div>
-          </div>
-          
-          <div className="flex gap-2">
-            <select 
-              className="px-3 py-2 border border-input rounded-md bg-card min-w-[150px]"
-              value={selectedCategory}
-              onChange={(e) => onCategoryChange(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-            
-            <select 
-              className="px-3 py-2 border border-input rounded-md bg-card min-w-[140px]"
-              value={selectedPricingType}
-              onChange={(e) => onPricingTypeChange(e.target.value)}
-            >
-              <option value="All">All Pricing</option>
-              <option value="fixed">Fixed Price</option>
-              <option value="hourly">Hourly Rate</option>
-              <option value="package">Package Deal</option>
-              <option value="quote">Custom Quote</option>
-            </select>
-            
-            <div className="bg-card flex items-center space-x-2 px-3 py-2 border border-input rounded-md ">
-              <Switch
-                className="bg-card"
-                id="activeOnly"
-                checked={showActiveOnly}
-                onCheckedChange={onActiveOnlyChange}
-              />
-              <Label htmlFor="activeOnly" className="text-sm whitespace-nowrap">Active only</Label>
-            </div>
-          </div>
+    <div className="space-y-4">
+      
+      {/* Search */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Search</Label>
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search services..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="bg-background pl-10"
+          />
         </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Category</Label>
+        <select 
+          className="w-full bg-background px-3 py-2 border border-input rounded-md"
+          value={selectedCategory}
+          onChange={(e) => onCategoryChange(e.target.value)}
+        >
+          <option value="All">All Categories</option>
+          {categories.map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Pricing Type Filter */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Pricing Type</Label>
+        <select 
+          className="w-full bg-background px-3 py-2 border border-input rounded-md"
+          value={selectedPricingType}
+          onChange={(e) => onPricingTypeChange(e.target.value)}
+        >
+          <option value="All">All Pricing</option>
+          <option value="fixed">Fixed Price</option>
+          <option value="hourly">Hourly Rate</option>
+          <option value="package">Package Deal</option>
+          <option value="quote">Custom Quote</option>
+        </select>
+      </div>
+
+      {/* Filters */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Filters</Label>
         
-        <div className="flex items-center justify-between mt-4 pt-4 border-t">
-          <div className="flex items-center gap-4">
-            <p className="text-sm text-muted-foreground">
-              Showing {filteredCount} of {totalServices} services
-            </p>
-            <div className="flex items-center gap-2">
-              <Label className="text-sm text-muted-foreground">Per page:</Label>
-              <select 
-                className="bg-card px-2 py-1 border border-input rounded text-sm"
-                value={pageLimit}
-                onChange={(e) => onPageLimitChange(Number(e.target.value))}
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-          </div>
-          
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border border-input rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
-              >
-                Previous
-              </button>
-              
-              <span className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              
-              <button
-                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm border border-input rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-accent"
-              >
-                Next
-              </button>
-            </div>
-          )}
+        <div className="flex items-center space-x-2 px-3 py-2 border border-input rounded-md bg-background">
+          <Switch
+            id="activeOnly"
+            checked={showActiveOnly}
+            onCheckedChange={onActiveOnlyChange}
+          />
+          <Label htmlFor="activeOnly" className="text-sm">Active only</Label>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Results Summary */}
+      <div className="pt-4 border-t">
+        <div className="text-sm text-muted-foreground">
+          Showing {filteredCount} of {totalServices} services
+        </div>
+      </div>
+    </div>
   )
 }
