@@ -17,12 +17,17 @@ export default function ServicesPage() {
   const user =  useAuth().user
   const businessId = user?.businessId
   const [services, setServices] = useState<Service[]>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedPricingType, setSelectedPricingType] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageLimit, setPageLimit] = useState(10)
+  const [totalPages, setTotalPages] = useState(0)
+  const [totalServices, setTotalServices] = useState(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
 
@@ -38,35 +43,63 @@ export default function ServicesPage() {
     isActive: true
   })
 
+  // Fetch services function
+  const fetchServices = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const params: any = {
+        page: currentPage,
+        limit: pageLimit
+      }
+      if (selectedCategory !== "All") params.category = selectedCategory
+      if (selectedPricingType !== "All") params.pricingType = selectedPricingType
+      if (showActiveOnly) params.isActive = true
+      if (searchTerm.trim()) params.search = searchTerm.trim()
+      
+      const res = await api.get(`/service/business/${businessId}`, { params })
+      setServices((res.data.services || []).map(normalizeService))
+      setTotalServices(res.data.total || 0)
+      setTotalPages(res.data.totalPages || 0)
+    } catch (err: any) {
+      setError(err?.response?.data?.error || err.message || "Failed to fetch services")
+      setServices([])
+      setTotalServices(0)
+      setTotalPages(0)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch services from API
   useEffect(() => {
-    const fetchServices = async () => {
-      setLoading(true)
-      setError(null)
+    if (businessId) {
+      fetchServices()
+    }
+  }, [businessId, selectedCategory, selectedPricingType, showActiveOnly, searchTerm, currentPage, pageLimit])
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
       try {
-        let url = `/service/business/${businessId}`
-        const params: any = {}
-        if (selectedCategory !== "All") params.category = selectedCategory
-        if (selectedPricingType !== "All") params.pricingType = selectedPricingType
-        if (showActiveOnly) params.isActive = true
-        const res = await api.get(url, { params })
-        setServices(res.data.services.map(normalizeService))
-      } catch (err: any) {
-        setError(err?.response?.data?.error || err.message || "Failed to fetch services")
-      } finally {
-        setLoading(false)
+        const res = await api.get(`/service/business/${businessId}/categories`)
+        setCategories(res.data.categories || [])
+      } catch (err) {
+        setCategories([])
       }
     }
-    fetchServices()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [businessId, selectedCategory, selectedPricingType, showActiveOnly])
+    
+    if (businessId) {
+      fetchCategories()
+    }
+  }, [businessId])
 
-  // Filter services based on search and filters (search is client-side)
-  const filteredServices = services.filter(service => {
-    const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch
-  })
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    if (currentPage > 1) {
+      setCurrentPage(1)
+    }
+  }, [selectedCategory, selectedPricingType, showActiveOnly, searchTerm])
 
   const handleFormChange = (field: keyof ServiceFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -90,11 +123,15 @@ export default function ServicesPage() {
         isActive: formData.isActive
       }
       const res = await api.post("/service", payload)
-      setServices([normalizeService(res.data.service), ...services])
-      resetForm()
+      if (res.data && res.data.service) {
+        // Go to first page and reset form
+        setCurrentPage(1)
+        resetForm()
+        // Refetch data to show the new service immediately
+        await fetchServices()
+      }
     } catch (err: any) {
       setError(err?.response?.data?.error || err.message || "Failed to create service")
-    } finally {
       setLoading(false)
     }
   }
@@ -132,11 +169,14 @@ export default function ServicesPage() {
         isActive: formData.isActive
       }
       const res = await api.put(`/service/${editingService.id}`, payload)
-      setServices(services.map(service =>
-        service.id === editingService.id
-          ? normalizeService(res.data.service)
-          : service
-      ))
+      if (res.data && res.data.service) {
+        // Update the service in current page
+        setServices(prev => prev.map(service =>
+          service.id === editingService.id
+            ? normalizeService(res.data.service)
+            : service
+        ))
+      }
       resetForm()
     } catch (err: any) {
       setError(err?.response?.data?.error || err.message || "Failed to update service")
@@ -150,7 +190,17 @@ export default function ServicesPage() {
     setError(null)
     try {
       await api.delete(`/service/${id}`)
-      setServices(services.filter(service => service.id !== id))
+      // Remove from current page and adjust pagination if needed
+      setServices(prev => {
+        const filtered = prev.filter(service => service.id !== id)
+        // If page becomes empty and we're not on page 1, go to previous page
+        if (filtered.length === 0 && currentPage > 1) {
+          setCurrentPage(currentPage - 1)
+        }
+        return filtered
+      })
+      // Update total count
+      setTotalServices(prev => Math.max(0, prev - 1))
     } catch (err: any) {
       setError(err?.response?.data?.error || err.message || "Failed to delete service")
     } finally {
@@ -197,9 +247,6 @@ export default function ServicesPage() {
     }
   }
 
-  const activeCount = services.filter(s => s.isActive).length
-  const inactiveCount = services.filter(s => !s.isActive).length
-
   return (
     <div className="p-6">
       <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
@@ -217,11 +264,14 @@ export default function ServicesPage() {
           onPricingTypeChange={setSelectedPricingType}
           showActiveOnly={showActiveOnly}
           onActiveOnlyChange={setShowActiveOnly}
-          categories={categories}
-          totalServices={services.length}
-          filteredCount={filteredServices.length}
-          activeCount={activeCount}
-          inactiveCount={inactiveCount}
+          categories={["All", ...categories]}
+          totalServices={totalServices}
+          filteredCount={services.length}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageLimit={pageLimit}
+          onPageLimitChange={setPageLimit}
         />
 
         <ServiceHeader onCreateClick={() => setIsCreateDialogOpen(true)} />
@@ -234,14 +284,14 @@ export default function ServicesPage() {
             <div className="flex items-center justify-center min-h-[400px] p-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
-          ) : filteredServices.length === 0 ? (
+          ) : services.length === 0 ? (
             <EmptyState
-              hasAnyServices={services.length > 0}
+              hasAnyServices={totalServices > 0}
               onCreateClick={() => setIsCreateDialogOpen(true)}
             />
           ) : (
             <ServiceTable
-              services={filteredServices}
+              services={services}
               onEdit={handleEditService}
               onDelete={handleDeleteService}
               onToggleStatus={toggleServiceStatus}
