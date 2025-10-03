@@ -202,7 +202,7 @@ export default function DashboardLayout({
           {/* Navigation with ScrollArea */}
           <div className="flex-1 min-h-0">
             <ScrollArea className="h-full px-4 pb-4">
-              <nav className="px-2 py-4">
+              <nav className="py-4">
                 <div className="space-y-6">                
                   {navigation.map((section, sectionIndex) => (
                     <div key={section.category}>
