@@ -8,7 +8,7 @@ import PolicyFilters from "./components/PolicyFilters"
 import PolicyCard from "./components/PolicyCard"
 import PolicyDialog from "./components/PolicyDialog"
 import EmptyState from "./components/EmptyState"
-import { Policy, PolicyFormData, mockPolicies, policyTypes } from "./components/types"
+import { Policy, PolicyFormData, mockPolicies } from "./components/types"
 import { useAuth } from "@/lib/auth"
 
 export default function PolicyPage() {
@@ -21,6 +21,10 @@ export default function PolicyPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedType, setSelectedType] = useState("All")
   const [showActiveOnly, setShowActiveOnly] = useState(false)
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null)
 
@@ -33,25 +37,42 @@ export default function PolicyPage() {
     isActive: true
   })
 
+  // Fetch policies function
+  const fetchPolicies = React.useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString()
+      })
+      
+      if (searchTerm.trim()) params.append('search', searchTerm.trim())
+      if (selectedType !== 'All') params.append('type', selectedType)
+      if (showActiveOnly) params.append('isActive', 'true')
+      
+      const { data } = await api.get(`/policy/business/${businessId}?${params}`)
+      if (data.success) {
+        setPolicies(data.policies)
+        setTotal(data.total)
+        setTotalPages(data.totalPages)
+      }
+    } catch (err) {
+      setPolicies([])
+      setTotal(0)
+      setTotalPages(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [businessId, page, limit, searchTerm, selectedType, showActiveOnly])
+
   // Fetch policies and types on mount
   React.useEffect(() => {
-    const fetchPolicies = async () => {
-      setLoading(true)
-      try {
-        const { data } = await api.get(`/policy/business/${businessId}`)
-        if (data.success) setPolicies(data.policies)
-      } catch (err) {
-        setPolicies([])
-      }
-    }
     const fetchTypes = async () => {
       try {
         const { data } = await api.get(`/policy/business/${businessId}/types`)
         if (data.success) setPolicyTypes(data.types)
       } catch (err) {
         setPolicyTypes([])
-      } finally {
-        setLoading(false)
       }
     }
     
@@ -59,19 +80,12 @@ export default function PolicyPage() {
       fetchPolicies()
       fetchTypes()
     }
-  }, [businessId])
+  }, [fetchPolicies, businessId])
 
-  // Filter policies based on search and filters
-  const filteredPolicies = policies.filter(policy => {
-    const matchesSearch = policy.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         policy.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         policy.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    const matchesType = selectedType === "All" || policy.type === selectedType
-    const matchesActiveStatus = !showActiveOnly || policy.isActive
-    
-    return matchesSearch && matchesType && matchesActiveStatus
-  })
+  // Reset page when search/filter changes
+  React.useEffect(() => {
+    setPage(1)
+  }, [searchTerm, selectedType, showActiveOnly])
 
   const handleFormChange = (field: keyof PolicyFormData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -88,8 +102,9 @@ export default function PolicyPage() {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       })
       if (data.success && data.policy) {
-        setPolicies([data.policy, ...policies])
+        setPage(1) // Reset to first page
         resetForm()
+        // Data will be refetched via useEffect dependency on page change
       }
     } catch (err) {}
   }
@@ -117,8 +132,8 @@ export default function PolicyPage() {
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
       })
       if (data.success && data.policy) {
-        setPolicies(policies.map(policy => (policy._id || policy.id) === data.policy._id ? data.policy : policy))
         resetForm()
+        fetchPolicies() // Refetch data to get updated policy
       }
     } catch (err) {}
   }
@@ -127,7 +142,12 @@ export default function PolicyPage() {
     try {
       const { data } = await api.delete(`/policy/${id}`)
       if (data.success) {
-        setPolicies(policies.filter(policy => (policy._id || policy.id) !== id))
+        // If we're on a page that becomes empty after deletion, go to previous page
+        if (policies.length === 1 && page > 1) {
+          setPage(page - 1)
+        } else {
+          fetchPolicies() // Refetch current page data
+        }
       }
     } catch (err) {}
   }
@@ -138,7 +158,7 @@ export default function PolicyPage() {
     try {
       const { data } = await api.put(`/policy/${id}`, { ...policy, isActive: !policy.isActive })
       if (data.success && data.policy) {
-        setPolicies(policies.map(p => (p._id || p.id) === id ? data.policy : p))
+        fetchPolicies() // Refetch data to get updated policy status
       }
     } catch (err) {}
   }
@@ -182,8 +202,8 @@ export default function PolicyPage() {
           showActiveOnly={showActiveOnly}
           onActiveOnlyChange={setShowActiveOnly}
           policyTypes={policyTypes.map(type => ({ value: type, label: type }))}
-          totalPolicies={policies.length}
-          filteredCount={filteredPolicies.length}
+          totalPolicies={total}
+          filteredCount={policies.length}
           activeCount={activeCount}
           inactiveCount={inactiveCount}
         />
@@ -196,13 +216,13 @@ export default function PolicyPage() {
             <div className="flex items-center justify-center min-h-[400px] p-12">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
-          ) : filteredPolicies.length === 0 ? (
+          ) : policies.length === 0 ? (
             <EmptyState 
-              hasAnyPolicies={policies.length > 0} 
+              hasAnyPolicies={total > 0} 
               onCreateClick={() => setIsCreateDialogOpen(true)} 
             />
           ) : (
-            filteredPolicies.map((policy) => (
+            policies.map((policy) => (
               <PolicyCard
                 key={policy._id || policy.id}
                 policy={policy}
@@ -213,6 +233,29 @@ export default function PolicyPage() {
             ))
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-4 mt-6">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {totalPages} ({total} total policies)
+            </span>
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page === totalPages}
+              className="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
 
         <PolicyDialog
           isOpen={isCreateDialogOpen}
