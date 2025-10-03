@@ -3,12 +3,10 @@
 import * as React from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, Mail, Phone, UserCheck, UserX } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, Mail, Phone, UserX } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 
 export interface Agent {
@@ -25,9 +23,6 @@ export interface Agent {
 
 interface AgentTableProps {
   agents: Agent[]
-  selectedIds: string[]
-  onSelectAll: (checked: boolean) => void
-  onSelectItem: (id: string, checked: boolean) => void
   onEdit: (agent: Agent) => void
   onDelete: (agent: Agent) => void
   loading?: boolean
@@ -35,16 +30,10 @@ interface AgentTableProps {
 
 export function AgentTable({
   agents,
-  selectedIds,
-  onSelectAll,
-  onSelectItem,
   onEdit,
   onDelete,
   loading = false
 }: AgentTableProps) {
-  const isAllSelected = agents.length > 0 && selectedIds.length === agents.length
-  const isPartiallySelected = selectedIds.length > 0 && selectedIds.length < agents.length
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -52,19 +41,6 @@ export function AgentTable({
       .join('')
       .toUpperCase()
       .slice(0, 2)
-  }
-
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return 'destructive'
-      case 'supervisor':
-        return 'default'
-      case 'agent':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
   }
 
   if (loading) {
@@ -91,34 +67,19 @@ export function AgentTable({
   }
 
   return (
-    <Card className="w-full border-border">
+    <Card className="bg-card w-full border-border shadow-none">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12">
-              <Checkbox
-                checked={isAllSelected}
-                onCheckedChange={onSelectAll}
-                aria-label="Select all agents"
-              />
-            </TableHead>
             <TableHead>Agent</TableHead>
             <TableHead>Contact</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Joined</TableHead>
+            <TableHead>Date Added</TableHead>
             <TableHead className="w-12">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {agents.map((agent) => (
             <TableRow key={agent._id}>
-              <TableCell>
-                <Checkbox
-                  checked={selectedIds.includes(agent._id)}
-                  onCheckedChange={(checked) => onSelectItem(agent._id, !!checked)}
-                />
-              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
@@ -144,28 +105,6 @@ export function AgentTable({
                       <Phone className="h-3 w-3" />
                       <span>{agent.phone}</span>
                     </div>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={getRoleBadgeVariant(agent.role)}>
-                  {agent.role}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  {agent.deletedAt ? (
-                    <>
-                      <UserX className="h-4 w-4 text-destructive" />
-                      <Badge variant="destructive">Inactive</Badge>
-                    </>
-                  ) : (
-                    <>
-                      <UserCheck className="h-4 w-4 text-green-500" />
-                      <Badge variant="outline" className="text-green-700 border-green-200">
-                        Active
-                      </Badge>
-                    </>
                   )}
                 </div>
               </TableCell>

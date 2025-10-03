@@ -6,13 +6,43 @@ import { Input } from "@/components/ui/input"
 import { Plus, Search, Filter, Download, Trash2 } from "lucide-react"
 import { toast } from "@/hooks/useToast"
 import { useAuth } from "@/lib/auth"
-import { agentService, type Agent, type CreateAgentData, type UpdateAgentData } from "@/services/agentService"
+import api from "@/utils/api"
 import { 
-  AgentTable, 
+  AgentTable,
   AgentForm, 
-  AgentStatsCards, 
   DeleteAgentDialog
 } from "./components"
+
+// Agent interface
+interface Agent {
+  _id: string;
+  businessId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  profilePic?: string;
+  role: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+
+interface CreateAgentData {
+  name: string;
+  email: string;
+  phone?: string;
+  profilePic?: string;
+  role: string;
+  password: string;
+  businessId: string;
+}
+
+interface UpdateAgentData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  profilePic?: string;
+  role?: string;
+}
 
 export default function AgentManagementPage() {
   const { user, isLoading: authLoading } = useAuth()
@@ -24,6 +54,20 @@ export default function AgentManagementPage() {
   const [roleFilter, setRoleFilter] = React.useState<"all" | "admin" | "supervisor" | "agent">("all")
   const [loading, setLoading] = React.useState(false)
   const [initialLoading, setInitialLoading] = React.useState(true)
+
+  // Helper function for consistent error handling
+  const getErrorMessage = (error: any, defaultMessage: string) => {
+    if (error.code === 'NETWORK_ERROR' || !error.response) {
+      return "Network error. Please check your connection and try again.";
+    } else if (error.response?.status === 403) {
+      return "You don't have permission to perform this action.";
+    } else if (error.response?.status === 401) {
+      return "Session expired. Please log in again.";
+    } else if (error.response?.data?.error) {
+      return error.response.data.error;
+    }
+    return defaultMessage;
+  }
   
   // Dialog states
   const [showAgentForm, setShowAgentForm] = React.useState(false)
@@ -55,12 +99,17 @@ export default function AgentManagementPage() {
     try {
       setInitialLoading(true)
       // Load agents for the current user's business
-      const data = user?.businessId 
-        ? await agentService.getAgentsByBusiness(user.businessId)
-        : await agentService.getAgents()
-      setAgents(data)
+      let response;
+      if (user?.businessId) {
+        // Get agents by business using query parameter
+        response = await api.get('/agent', { params: { businessId: user.businessId } });
+      } else {
+        // Get all agents
+        response = await api.get('/agent');
+      }
+      setAgents(response.data)
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to load agents")
+      toast.error(getErrorMessage(error, "Failed to load agents"))
     } finally {
       setInitialLoading(false)
     }
@@ -136,17 +185,17 @@ export default function AgentManagementPage() {
         password: data.password,
         businessId: user.businessId,
         // Set default values for optional fields
-        phone: "",
-        role: "agent",
-        profilePic: ""
+        phone: data.phone || "",
+        role: data.role || "agent",
+        profilePic: data.profilePic || ""
       }
       
-      const newAgent = await agentService.createAgent(createData)
-      setAgents(prev => [newAgent, ...prev])
+      const response = await api.post('/agent', createData)
+      setAgents(prev => [response.data, ...prev])
       toast.success("Agent created successfully")
       closeDialogs()
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to create agent")
+      toast.error(getErrorMessage(error, "Failed to create agent"))
     } finally {
       setLoading(false)
     }
@@ -165,16 +214,16 @@ export default function AgentManagementPage() {
         profilePic: data.profilePic
       }
       
-      const updatedAgent = await agentService.updateAgent(editingAgent._id, updateData)
+      const response = await api.put(`/agent/${editingAgent._id}`, updateData)
       setAgents(prev =>
         prev.map(agent =>
-          agent._id === editingAgent._id ? updatedAgent : agent
+          agent._id === editingAgent._id ? response.data : agent
         )
       )
       toast.success("Agent updated successfully")
       closeDialogs()
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update agent")
+      toast.error(getErrorMessage(error, "Failed to update agent"))
     } finally {
       setLoading(false)
     }
@@ -185,7 +234,7 @@ export default function AgentManagementPage() {
 
     setLoading(true)
     try {
-      await agentService.deleteAgent(deletingAgent._id)
+      await api.delete(`/agent/${deletingAgent._id}`)
       // Soft delete - update the deletedAt field
       setAgents(prev =>
         prev.map(agent =>
@@ -197,7 +246,7 @@ export default function AgentManagementPage() {
       toast.success("Agent deleted successfully")
       closeDialogs()
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete agent")
+      toast.error(getErrorMessage(error, "Failed to delete agent"))
     } finally {
       setLoading(false)
     }
@@ -209,7 +258,7 @@ export default function AgentManagementPage() {
     setLoading(true)
     try {
       // Delete each selected agent
-      await Promise.all(selectedIds.map(id => agentService.deleteAgent(id)))
+      await Promise.all(selectedIds.map(id => api.delete(`/agent/${id}`)))
       
       // Update local state
       setAgents(prev =>
@@ -225,6 +274,86 @@ export default function AgentManagementPage() {
       toast.error(error.response?.data?.error || "Failed to delete agents")
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Restore deleted agent
+  const handleRestoreAgent = async (agentId: string) => {
+    setLoading(true)
+    try {
+      const response = await api.patch(`/agent/${agentId}/restore`)
+      // Update local state to remove deletedAt
+      setAgents(prev =>
+        prev.map(agent =>
+          agent._id === agentId
+            ? { ...agent, deletedAt: null }
+            : agent
+        )
+      )
+      toast.success("Agent restored successfully")
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to restore agent")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Search agents
+  const searchAgents = async (searchQuery: string) => {
+    try {
+      const params: any = { search: searchQuery }
+      if (user?.businessId) {
+        params.businessId = user.businessId
+      }
+      const response = await api.get('/agent/search', { params })
+      return response.data
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to search agents")
+      return []
+    }
+  }
+
+  // Export agents to CSV
+  const handleExportAgents = () => {
+    try {
+      // Prepare CSV data
+      const csvHeaders = ['Name', 'Email', 'Phone', 'Role', 'Status', 'Created At']
+      const csvData = filteredAgents.map(agent => [
+        agent.name,
+        agent.email,
+        agent.phone || '',
+        agent.role,
+        agent.deletedAt ? 'Inactive' : 'Active',
+        new Date(agent.createdAt).toLocaleDateString()
+      ])
+
+      // Create CSV content
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+      ].join('\n')
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = `agents_export_${new Date().toISOString().split('T')[0]}.csv`
+      link.click()
+      
+      toast.success("Agents exported successfully")
+    } catch (error) {
+      toast.error("Failed to export agents")
+    }
+  }
+
+  // Get agent statistics
+  const getAgentStats = async (agentId: string) => {
+    try {
+      const response = await api.get(`/agent/${agentId}/stats`)
+      return response.data
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to get agent statistics")
+      return null
     }
   }
 
@@ -252,70 +381,64 @@ export default function AgentManagementPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Agent Management</h1>
-          <p className="text-muted-foreground">
-            Manage your team members and their permissions
-          </p>
-        </div>
-        <Button onClick={openCreateDialog} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Agent
-        </Button>
+    <div className="p-6 space-y-6">
+      {/* Header Section */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Agent management</h1>
+        <p className="text-muted-foreground mt-1">Manage your team members and their permissions here.</p>
       </div>
 
-      {/* Stats Cards */}
-      <AgentStatsCards
-        totalAgents={stats.totalAgents}
-        activeAgents={stats.activeAgents}
-        inactiveAgents={stats.inactiveAgents}
-        adminCount={stats.adminCount}
-        loading={loading}
+      {/* Top Controls */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-semibold">All agents {stats.totalAgents}</h2>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-card pl-10 w-64 shadow-none"
+            />
+          </div>
+          
+          {/* Add Agent */}
+          <Button onClick={openCreateDialog} size="sm" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add agent
+          </Button>
+        </div>
+      </div>
+
+      {/* Table */}
+      <AgentTable
+        agents={filteredAgents}
+        onEdit={openEditDialog}
+        onDelete={openDeleteDialog}
+        loading={loading || initialLoading}
       />
 
-      {/* Filters and Actions */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search agents by name, email, or phone..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {/* Filters */}
-        <div className="flex gap-2">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as any)}
-            className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-          >
-            <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="agent">Agent</option>
-          </select>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2">
-          {selectedIds.length > 0 && (
+      {/* Bottom Actions */}
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg p-4">
+          <div className="text-sm text-primary">
+            {selectedIds.length} agent{selectedIds.length > 1 ? 's' : ''} selected
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportAgents}
+              disabled={loading}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
             <Button
               variant="destructive"
               size="sm"
@@ -324,27 +447,11 @@ export default function AgentManagementPage() {
               className="gap-2"
             >
               <Trash2 className="h-4 w-4" />
-              Delete ({selectedIds.length})
+              Delete
             </Button>
-          )}
-          
-          <Button variant="outline" size="sm" className="gap-2">
-            <Download className="h-4 w-4" />
-            Export
-          </Button>
+          </div>
         </div>
-      </div>
-
-      {/* Table */}
-      <AgentTable
-        agents={filteredAgents}
-        selectedIds={selectedIds}
-        onSelectAll={handleSelectAll}
-        onSelectItem={handleSelectItem}
-        onEdit={openEditDialog}
-        onDelete={openDeleteDialog}
-        loading={loading || initialLoading}
-      />
+      )}
 
       {/* Dialogs */}
       <AgentForm
