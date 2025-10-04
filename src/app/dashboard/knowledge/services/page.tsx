@@ -29,7 +29,7 @@ export default function ServicesPage() {
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
-  const pageLimit = 12
+  const pageLimit = 13
   const [totalServices, setTotalServices] = useState(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
@@ -251,7 +251,7 @@ export default function ServicesPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 ">
       <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
         setIsCreateDialogOpen(open)
         if (!open) resetForm()

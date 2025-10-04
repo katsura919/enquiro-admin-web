@@ -134,7 +134,6 @@ export default function ServiceTable({ services, onEdit, onDelete, onToggleStatu
         <Table className="bg-card rounded-lg">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[60px]">ID</TableHead>
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="category">Category</SortableHeader>
               <SortableHeader field="pricing">Pricing</SortableHeader>
@@ -147,9 +146,6 @@ export default function ServiceTable({ services, onEdit, onDelete, onToggleStatu
           <TableBody>
             {sortedServices.map((service, index) => (
               <TableRow key={service.id} className={!service.isActive ? 'opacity-60' : ''}>
-                <TableCell className="font-mono text-xs text-muted-foreground">
-                  {String(index + 1).padStart(3, '0')}
-                </TableCell>
                 <TableCell>
                   <div>
                     <div className="font-medium">{service.name}</div>
