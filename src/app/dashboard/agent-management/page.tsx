@@ -47,13 +47,19 @@ interface UpdateAgentData {
 export default function AgentManagementPage() {
   const { user, isLoading: authLoading } = useAuth()
   const [agents, setAgents] = React.useState<Agent[]>([])
-  const [filteredAgents, setFilteredAgents] = React.useState<Agent[]>([])
   const [selectedIds, setSelectedIds] = React.useState<string[]>([])
   const [searchQuery, setSearchQuery] = React.useState("")
   const [statusFilter, setStatusFilter] = React.useState<"all" | "active" | "inactive">("all")
   const [roleFilter, setRoleFilter] = React.useState<"all" | "admin" | "supervisor" | "agent">("all")
   const [loading, setLoading] = React.useState(false)
   const [initialLoading, setInitialLoading] = React.useState(true)
+  console.log("Agents:", agents)
+  // Pagination state
+  const [currentPage, setCurrentPage] = React.useState(1)
+  const [itemsPerPage, setItemsPerPage] = React.useState(11)
+  const [totalPages, setTotalPages] = React.useState(0)
+  const [totalItems, setTotalItems] = React.useState(0)
+  const [totalAgentsInBusiness, setTotalAgentsInBusiness] = React.useState(0)
 
   // Helper function for consistent error handling
   const getErrorMessage = (error: any, defaultMessage: string) => {
@@ -91,75 +97,72 @@ export default function AgentManagementPage() {
   // Load agents when component mounts or user changes
   React.useEffect(() => {
     if (user?.businessId) {
-      loadAgents()
+      loadAgents(1) // Load first page
     }
   }, [user?.businessId])
 
-  const loadAgents = async () => {
-    try {
-      setInitialLoading(true)
-      // Load agents for the current user's business
-      let response;
+  // Trigger search when searchQuery changes (with debounce)
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
       if (user?.businessId) {
-        // Get agents by business using query parameter
-        response = await api.get('/agent', { params: { businessId: user.businessId } });
-      } else {
-        // Get all agents
-        response = await api.get('/agent');
+        loadAgents(1, itemsPerPage, searchQuery) // Reset to page 1 when searching
       }
-      setAgents(response.data)
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timeoutId)
+  }, [searchQuery, user?.businessId, itemsPerPage])
+
+  const loadAgents = async (page: number = currentPage, limit: number = itemsPerPage, search: string = searchQuery) => {
+    try {
+      setInitialLoading(page === 1 && !search)
+      setLoading(page !== 1 || !!search)
+      
+      if (!user?.businessId) {
+        toast.error("Business ID not found. Please log in again.")
+        return
+      }
+
+      // Use the new paginated endpoint
+      const params = {
+        page: page.toString(),
+        limit: limit.toString(),
+        ...(search.trim() && { search: search.trim() })
+      }
+      
+      const response = await api.get(`/agent/${user.businessId}`, { params })
+      
+      // Update states with paginated response
+      setAgents(response.data.agents)
+      setCurrentPage(response.data.pagination.currentPage)
+      setTotalPages(response.data.pagination.totalPages)
+      setTotalItems(response.data.pagination.totalItems)
+      setTotalAgentsInBusiness(response.data.totalAgentsInBusiness)
     } catch (error: any) {
       toast.error(getErrorMessage(error, "Failed to load agents"))
     } finally {
       setInitialLoading(false)
+      setLoading(false)
     }
   }
 
-  // Filter agents based on search, status, and role
-  React.useEffect(() => {
-    let filtered = agents
-
-    // Search filter
-    if (searchQuery.trim()) {
-      filtered = filtered.filter(agent =>
-        agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        agent.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        agent.phone?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    // Status filter
-    if (statusFilter === "active") {
-      filtered = filtered.filter(agent => !agent.deletedAt)
-    } else if (statusFilter === "inactive") {
-      filtered = filtered.filter(agent => agent.deletedAt)
-    }
-
-    // Role filter
-    if (roleFilter !== "all") {
-      filtered = filtered.filter(agent => agent.role === roleFilter)
-    }
-
-    setFilteredAgents(filtered)
-  }, [agents, searchQuery, statusFilter, roleFilter])
-
-  // Calculate stats
+  // Calculate stats - now using total from backend
   const stats = React.useMemo(() => {
     const activeAgents = agents.filter(agent => !agent.deletedAt)
     const inactiveAgents = agents.filter(agent => agent.deletedAt)
     const adminCount = agents.filter(agent => agent.role === "admin" && !agent.deletedAt)
 
     return {
-      totalAgents: agents.length,
+      totalAgents: totalAgentsInBusiness, // Use total from backend
       activeAgents: activeAgents.length,
       inactiveAgents: inactiveAgents.length,
-      adminCount: adminCount.length
+      adminCount: adminCount.length,
+      currentPageItems: agents.length
     }
-  }, [agents])
+  }, [agents, totalAgentsInBusiness])
 
   // Selection handlers
   const handleSelectAll = (checked: boolean) => {
-    setSelectedIds(checked ? filteredAgents.map(agent => agent._id) : [])
+    setSelectedIds(checked ? agents.map((agent: Agent) => agent._id) : [])
   }
 
   const handleSelectItem = (id: string, checked: boolean) => {
@@ -313,12 +316,12 @@ export default function AgentManagementPage() {
     }
   }
 
-  // Export agents to CSV
+  // Export agents to CSV (current page only for now)
   const handleExportAgents = () => {
     try {
       // Prepare CSV data
       const csvHeaders = ['Name', 'Email', 'Phone', 'Role', 'Status', 'Created At']
-      const csvData = filteredAgents.map(agent => [
+      const csvData = agents.map((agent: Agent) => [
         agent.name,
         agent.email,
         agent.phone || '',
@@ -330,7 +333,7 @@ export default function AgentManagementPage() {
       // Create CSV content
       const csvContent = [
         csvHeaders.join(','),
-        ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+        ...csvData.map((row: any[]) => row.map((field: any) => `"${field}"`).join(','))
       ].join('\n')
 
       // Create and download file
@@ -382,19 +385,14 @@ export default function AgentManagementPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header Section */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Agent management</h1>
-        <p className="text-muted-foreground mt-1">Manage your team members and their permissions here.</p>
-      </div>
 
       {/* Top Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-lg font-semibold">All agents {stats.totalAgents}</h2>
-        </div>
-        
-        <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
+        <h1 className="text-2xl font-semibold">
+          Agent Management
+        </h1>
+      </div>        <div className="flex items-center gap-3">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -416,10 +414,17 @@ export default function AgentManagementPage() {
 
       {/* Table */}
       <AgentTable
-        agents={filteredAgents}
+        agents={agents}
         onEdit={openEditDialog}
         onDelete={openDeleteDialog}
         loading={loading || initialLoading}
+        pagination={{
+          currentPage,
+          totalPages,
+          totalItems,
+          itemsPerPage,
+          onPageChange: (page: number) => loadAgents(page)
+        }}
       />
 
       {/* Bottom Actions */}
