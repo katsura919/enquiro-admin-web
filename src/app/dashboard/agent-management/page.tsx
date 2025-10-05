@@ -103,6 +103,11 @@ export default function AgentManagementPage() {
 
   // Trigger search when searchQuery changes (with debounce)
   React.useEffect(() => {
+    // Skip if this is the initial load (no search query and items per page is default)
+    if (!searchQuery && itemsPerPage === 11) {
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
       if (user?.businessId) {
         loadAgents(1, itemsPerPage, searchQuery) // Reset to page 1 when searching
@@ -110,7 +115,7 @@ export default function AgentManagementPage() {
     }, 500) // 500ms debounce
 
     return () => clearTimeout(timeoutId)
-  }, [searchQuery, user?.businessId, itemsPerPage])
+  }, [searchQuery, itemsPerPage])
 
   const loadAgents = async (page: number = currentPage, limit: number = itemsPerPage, search: string = searchQuery) => {
     try {

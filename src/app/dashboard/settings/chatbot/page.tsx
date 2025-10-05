@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { MessageSquare, Save, Upload, Eye, Camera, X, Check, Bot, ZoomIn, ZoomOut, RotateCw, Globe, Settings, Palette, Copy, Download, AlertTriangle } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
@@ -531,7 +530,7 @@ export default function ChatbotSettingsPage() {
   }
 
   return (
-    <ScrollArea className="h-[90vh] w-full">
+    <div className="w-full">
  
         {/* Success Message */}
         {isSuccess && (
@@ -545,7 +544,7 @@ export default function ChatbotSettingsPage() {
 
         <div className="w-full max-w-4xl">
           {/* Chatbot Settings Card */}
-          <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+          <Card className="border-muted-gray bg-card shadow-none ">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-foreground">Chatbot & QR Settings</CardTitle>
               <p className="text-sm text-muted-foreground">Customize your AI assistant's name, appearance, and features</p>
@@ -569,13 +568,13 @@ export default function ChatbotSettingsPage() {
                     <Input
                       readOnly
                       value={chatUrl}
-                      className="bg-background text-foreground border-border text-sm"
+                      className="bg-card text-foreground border-border text-sm shadow-none"
                     />
                     <Button
                       onClick={handleCopy}
                       variant="outline"
                       size="sm"
-                      className="shrink-0 border-border text-primary hover:bg-accent"
+                      className="bg-card shrink-0 border-border text-secondary-foreground cursor-pointer"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
@@ -588,7 +587,7 @@ export default function ChatbotSettingsPage() {
                   <div className="flex flex-col items-center space-y-4">
                     <div 
                       ref={qrRef}
-                      className="relative p-4 bg-white rounded-lg border border-border shadow-sm"
+                      className="relative p-4 bg-white rounded-lg border border-border shadow-none"
                       style={{ backgroundColor: qrSettings.bgColor }}
                     >
                       <QRCodeSVG 
@@ -1018,6 +1017,6 @@ export default function ChatbotSettingsPage() {
           </DialogContent>
         </Dialog>
 
-    </ScrollArea>
+    </div>
   )
 }
