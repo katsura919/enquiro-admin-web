@@ -80,19 +80,7 @@ export default function Home() {
                     </div>
 
 
-                    {/* Lottie Animation */}
-                    <div className="mt-10 flex justify-center">
-                      <div className="w-full max-w-2xl md:max-w-4xl lg:max-w-6xl">
-                        {animationData && (
-                          <Lottie 
-                            animationData={animationData}
-                            loop={true}
-                            autoplay={true}
-                            className="w-full h-auto scale-110 md:scale-105 lg:scale-110"
-                          />
-                        )}
-                      </div>
-                    </div>
+
                   </div>
                 </div>
               </section>
