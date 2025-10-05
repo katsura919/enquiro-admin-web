@@ -72,7 +72,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     policy: { label: 'Policy Management'},
     sessions: { label: 'Chat Sessions'},
     escalations: { label: 'Escalations'},
-    realtimedashboard: { label: 'Real-time Dashboard' },
+    'realtime-dashboard': { label: 'Realtime Dashboard' },
     settings: { label: 'Settings'},
     business: { label: 'Business '},
     account: { label: 'Account '},
@@ -81,6 +81,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     chat: { label: 'Chat' },
     auth: { label: 'Auth' },
     agents: { label: 'Agents' },
+    'agent-management': { label: 'Agent Management' },
     security: { label: 'Security' },
     chatbot: { label: 'Chatbot' },
   };

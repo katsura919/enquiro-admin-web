@@ -61,7 +61,7 @@ const navigation = [
   {
     category: "WORKFORCE",
     items: [
-      { name: "Real-Time Monitoring", href: "/dashboard/realtime-dashboard", icon: Monitor },
+      { name: "Realtime Dashboard", href: "/dashboard/realtime-dashboard", icon: Monitor },
       { name: "Agent Management", href: "/dashboard/agent-management", icon: Users },
     ]
   },
