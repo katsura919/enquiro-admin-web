@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ArrowRight, Eye, EyeOff, CheckCircle, Mail, User, Lock, Building, FileText, Shield } from "lucide-react"
@@ -49,6 +49,22 @@ export default function RegisterPage() {
   const [verificationCode, setVerificationCode] = useState("")
   const [registeredEmail, setRegisteredEmail] = useState("")
   const [isResending, setIsResending] = useState(false)
+  const [resendTimer, setResendTimer] = useState(0)
+  const [codeDigits, setCodeDigits] = useState(["", "", "", "", "", ""])
+  
+  // Refs for digit inputs
+  const digitInputs = useRef<(HTMLInputElement | null)[]>([])
+
+  // Timer effect for resend functionality
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1)
+      }, 1000)
+    }
+    return () => clearInterval(interval)
+  }, [resendTimer])
 
   const stepIcons = {
     1: Building,
@@ -78,6 +94,72 @@ export default function RegisterPage() {
     5: "Enter the 6-digit code sent to your email",
     6: "Review and accept our terms",
     7: "Welcome to Enquiro!"
+  }
+
+  // Handle digit input changes
+  const handleDigitChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return // Only allow digits
+    
+    // Check if previous digits are filled (sequential entry)
+    if (index > 0 && !codeDigits[index - 1]) {
+      // Focus the first empty digit instead
+      const firstEmptyIndex = codeDigits.findIndex(digit => !digit)
+      if (firstEmptyIndex !== -1) {
+        digitInputs.current[firstEmptyIndex]?.focus()
+      }
+      return
+    }
+    
+    const newDigits = [...codeDigits]
+    newDigits[index] = value.slice(-1) // Only take the last character
+    setCodeDigits(newDigits)
+    
+    // Update the verification code
+    setVerificationCode(newDigits.join(''))
+    
+    // Auto-focus next input
+    if (value && index < 5) {
+      digitInputs.current[index + 1]?.focus()
+    }
+  }
+
+  // Handle backspace and navigation
+  const handleDigitKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace') {
+      if (codeDigits[index]) {
+        // Clear current digit
+        const newDigits = [...codeDigits]
+        newDigits[index] = ''
+        setCodeDigits(newDigits)
+        setVerificationCode(newDigits.join(''))
+      } else if (index > 0) {
+        // Move to previous digit and clear it
+        const newDigits = [...codeDigits]
+        newDigits[index - 1] = ''
+        setCodeDigits(newDigits)
+        setVerificationCode(newDigits.join(''))
+        digitInputs.current[index - 1]?.focus()
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      digitInputs.current[index - 1]?.focus()
+    } else if (e.key === 'ArrowRight' && index < 5 && codeDigits[index]) {
+      // Only allow right arrow if current digit is filled
+      digitInputs.current[index + 1]?.focus()
+    }
+  }
+
+  // Handle paste functionality
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    const newDigits = Array(6).fill('').map((_, i) => pastedData[i] || '')
+    setCodeDigits(newDigits)
+    setVerificationCode(newDigits.join(''))
+    
+    // Focus the next empty input or the last input
+    const nextEmptyIndex = newDigits.findIndex(digit => !digit)
+    const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : 5
+    digitInputs.current[focusIndex]?.focus()
   }
 
   const validateStep = (step: RegistrationStep): boolean => {
@@ -206,6 +288,7 @@ export default function RegisterPage() {
       })
       
       setRegisteredEmail(result.email)
+      setResendTimer(60) // Start 60 second timer
       setCurrentStep(5) // Move to verification step
     } catch (err) {
       setErrors({ general: err instanceof Error ? err.message : "An error occurred" })
@@ -259,12 +342,19 @@ export default function RegisterPage() {
   }
 
   const handleResendCode = async () => {
+    if (resendTimer > 0 || isResending) return
+    
     setIsResending(true)
     setErrors({})
 
     try {
       await resendCode(registeredEmail)
-      // Show success message or toast
+      setResendTimer(60) // Reset timer to 60 seconds
+      // Clear current digits
+      setCodeDigits(["", "", "", "", "", ""])
+      setVerificationCode("")
+      // Focus first input
+      digitInputs.current[0]?.focus()
     } catch (err) {
       setErrors({ general: err instanceof Error ? err.message : "Failed to resend code" })
     } finally {
@@ -376,7 +466,7 @@ export default function RegisterPage() {
               <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[2]}</p>
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-300 block" htmlFor="firstName">
                     First Name
@@ -536,48 +626,64 @@ export default function RegisterPage() {
                 </p>
               </div>
             </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 block" htmlFor="verificationCode">
-                  Verification Code
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <label className="text-sm font-medium text-gray-300 block text-center">
+                  Enter Verification Code
                 </label>
-                <Input
-                  id="verificationCode"
-                  type="text"
-                  placeholder="000000"
-                  value={verificationCode}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 6)
-                    setVerificationCode(value)
-                  }}
-                  className={`h-12 bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 text-center text-2xl font-mono tracking-widest ${
-                    errors.verificationCode 
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                      : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                  }`}
-                  maxLength={6}
-                />
+                
+                {/* Digit Input Boxes */}
+                <div className="flex justify-center items-center space-x-3 sm:space-x-4">
+                  {codeDigits.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { digitInputs.current[index] = el }}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleDigitChange(index, e.target.value)}
+                      onKeyDown={(e) => handleDigitKeyDown(index, e)}
+                      onPaste={index === 0 ? handlePaste : undefined}
+                      className={`w-12 h-12 sm:w-14 sm:h-14 text-center text-xl sm:text-2xl font-mono font-semibold bg-white/5 text-white border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
+                        errors.verificationCode 
+                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                          : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                      }`}
+                    />
+                  ))}
+                </div>
+                
                 {errors.verificationCode && (
-                  <p className="text-sm text-red-400 mt-1">{errors.verificationCode}</p>
+                  <p className="text-sm text-red-400 text-center mt-2">{errors.verificationCode}</p>
                 )}
               </div>
               
-              {/* Resend Code Button */}
+              {/* Resend Code Section */}
               <div className="text-center pt-2">
-                <button
-                  onClick={handleResendCode}
-                  disabled={isResending}
-                  className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors disabled:opacity-50"
-                >
-                  {isResending ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-3 w-3 border border-blue-400/30 border-t-blue-400 mr-2"></div>
-                      Resending...
-                    </div>
+                <div className="space-y-2">
+                  {resendTimer > 0 ? (
+                    <p className="text-sm text-gray-400">
+                      Resend code in <span className="font-medium text-blue-400">{resendTimer}s</span>
+                    </p>
                   ) : (
-                    "Didn't receive the code? Resend"
+                    <button
+                      onClick={handleResendCode}
+                      disabled={isResending}
+                      className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors disabled:opacity-50"
+                    >
+                      {isResending ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-400/30 border-t-blue-400"></div>
+                          <span>Resending...</span>
+                        </div>
+                      ) : (
+                        "Didn't receive the code? Resend"
+                      )}
+                    </button>
                   )}
-                </button>
+                </div>
               </div>
             </div>
           </div>
@@ -697,23 +803,40 @@ export default function RegisterPage() {
   return (
     <AuthRedirect>
       <div className="min-h-screen bg-black flex flex-col">
-        {/* Navbar */}
+        {/* Mobile Navigation */}
+        <div className="lg:hidden bg-black/95 backdrop-blur-sm border-b border-gray-800 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-white font-bold text-xl">
+              Enquiro
+            </Link>
+            <Link 
+              href="/auth/login" 
+              className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+
+      {/* Desktop Navbar */}
+      <div className="hidden lg:block">
         <Navbar />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex flex-col lg:flex-row">
         {/* Left Side - Illustration/Content Area */}
-        <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-gradient-to-br">
+        <div className="hidden lg:flex lg:w-2/5 xl:w-1/2 relative overflow-hidden bg-gradient-to-br">
         <GridPattern />
         
         {/* Content Overlay */}
-        <div className="relative z-10 flex items-center justify-center px-8 py-16 h-full w-full">
+        <div className="relative z-10 flex items-center justify-center px-8 lg:px-12 xl:px-16 h-full w-full">
           {/* Main Content Container */}
-          <div className="max-w-md w-full text-center">
+          <div className="max-w-lg w-full text-center">
             
             {/* Lottie Animation */}
-            <div className="flex justify-center mb-10">
-              <div className="w-80 h-80">
+            <div className="flex justify-center mb-8 lg:mb-10">
+              <div className="w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80">
                 <Lottie 
                   animationData={registrationAnimation}
                   loop={true}
@@ -723,11 +846,11 @@ export default function RegisterPage() {
             </div>
             
             {/* Heading and Description */}
-            <div className="space-y-8 mb-10">
-              <h1 className="text-4xl font-bold text-white leading-tight tracking-tight text-center">
+            <div className="space-y-6 lg:space-y-8 mb-8 lg:mb-10">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight text-center">
                 Join <span className="font-bold">Enquiro</span> Now!
               </h1>
-              <p className="text-lg text-blue-100/90 leading-relaxed font-medium text-center">
+              <p className="text-base md:text-lg text-blue-100/90 leading-relaxed font-medium text-center px-4">
                 Transform your customer support with intelligent AI chatbots designed for modern businesses.
               </p>
             </div>
@@ -744,24 +867,24 @@ export default function RegisterPage() {
       </div>
 
       {/* Right Side - Form Area */}
-      <div className="w-full lg:w-3/5 bg-black flex flex-col">
+      <div className="w-full lg:w-3/5 xl:w-1/2 bg-black flex flex-col min-h-screen lg:min-h-auto">
         {/* Form Content - Properly Structured Layout */}
-        <div className="flex-1 flex items-center justify-center px-6">
-          <div className="w-full max-w-md">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+          <div className="w-full max-w-md lg:max-w-lg">
             
             {/* Progress Steps Indicator - Top aligned */}
             {currentStep < 7 && (
-              <div className="mb-8">
+              <div className="mb-6 lg:mb-8">
                 <div className="flex items-center justify-center mb-4">
-                  <div className="flex items-center space-x-1.5">
+                  <div className="flex items-center space-x-1 sm:space-x-1.5">
                     {[1, 2, 3, 4, 5, 6].map((step) => (
                       <div key={step} className="flex items-center">
-                        <div className={`h-2 w-10 rounded-full transition-all duration-300 ${
+                        <div className={`h-2 w-6 sm:w-8 lg:w-10 rounded-full transition-all duration-300 ${
                           step <= currentStep 
                             ? 'bg-blue-500' 
                             : 'bg-gray-700'
                         }`}></div>
-                        {step < 6 && <div className="w-1"></div>}
+                        {step < 6 && <div className="w-0.5 sm:w-1"></div>}
                       </div>
                     ))}
                   </div>
@@ -786,42 +909,43 @@ export default function RegisterPage() {
 
             {/* Footer Button - Right aligned for natural flow */}
             {currentStep !== 7 && (
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
                 {/* Back Button */}
                 {currentStep > 1 ? (
                   <Button
                     onClick={handleBack}
                     variant="ghost"
-                    className="text-gray-400 hover:text-white hover:bg-white/10 h-12 px-6 text-base font-medium transition-all duration-200"
+                    className="w-full sm:w-auto text-gray-400 hover:text-white hover:bg-white/10 h-12 px-6 text-base font-medium transition-all duration-200 order-2 sm:order-1"
                   >
                     Back
                   </Button>
                 ) : (
-                  <div></div>
+                  <div className="hidden sm:block"></div>
                 )}
 
                 {/* Next Button */}
                 <Button
                   onClick={handleNext}
                   disabled={isLoading}
-                  className="bg-blue-500 hover:bg-blue-600 text-white h-12 px-8 text-base font-medium transition-all duration-200 rounded-lg shadow-sm"
+                  className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white h-12 px-8 text-base font-medium transition-all duration-200 rounded-lg shadow-sm order-1 sm:order-2"
                 >
                   {isLoading ? (
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-3"></div>
-                      Processing...
+                      <span className="hidden sm:inline">Processing...</span>
+                      <span className="sm:hidden">Processing</span>
                     </div>
                   ) : currentStep === 4 ? (
-                    "Send Verification Code"
+                    <span className="hidden sm:inline">Send Verification Code</span>
                   ) : currentStep === 5 ? (
                     "Verify Email"
                   ) : currentStep === 6 ? (
-                    "Complete Registration"
+                    <span className="hidden sm:inline">Complete Registration</span>
                   ) : (
-                    <>
-                      Next
-                    </>
+                    "Next"
                   )}
+                  {currentStep === 4 && <span className="sm:hidden">Send Code</span>}
+                  {currentStep === 6 && <span className="sm:hidden">Complete</span>}
                 </Button>
               </div>
             )}
