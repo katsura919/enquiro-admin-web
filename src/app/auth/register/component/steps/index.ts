@@ -1,0 +1,7 @@
+export { default as BusinessInfoStep } from './BusinessInfoStep'
+export { default as PersonalDetailsStep } from './PersonalDetailsStep'
+export { default as CreatePasswordStep } from './CreatePasswordStep'
+export { default as EmailAddressStep } from './EmailAddressStep'
+export { default as VerifyEmailStep } from './VerifyEmailStep'
+export { default as TermsAgreementStep } from './TermsAgreementStep'
+export { default as RegistrationCompleteStep } from './RegistrationCompleteStep'

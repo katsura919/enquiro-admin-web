@@ -1,23 +1,28 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, ArrowRight, Eye, EyeOff, CheckCircle, Mail, User, Lock, Building, FileText, Shield } from "lucide-react"
+import { Building, User, Lock, Mail, Shield, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { BackgroundGradient } from "@/components/ui/background-gradient"
 import { GridPattern } from "@/components/ui/grid-pattern"
 import { useAuth } from "@/lib/auth"
 import AuthRedirect from "@/components/auth-redirect"
 import Lottie from "lottie-react"
 import registrationAnimation from "../../../../public/animations/registration.json"
-import checkAnimation from "../../../../public/animations/check.json"
 import Navbar from "@/components/hero-page/nav-bar"
 import Footer from "@/components/hero-page/footer"
 import TermsModal from "./component/TermsModal"
 import PrivacyModal from "./component/PrivacyModal"
+import {
+  BusinessInfoStep,
+  PersonalDetailsStep,
+  CreatePasswordStep,
+  EmailAddressStep,
+  VerifyEmailStep,
+  TermsAgreementStep,
+  RegistrationCompleteStep
+} from "./component/steps"
 
 type RegistrationStep = 1 | 2 | 3 | 4 | 5 | 6 | 7
 
@@ -52,9 +57,6 @@ export default function RegisterPage() {
   const [resendTimer, setResendTimer] = useState(0)
   const [codeDigits, setCodeDigits] = useState(["", "", "", "", "", ""])
   
-  // Refs for digit inputs
-  const digitInputs = useRef<(HTMLInputElement | null)[]>([])
-
   // Timer effect for resend functionality
   useEffect(() => {
     let interval: NodeJS.Timeout
@@ -96,71 +98,7 @@ export default function RegisterPage() {
     7: "Welcome to Enquiro!"
   }
 
-  // Handle digit input changes
-  const handleDigitChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return // Only allow digits
-    
-    // Check if previous digits are filled (sequential entry)
-    if (index > 0 && !codeDigits[index - 1]) {
-      // Focus the first empty digit instead
-      const firstEmptyIndex = codeDigits.findIndex(digit => !digit)
-      if (firstEmptyIndex !== -1) {
-        digitInputs.current[firstEmptyIndex]?.focus()
-      }
-      return
-    }
-    
-    const newDigits = [...codeDigits]
-    newDigits[index] = value.slice(-1) // Only take the last character
-    setCodeDigits(newDigits)
-    
-    // Update the verification code
-    setVerificationCode(newDigits.join(''))
-    
-    // Auto-focus next input
-    if (value && index < 5) {
-      digitInputs.current[index + 1]?.focus()
-    }
-  }
 
-  // Handle backspace and navigation
-  const handleDigitKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace') {
-      if (codeDigits[index]) {
-        // Clear current digit
-        const newDigits = [...codeDigits]
-        newDigits[index] = ''
-        setCodeDigits(newDigits)
-        setVerificationCode(newDigits.join(''))
-      } else if (index > 0) {
-        // Move to previous digit and clear it
-        const newDigits = [...codeDigits]
-        newDigits[index - 1] = ''
-        setCodeDigits(newDigits)
-        setVerificationCode(newDigits.join(''))
-        digitInputs.current[index - 1]?.focus()
-      }
-    } else if (e.key === 'ArrowLeft' && index > 0) {
-      digitInputs.current[index - 1]?.focus()
-    } else if (e.key === 'ArrowRight' && index < 5 && codeDigits[index]) {
-      // Only allow right arrow if current digit is filled
-      digitInputs.current[index + 1]?.focus()
-    }
-  }
-
-  // Handle paste functionality
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
-    const newDigits = Array(6).fill('').map((_, i) => pastedData[i] || '')
-    setCodeDigits(newDigits)
-    setVerificationCode(newDigits.join(''))
-    
-    // Focus the next empty input or the last input
-    const nextEmptyIndex = newDigits.findIndex(digit => !digit)
-    const focusIndex = nextEmptyIndex !== -1 ? nextEmptyIndex : 5
-    digitInputs.current[focusIndex]?.focus()
-  }
 
   const validateStep = (step: RegistrationStep): boolean => {
     setErrors({})
@@ -353,8 +291,6 @@ export default function RegisterPage() {
       // Clear current digits
       setCodeDigits(["", "", "", "", "", ""])
       setVerificationCode("")
-      // Focus first input
-      digitInputs.current[0]?.focus()
     } catch (err) {
       setErrors({ general: err instanceof Error ? err.message : "Failed to resend code" })
     } finally {
@@ -366,435 +302,75 @@ export default function RegisterPage() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[1]}</h2>
-              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[1]}</p>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="businessName">
-                    Business Name
-                  </label>
-                  <Input
-                    id="businessName"
-                    type="text"
-                    placeholder="Acme Corporation"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.businessName 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.businessName && (
-                    <p className="text-sm text-red-400 mt-1">{errors.businessName}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="category">
-                    Business Category
-                  </label>
-                  <Input
-                    id="category"
-                    type="text"
-                    placeholder="Technology"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.category 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.category && (
-                    <p className="text-sm text-red-400 mt-1">{errors.category}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="description">
-                    Business Description
-                  </label>
-                  <Input
-                    id="description"
-                    type="text"
-                    placeholder="Software Development"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.description 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.description && (
-                    <p className="text-sm text-red-400 mt-1">{errors.description}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="address">
-                    Business Address
-                  </label>
-                  <Input
-                    id="address"
-                    type="text"
-                    placeholder="123 Main St, City, State 12345"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.address 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.address && (
-                    <p className="text-sm text-red-400 mt-1">{errors.address}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <BusinessInfoStep
+            businessName={businessName}
+            setBusinessName={setBusinessName}
+            category={category}
+            setCategory={setCategory}
+            description={description}
+            setDescription={setDescription}
+            address={address}
+            setAddress={setAddress}
+            errors={errors}
+          />
         )
-
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[2]}</h2>
-              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[2]}</p>
-            </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="firstName">
-                    First Name
-                  </label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    placeholder="First name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.firstName 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.firstName && (
-                    <p className="text-sm text-red-400 mt-1">{errors.firstName}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="lastName">
-                    Last Name
-                  </label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    placeholder="Last name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.lastName 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.lastName && (
-                    <p className="text-sm text-red-400 mt-1">{errors.lastName}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <PersonalDetailsStep
+            firstName={firstName}
+            setFirstName={setFirstName}
+            lastName={lastName}
+            setLastName={setLastName}
+            errors={errors}
+          />
         )
-
       case 3:
         return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[3]}</h2>
-              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[3]}</p>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 block" htmlFor="password">
-                  Password
-                </label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 pr-12 ${
-                      errors.password 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-sm text-red-400 mt-1">{errors.password}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 block" htmlFor="confirmPassword">
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 pr-12 ${
-                      errors.confirmPassword 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {errors.confirmPassword && (
-                  <p className="text-sm text-red-400 mt-1">{errors.confirmPassword}</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <CreatePasswordStep
+            password={password}
+            setPassword={setPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            showConfirmPassword={showConfirmPassword}
+            setShowConfirmPassword={setShowConfirmPassword}
+            errors={errors}
+          />
         )
-
       case 4:
         return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[4]}</h2>
-              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[4]}</p>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 block" htmlFor="email">
-                  Email Address
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                    errors.email 
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                      : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                  }`}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-400 mt-1">{errors.email}</p>
-                )}
-              </div>
-            </div>
-          </div>
+          <EmailAddressStep
+            email={email}
+            setEmail={setEmail}
+            errors={errors}
+          />
         )
-
       case 5:
         return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[5]}</h2>
-              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[5]}</p>
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
-                <p className="text-sm text-blue-400">
-                  We've sent a verification code to <span className="font-semibold">{registeredEmail}</span>
-                </p>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <label className="text-sm font-medium text-gray-300 block text-center">
-                  Enter Verification Code
-                </label>
-                
-                {/* Digit Input Boxes */}
-                <div className="flex justify-center items-center space-x-3 sm:space-x-4">
-                  {codeDigits.map((digit, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => { digitInputs.current[index] = el }}
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleDigitChange(index, e.target.value)}
-                      onKeyDown={(e) => handleDigitKeyDown(index, e)}
-                      onPaste={index === 0 ? handlePaste : undefined}
-                      className={`w-12 h-12 sm:w-14 sm:h-14 text-center text-xl sm:text-2xl font-mono font-semibold bg-white/5 text-white border-2 rounded-lg focus:outline-none focus:ring-2 transition-all duration-200 ${
-                        errors.verificationCode 
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                          : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                      }`}
-                    />
-                  ))}
-                </div>
-                
-                {errors.verificationCode && (
-                  <p className="text-sm text-red-400 text-center mt-2">{errors.verificationCode}</p>
-                )}
-              </div>
-              
-              {/* Resend Code Section */}
-              <div className="text-center pt-2">
-                <div className="space-y-2">
-                  {resendTimer > 0 ? (
-                    <p className="text-sm text-gray-400">
-                      Resend code in <span className="font-medium text-blue-400">{resendTimer}s</span>
-                    </p>
-                  ) : (
-                    <button
-                      onClick={handleResendCode}
-                      disabled={isResending}
-                      className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors disabled:opacity-50"
-                    >
-                      {isResending ? (
-                        <div className="flex items-center justify-center space-x-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-400/30 border-t-blue-400"></div>
-                          <span>Resending...</span>
-                        </div>
-                      ) : (
-                        "Didn't receive the code? Resend"
-                      )}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <VerifyEmailStep
+            registeredEmail={registeredEmail}
+            codeDigits={codeDigits}
+            setCodeDigits={setCodeDigits}
+            setVerificationCode={setVerificationCode}
+            errors={errors}
+            resendTimer={resendTimer}
+            isResending={isResending}
+            onResendCode={handleResendCode}
+          />
         )
-
       case 6:
         return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[6]}</h2>
-              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[6]}</p>
-            </div>
-            <div className="space-y-4">
-              {/* Summary Card */}
-              <div className="bg-white/5 rounded-2xl border border-blue-500/20 p-6">
-                <div className="space-y-4">          
-                  <div className="flex flex-col space-y-3">
-                    <button
-                      onClick={() => setShowTermsModal(true)}
-                      className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl border border-gray-700 hover:border-blue-500/50 transition-all duration-200 group"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                          <FileText className="h-4 w-4 text-blue-400" />
-                        </div>
-                        <span className="text-white font-medium">Terms of Service</span>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
-                    </button>
-                    
-                    <button
-                      onClick={() => setShowPrivacyModal(true)}
-                      className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl border border-gray-700 hover:border-blue-500/50 transition-all duration-200 group"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                          <Shield className="h-4 w-4 text-blue-400" />
-                        </div>
-                        <span className="text-white font-medium">Privacy Policy</span>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-400 transition-colors" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Agreement Checkbox */}
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-6 py-4">
-                <div className="flex items-start space-x-3">
-                  <input 
-                    type="checkbox" 
-                    id="agreeToTerms"
-                    checked={agreeToTerms}
-                    onChange={(e) => setAgreeToTerms(e.target.checked)}
-                    className={`mt-1 w-4 h-4 rounded bg-white/5 focus:ring-offset-0 focus:ring-2 ${
-                      errors.terms
-                        ? 'border-red-500 text-red-500 focus:ring-red-500'
-                        : 'border-gray-700 text-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  <div className="flex-1">
-                    <label htmlFor="agreeToTerms" className="text-sm text-gray-400 leading-relaxed">
-                      I have read and agree to the{" "}
-                      <button
-                        onClick={() => setShowTermsModal(true)}
-                        className="text-blue-400 font-medium hover:text-blue-300 underline transition-colors"
-                      >
-                        Terms of Service
-                      </button>{" "}
-                      and{" "}
-                      <button
-                        onClick={() => setShowPrivacyModal(true)}
-                        className="text-blue-400 font-medium hover:text-blue-300 underline transition-colors"
-                      >
-                        Privacy Policy
-                      </button>. 
-                      I understand that my business data will be processed according to these terms.
-                    </label>
-                    {errors.terms && (
-                      <p className="text-sm text-red-400 mt-2">{errors.terms}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <TermsAgreementStep
+            agreeToTerms={agreeToTerms}
+            setAgreeToTerms={setAgreeToTerms}
+            onShowTermsModal={() => setShowTermsModal(true)}
+            onShowPrivacyModal={() => setShowPrivacyModal(true)}
+            errors={errors}
+          />
         )
-
       case 7:
-        return (
-          <div className="space-y-8 text-center py-12">
-            <div className="space-y-6">
-              <div className="flex justify-center">
-                <div className="w-24 h-24">
-                  <Lottie 
-                    animationData={checkAnimation}
-                    loop={false}
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-3xl font-bold text-white tracking-tight">Welcome to Enquiro!</h2>
-                <p className="text-lg text-gray-300 leading-relaxed">
-                  Registration completed successfully! Redirecting you to your dashboard.
-                </p>
-              </div>
-            </div>
-          </div>
-        )
-
+        return <RegistrationCompleteStep />
       default:
         return null
     }
