@@ -76,7 +76,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
     }
 
     // Phone validation (optional but must be valid if provided)
-    if (formData.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+    if (formData.phone && !/^[\+]?[\d]{7,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
       newErrors.phone = "Please enter a valid phone number"
     }
 
