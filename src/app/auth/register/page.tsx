@@ -19,11 +19,11 @@ import Footer from "@/components/hero-page/footer"
 import TermsModal from "./component/TermsModal"
 import PrivacyModal from "./component/PrivacyModal"
 
-type RegistrationStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+type RegistrationStep = 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { register } = useAuth()
+  const { register, verifyCode, completeRegistration, resendCode } = useAuth()
   const [currentStep, setCurrentStep] = useState<RegistrationStep>(1)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [success, setSuccess] = useState(false)
@@ -46,38 +46,38 @@ export default function RegisterPage() {
   const [category, setCategory] = useState("")
   const [address, setAddress] = useState("")
   const [agreeToTerms, setAgreeToTerms] = useState(false)
+  const [verificationCode, setVerificationCode] = useState("")
+  const [registeredEmail, setRegisteredEmail] = useState("")
+  const [isResending, setIsResending] = useState(false)
 
   const stepIcons = {
-    1: Mail,
+    1: Building,
     2: User,
     3: Lock,
-    4: null, // Setup step
-    5: Building,
-    6: FileText,
-    7: Shield,
-    8: CheckCircle
+    4: Mail,
+    5: Mail, // Verification step
+    6: Shield,
+    7: CheckCircle
   }
 
   const stepTitles = {
-    1: "Email Address",
+    1: "Business Information",
     2: "Personal Details",
     3: "Create Password",
-    4: "Setting Up Profile",
-    5: "Business Information",
-    6: "Business Details",
-    7: "Terms & Agreements",
-    8: "Registration Complete"
+    4: "Email Address",
+    5: "Verify Your Email",
+    6: "Terms & Agreements",
+    7: "Registration Complete"
   }
 
   const stepDescriptions = {
-    1: "Enter your email address to get started",
+    1: "Tell us about your business",
     2: "Tell us your name",
     3: "Create a secure password",
-    4: "Please wait while we set up your profile...",
-    5: "What's your business called?",
-    6: "Tell us more about your business",
-    7: "Review and accept our terms",
-    8: "Welcome to Enquiro!"
+    4: "Enter your email address",
+    5: "Enter the 6-digit code sent to your email",
+    6: "Review and accept our terms",
+    7: "Welcome to Enquiro!"
   }
 
   const validateStep = (step: RegistrationStep): boolean => {
@@ -85,12 +85,21 @@ export default function RegisterPage() {
     
     switch (step) {
       case 1:
-        if (!email) {
-          setErrors({ email: "Please enter your email address" })
-          return false
+        const businessErrors: Record<string, string> = {}
+        if (!businessName.trim()) {
+          businessErrors.businessName = "Please enter your business name"
         }
-        if (!/\S+@\S+\.\S+/.test(email)) {
-          setErrors({ email: "Please enter a valid email address" })
+        if (!description.trim()) {
+          businessErrors.description = "Please enter a business description"
+        }
+        if (!category.trim()) {
+          businessErrors.category = "Please enter a business category"
+        }
+        if (!address.trim()) {
+          businessErrors.address = "Please enter your business address"
+        }
+        if (Object.keys(businessErrors).length > 0) {
+          setErrors(businessErrors)
           return false
         }
         return true
@@ -124,29 +133,27 @@ export default function RegisterPage() {
           return false
         }
         return true
+      case 4:
+        if (!email) {
+          setErrors({ email: "Please enter your email address" })
+          return false
+        }
+        if (!/\S+@\S+\.\S+/.test(email)) {
+          setErrors({ email: "Please enter a valid email address" })
+          return false
+        }
+        return true
       case 5:
-        if (!businessName.trim()) {
-          setErrors({ businessName: "Please enter your business name" })
+        if (!verificationCode.trim()) {
+          setErrors({ verificationCode: "Please enter the verification code" })
+          return false
+        }
+        if (verificationCode.length !== 6) {
+          setErrors({ verificationCode: "Verification code must be 6 digits" })
           return false
         }
         return true
       case 6:
-        const businessErrors: Record<string, string> = {}
-        if (!description.trim()) {
-          businessErrors.description = "Please enter a business description"
-        }
-        if (!category.trim()) {
-          businessErrors.category = "Please enter a business category"
-        }
-        if (!address.trim()) {
-          businessErrors.address = "Please enter your business address"
-        }
-        if (Object.keys(businessErrors).length > 0) {
-          setErrors(businessErrors)
-          return false
-        }
-        return true
-      case 7:
         if (!agreeToTerms) {
           setErrors({ terms: "Please accept the Terms of Service and Privacy Policy" })
           return false
@@ -160,20 +167,16 @@ export default function RegisterPage() {
   const handleNext = async () => {
     if (!validateStep(currentStep)) return
 
-    if (currentStep === 3) {
-      // After password step, show setup screen
-      setCurrentStep(4)
-      setIsSettingUp(true)
-      
-      // Simulate profile setup delay
-      setTimeout(() => {
-        setIsSettingUp(false)
-        setCurrentStep(5)
-      }, 2500)
-    } else if (currentStep === 7) {
-      // Final submission
+    if (currentStep === 4) {
+      // After email step, submit registration and get verification code
+      await handleRegistrationSubmit()
+    } else if (currentStep === 5) {
+      // Verify code but don't complete registration yet
+      await handleVerificationSubmit()
+    } else if (currentStep === 6) {
+      // Final step - complete registration with terms agreement
       await handleFinalSubmit()
-    } else if (currentStep < 7) {
+    } else if (currentStep < 6) {
       setCurrentStep((prev) => (prev + 1) as RegistrationStep)
     }
   }
@@ -185,14 +188,12 @@ export default function RegisterPage() {
     }
   }
 
-  const handleFinalSubmit = async () => {
+  const handleRegistrationSubmit = async () => {
     setIsLoading(true)
     setErrors({})
 
     try {
-      const startTime = Date.now()
-      
-      await register({
+      const result = await register({
         firstName,
         lastName,
         email,
@@ -204,7 +205,43 @@ export default function RegisterPage() {
         address,
       })
       
-      setCurrentStep(8)
+      setRegisteredEmail(result.email)
+      setCurrentStep(5) // Move to verification step
+    } catch (err) {
+      setErrors({ general: err instanceof Error ? err.message : "An error occurred" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerificationSubmit = async () => {
+    setIsLoading(true)
+    setErrors({})
+
+    try {
+      const result = await verifyCode(registeredEmail, verificationCode)
+      
+      if (result.verified) {
+        setCurrentStep(6) // Move to terms step
+      }
+    } catch (err) {
+      setErrors({ general: err instanceof Error ? err.message : "An error occurred" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleFinalSubmit = async () => {
+    setIsLoading(true)
+    setErrors({})
+
+    try {
+      const startTime = Date.now()
+      
+      // Complete registration with terms acceptance
+      await completeRegistration(registeredEmail)
+      
+      setCurrentStep(7) // Move to success step
       
       // Ensure the success screen is visible for at least 2 seconds
       const elapsedTime = Date.now() - startTime
@@ -212,12 +249,26 @@ export default function RegisterPage() {
       const remainingTime = Math.max(0, minimumDisplayTime - elapsedTime)
       
       setTimeout(() => {
-        router.push("/auth/login")
+        router.push("/dashboard") // Go to dashboard
       }, remainingTime + 1000) // Add extra 1 second for better UX
     } catch (err) {
       setErrors({ general: err instanceof Error ? err.message : "An error occurred" })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleResendCode = async () => {
+    setIsResending(true)
+    setErrors({})
+
+    try {
+      await resendCode(registeredEmail)
+      // Show success message or toast
+    } catch (err) {
+      setErrors({ general: err instanceof Error ? err.message : "Failed to resend code" })
+    } finally {
+      setIsResending(false)
     }
   }
 
@@ -231,25 +282,87 @@ export default function RegisterPage() {
               <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[1]}</p>
             </div>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 block" htmlFor="email">
-                  Email Address
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                    errors.email 
-                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                      : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                  }`}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-400 mt-1">{errors.email}</p>
-                )}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 block" htmlFor="businessName">
+                    Business Name
+                  </label>
+                  <Input
+                    id="businessName"
+                    type="text"
+                    placeholder="Acme Corporation"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.businessName 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
+                  />
+                  {errors.businessName && (
+                    <p className="text-sm text-red-400 mt-1">{errors.businessName}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 block" htmlFor="category">
+                    Business Category
+                  </label>
+                  <Input
+                    id="category"
+                    type="text"
+                    placeholder="Technology"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.category 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
+                  />
+                  {errors.category && (
+                    <p className="text-sm text-red-400 mt-1">{errors.category}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 block" htmlFor="description">
+                    Business Description
+                  </label>
+                  <Input
+                    id="description"
+                    type="text"
+                    placeholder="Software Development"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.description 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
+                  />
+                  {errors.description && (
+                    <p className="text-sm text-red-400 mt-1">{errors.description}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 block" htmlFor="address">
+                    Business Address
+                  </label>
+                  <Input
+                    id="address"
+                    type="text"
+                    placeholder="123 Main St, City, State 12345"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                      errors.address 
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                    }`}
+                  />
+                  {errors.address && (
+                    <p className="text-sm text-red-400 mt-1">{errors.address}</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -381,26 +494,31 @@ export default function RegisterPage() {
 
       case 4:
         return (
-          <div className="space-y-8 text-center py-12">
-            <div className="space-y-6">
-              <div className="flex justify-center">
-                <div className="relative">
-                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500/20 border-t-blue-500"></div>
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <div className="w-8 h-8 bg-blue-900/50 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-blue-400" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[4]}</h2>
-                <p className="text-base text-gray-300 leading-relaxed">{stepDescriptions[4]}</p>
-              </div>
-              <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl px-6 py-4">
-                <div className="flex items-center justify-center text-blue-400">
-                  <div className="animate-pulse text-sm font-medium">Setting up your personal profile...</div>
-                </div>
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[4]}</h2>
+              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[4]}</p>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 block" htmlFor="email">
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
+                    errors.email 
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                      : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-400 mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
           </div>
@@ -412,27 +530,54 @@ export default function RegisterPage() {
             <div className="space-y-3">
               <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[5]}</h2>
               <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[5]}</p>
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-3">
+                <p className="text-sm text-blue-400">
+                  We've sent a verification code to <span className="font-semibold">{registeredEmail}</span>
+                </p>
+              </div>
             </div>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300 block" htmlFor="businessName">
-                  Business Name
+                <label className="text-sm font-medium text-gray-300 block" htmlFor="verificationCode">
+                  Verification Code
                 </label>
                 <Input
-                  id="businessName"
+                  id="verificationCode"
                   type="text"
-                  placeholder="Acme Corporation"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                    errors.businessName 
+                  placeholder="000000"
+                  value={verificationCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                    setVerificationCode(value)
+                  }}
+                  className={`h-12 bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 text-center text-2xl font-mono tracking-widest ${
+                    errors.verificationCode 
                       ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
                       : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
                   }`}
+                  maxLength={6}
                 />
-                {errors.businessName && (
-                  <p className="text-sm text-red-400 mt-1">{errors.businessName}</p>
+                {errors.verificationCode && (
+                  <p className="text-sm text-red-400 mt-1">{errors.verificationCode}</p>
                 )}
+              </div>
+              
+              {/* Resend Code Button */}
+              <div className="text-center pt-2">
+                <button
+                  onClick={handleResendCode}
+                  disabled={isResending}
+                  className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors disabled:opacity-50"
+                >
+                  {isResending ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-3 w-3 border border-blue-400/30 border-t-blue-400 mr-2"></div>
+                      Resending...
+                    </div>
+                  ) : (
+                    "Didn't receive the code? Resend"
+                  )}
+                </button>
               </div>
             </div>
           </div>
@@ -444,80 +589,6 @@ export default function RegisterPage() {
             <div className="space-y-3">
               <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[6]}</h2>
               <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[6]}</p>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="category">
-                    Business Category
-                  </label>
-                  <Input
-                    id="category"
-                    type="text"
-                    placeholder="Technology"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.category 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.category && (
-                    <p className="text-sm text-red-400 mt-1">{errors.category}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="description">
-                    Business Description
-                  </label>
-                  <Input
-                    id="description"
-                    type="text"
-                    placeholder="Software Development"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.description 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.description && (
-                    <p className="text-sm text-red-400 mt-1">{errors.description}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-300 block" htmlFor="address">
-                    Business Address
-                  </label>
-                  <Input
-                    id="address"
-                    type="text"
-                    placeholder="123 Main St, City, State 12345"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 ${
-                      errors.address 
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                        : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
-                    }`}
-                  />
-                  {errors.address && (
-                    <p className="text-sm text-red-400 mt-1">{errors.address}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-
-      case 7:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold text-white tracking-tight">{stepTitles[7]}</h2>
-              <p className="text-base text-gray-400 leading-relaxed">{stepDescriptions[7]}</p>
             </div>
             <div className="space-y-4">
               {/* Summary Card */}
@@ -595,7 +666,7 @@ export default function RegisterPage() {
           </div>
         )
 
-      case 8:
+      case 7:
         return (
           <div className="space-y-8 text-center py-12">
             <div className="space-y-6">
@@ -611,7 +682,7 @@ export default function RegisterPage() {
               <div className="space-y-4">
                 <h2 className="text-3xl font-bold text-white tracking-tight">Welcome to Enquiro!</h2>
                 <p className="text-lg text-gray-300 leading-relaxed">
-                  Registered successfully. Redirecting you now to the login page.
+                  Registration completed successfully! Redirecting you to your dashboard.
                 </p>
               </div>
             </div>
@@ -679,24 +750,24 @@ export default function RegisterPage() {
           <div className="w-full max-w-md">
             
             {/* Progress Steps Indicator - Top aligned */}
-            {currentStep < 8 && (
+            {currentStep < 7 && (
               <div className="mb-8">
                 <div className="flex items-center justify-center mb-4">
                   <div className="flex items-center space-x-1.5">
-                    {[1, 2, 3, 4, 5, 6, 7].map((step) => (
+                    {[1, 2, 3, 4, 5, 6].map((step) => (
                       <div key={step} className="flex items-center">
-                        <div className={`h-2 w-8 rounded-full transition-all duration-300 ${
-                          step <= (currentStep === 4 ? 3 : currentStep) 
+                        <div className={`h-2 w-10 rounded-full transition-all duration-300 ${
+                          step <= currentStep 
                             ? 'bg-blue-500' 
                             : 'bg-gray-700'
                         }`}></div>
-                        {step < 7 && <div className="w-1"></div>}
+                        {step < 6 && <div className="w-1"></div>}
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="text-xs text-gray-400 font-medium text-center">
-                  Step {currentStep === 4 ? 3 : currentStep} of 7
+                  Step {currentStep} of 6
                 </div>
               </div>
             )}
@@ -714,7 +785,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Footer Button - Right aligned for natural flow */}
-            {currentStep !== 4 && currentStep !== 8 && (
+            {currentStep !== 7 && (
               <div className="flex justify-between items-center">
                 {/* Back Button */}
                 {currentStep > 1 ? (
@@ -740,7 +811,11 @@ export default function RegisterPage() {
                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-3"></div>
                       Processing...
                     </div>
-                  ) : currentStep === 7 ? (
+                  ) : currentStep === 4 ? (
+                    "Send Verification Code"
+                  ) : currentStep === 5 ? (
+                    "Verify Email"
+                  ) : currentStep === 6 ? (
                     "Complete Registration"
                   ) : (
                     <>
