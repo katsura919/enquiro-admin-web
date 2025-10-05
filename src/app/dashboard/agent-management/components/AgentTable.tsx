@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -46,6 +47,16 @@ export function AgentTable({
   loading = false,
   pagination
 }: AgentTableProps) {
+  const router = useRouter()
+
+  const handleRowClick = (agentId: string, event: React.MouseEvent) => {
+    // Don't navigate if user clicked on the actions dropdown
+    if ((event.target as HTMLElement).closest('[data-dropdown-trigger]')) {
+      return
+    }
+    router.push(`/dashboard/agent-management/${agentId}`)
+  }
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -99,7 +110,11 @@ export function AgentTable({
           </TableHeader>
           <TableBody>
             {agents.map((agent) => (
-              <TableRow key={agent._id}>
+              <TableRow 
+                key={agent._id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={(e) => handleRowClick(agent._id, e)}
+              >
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
@@ -148,7 +163,12 @@ export function AgentTable({
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                        data-dropdown-trigger
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

@@ -53,7 +53,6 @@ export default function AgentManagementPage() {
   const [roleFilter, setRoleFilter] = React.useState<"all" | "admin" | "supervisor" | "agent">("all")
   const [loading, setLoading] = React.useState(false)
   const [initialLoading, setInitialLoading] = React.useState(true)
-  console.log("Agents:", agents)
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(11)
