@@ -448,29 +448,6 @@ export default function RegisterPage() {
         <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <div className="w-full max-w-md lg:max-w-lg">
             
-            {/* Progress Steps Indicator - Top aligned */}
-            {currentStep < 7 && (
-              <div className="mb-6 lg:mb-8">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="flex items-center space-x-1 sm:space-x-1.5">
-                    {[1, 2, 3, 4, 5, 6].map((step) => (
-                      <div key={step} className="flex items-center">
-                        <div className={`h-2 w-6 sm:w-8 lg:w-10 rounded-full transition-all duration-300 ${
-                          step <= currentStep 
-                            ? 'bg-blue-500' 
-                            : 'bg-gray-700'
-                        }`}></div>
-                        {step < 6 && <div className="w-0.5 sm:w-1"></div>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="text-xs text-gray-400 font-medium text-center">
-                  Step {currentStep} of 6
-                </div>
-              </div>
-            )}
-
             {/* Error Message for General Errors */}
             {errors.general && (
               <div className="mb-6 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
@@ -491,7 +468,7 @@ export default function RegisterPage() {
                   <Button
                     onClick={handleBack}
                     variant="ghost"
-                    className="w-full sm:w-auto text-gray-400 hover:text-white hover:bg-white/10 h-12 px-6 text-base font-medium transition-all duration-200 order-2 sm:order-1"
+                    className="w-full sm:w-auto text-gray-400 hover:text-white hover:bg-white/10 h-12 px-6 text-base font-medium transition-all duration-200 order-2 sm:order-1 cursor-pointer"
                   >
                     Back
                   </Button>
@@ -503,7 +480,7 @@ export default function RegisterPage() {
                 <Button
                   onClick={handleNext}
                   disabled={isLoading}
-                  className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white h-12 px-8 text-base font-medium transition-all duration-200 rounded-lg shadow-sm order-1 sm:order-2"
+                  className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white h-12 px-8 text-base font-medium transition-all duration-200 rounded-lg shadow-sm order-1 sm:order-2 cursor-pointer"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center">
@@ -512,7 +489,7 @@ export default function RegisterPage() {
                       <span className="sm:hidden">Processing</span>
                     </div>
                   ) : currentStep === 4 ? (
-                    <span className="hidden sm:inline">Send Verification Code</span>
+                    <span className="hidden sm:inline">Send Code</span>
                   ) : currentStep === 5 ? (
                     "Verify Email"
                   ) : currentStep === 6 ? (
