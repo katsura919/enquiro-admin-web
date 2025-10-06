@@ -84,6 +84,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     'agent-management': { label: 'Agent Management' },
     security: { label: 'Security' },
     chatbot: { label: 'Chatbot' },
+    ratings: { label: 'Ratings' },
   };
   // Breadcrumb import
   // prettier-ignore
