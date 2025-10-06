@@ -45,7 +45,7 @@ export default function FAQFilters({
             placeholder="Search FAQs..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-card shadow-none"
           />
         </div>
       </div>

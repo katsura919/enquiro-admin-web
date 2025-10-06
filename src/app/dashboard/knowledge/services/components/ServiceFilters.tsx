@@ -39,12 +39,12 @@ export default function ServiceFilters({
       <div className="space-y-2">
         <Label className="text-sm font-medium">Search</Label>
         <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground " />
           <Input
             placeholder="Search services..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="bg-background pl-10"
+            className="bg-card pl-10 shadow-none"
           />
         </div>
       </div>

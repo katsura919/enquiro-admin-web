@@ -574,7 +574,7 @@ return (
         </div>
 
         {/* Right Column */}
-        <div className="lg:border-l lg:border-border/40">
+        <div className="lg:border-l lg:border-border-muted-gray">
           <div className="p-0 lg:p-4 space-y-6 md:space-y-8">
             <CaseNotesPreview 
               notes={caseNotes}

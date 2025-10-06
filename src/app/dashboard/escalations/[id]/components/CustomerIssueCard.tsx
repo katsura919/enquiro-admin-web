@@ -102,7 +102,7 @@ export function CustomerIssueCard({
   };
 
   return (
-    <Card className="bg-card overflow-hidden shadow-sm border-border/40">
+    <Card className="bg-card overflow-hidden border-muted-gray shadow-none">
       <div className="p-6">
         {/* Header with Edit Button */}
         <div className="flex justify-between items-center mb-6">

@@ -45,7 +45,7 @@ export default function ProductFilters({
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="bg-background pl-10"
+            className="bg-card pl-10 shadow-none"
           />
         </div>
       </div>

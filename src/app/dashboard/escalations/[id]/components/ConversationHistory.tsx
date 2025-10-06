@@ -189,13 +189,13 @@ export function ConversationHistory({
           size="sm"
           onClick={handleRefreshChats}
           disabled={refreshing}
-          className="gap-2 bg-card"
+          className="gap-2 bg-card border-muted-gray shadow-none"
         >
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")}/>
           Refresh
         </Button>
       </div>        
-      <Card className="bg-card p-0 overflow-hidden shadow-sm border-border/40">
+      <Card className="bg-card p-0 overflow-hidden shadow-none border-muted-gray">
         {loadingChats ? (
           <ScrollArea className="h-[650px]">
             <div className="p-4 space-y-4">
@@ -286,11 +286,7 @@ export function ConversationHistory({
                         </div>
                         <div className="flex-1">
                           <div className="bg-muted rounded-lg rounded-tl-none p-3">
-                            {message.isGoodResponse !== null && (
-                              <Badge variant={message.isGoodResponse ? "default" : "destructive"} className="mb-2 text-xs">
-                                {message.isGoodResponse ? "Helpful" : "Not Helpful"}
-                              </Badge>
-                            )}
+
                             {message.messageType === 'text' && message.message && (
                               <Markdown
                                 options={{

@@ -353,7 +353,7 @@ export function EmailThread({
         </Button>
       </div>
 
-      <Card className="bg-card overflow-hidden">
+      <Card className="bg-card overflow-hidden border-muted-gray shadow-none">
         <ScrollArea className="h-[650px]">
           {emails.length === 0 ? (
             <div className="p-4">

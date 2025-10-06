@@ -1,9 +1,15 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Check, Copy, ChevronDown } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CaseOwnerCombobox } from "./CaseOwnerCombobox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface EscalationHeaderProps {
   escalation: {
@@ -98,31 +104,33 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
           {/* Status Section */}
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="bg-card flex items-center gap-2 justify-start">
+            <span className="text-sm font-medium text-muted-foreground tracking-wide">Status</span>
+            <Select
+              value={escalation.status}
+              onValueChange={handleStatusChange}
+            >
+              <SelectTrigger className="w-[200px] bg-card">
+                <SelectValue>
                   <span className="capitalize">{escalation.status}</span>
-                  <ChevronDown className="h-4 w-4 ml-1 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => handleStatusChange('escalated')}>
-                  <span className={cn("flex items-center gap-2", escalation.status === 'escalated' && 'font-bold')}>Escalated</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusChange('pending')}>
-                  <span className={cn("flex items-center gap-2", escalation.status === 'pending' && 'font-bold')}>Pending</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusChange('resolved')}>
-                  <span className={cn("flex items-center gap-2", escalation.status === 'resolved' && 'font-bold')}>Resolved</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="escalated">
+                  <span className={cn(escalation.status === 'escalated' && 'font-bold')}>Escalated</span>
+                </SelectItem>
+                <SelectItem value="pending">
+                  <span className={cn(escalation.status === 'pending' && 'font-bold')}>Pending</span>
+                </SelectItem>
+                <SelectItem value="resolved">
+                  <span className={cn(escalation.status === 'resolved' && 'font-bold')}>Resolved</span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Case Owner Section */}
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Owner</span>
+            <span className="text-sm font-medium text-muted-foreground  tracking-wide">Case Owner</span>
             <CaseOwnerCombobox
               value={escalation.caseOwner?._id || ""}
               onValueChange={handleCaseOwnerChange || (() => {})}

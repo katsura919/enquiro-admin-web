@@ -218,7 +218,7 @@ export default function FAQPage() {
           
           {/* Left Sidebar: Search and Filters - Fixed */}
           <div className="lg:w-80 flex-shrink-0">
-            <div className="space-y-6 bg-card p-6 rounded-lg ">
+            <div className="space-y-6 bg-card p-6 rounded-lg border border-muted-gray">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">FAQ Manager</h2>
