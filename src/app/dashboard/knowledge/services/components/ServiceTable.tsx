@@ -130,7 +130,7 @@ export default function ServiceTable({ services, onEdit, onDelete, onToggleStatu
 
   return (
     <TooltipProvider>
-      <div className="border rounded-lg">
+      <div className="border rounded-lg min-h-[600px]">
         <Table className="bg-card rounded-lg">
           <TableHeader>
             <TableRow>
