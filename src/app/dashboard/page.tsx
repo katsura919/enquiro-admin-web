@@ -96,6 +96,10 @@ export default function DashboardPage() {
   console.log(user)
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [averageRating, setAverageRating] = useState<number | null>(null)
+  const [escalatedCount, setEscalatedCount] = useState<number | null>(null)
+  const [ratingLoading, setRatingLoading] = useState(true)
+  const [escalatedLoading, setEscalatedLoading] = useState(true)
 
   // Fetch business data
   useEffect(() => {
@@ -114,6 +118,50 @@ export default function DashboardPage() {
     }
 
     fetchBusinessData()
+  }, [user?.businessId])
+
+  // Fetch average rating
+  useEffect(() => {
+    const fetchAverageRating = async () => {
+      if (!user?.businessId) return
+
+      try {
+        setRatingLoading(true)
+        const response = await api.get(`/analytics/business-ratings/${user.businessId}/average`)
+        if (response.data.success) {
+          setAverageRating(response.data.data.averageRating)
+        }
+      } catch (error) {
+        console.error("Error fetching average rating:", error)
+        setAverageRating(null)
+      } finally {
+        setRatingLoading(false)
+      }
+    }
+
+    fetchAverageRating()
+  }, [user?.businessId])
+
+  // Fetch escalated count
+  useEffect(() => {
+    const fetchEscalatedCount = async () => {
+      if (!user?.businessId) return
+
+      try {
+        setEscalatedLoading(true)
+        const response = await api.get(`/analytics/escalations/${user.businessId}/count`)
+        if (response.data.success) {
+          setEscalatedCount(response.data.data.escalatedCount)
+        }
+      } catch (error) {
+        console.error("Error fetching escalated count:", error)
+        setEscalatedCount(null)
+      } finally {
+        setEscalatedLoading(false)
+      }
+    }
+
+    fetchEscalatedCount()
   }, [user?.businessId])
 
   const getStatusColor = (status: string) => {
@@ -154,12 +202,18 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20">
           <CardHeader className="pb-3 px-6 pt-6">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Avg Response Time
+              <AlertTriangle className="h-4 w-4" />
+              Total Escalated Cases
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">{dashboardData.performance.avgResponseTime}</div>
+            {escalatedLoading ? (
+              <div className="text-xl font-bold text-muted-foreground">Loading...</div>
+            ) : escalatedCount !== null ? (
+              <div className="text-2xl font-bold text-foreground">{escalatedCount}</div>
+            ) : (
+              <div className="text-xl font-bold text-muted-foreground">0</div>
+            )}
           </CardContent>
         </Card>
 
@@ -171,7 +225,13 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">{dashboardData.performance.customerSatisfaction}/5</div>
+            {ratingLoading ? (
+              <div className="text-xl font-bold text-muted-foreground">Loading...</div>
+            ) : averageRating !== null ? (
+              <div className="text-2xl font-bold text-foreground">{averageRating}/5</div>
+            ) : (
+              <div className="text-xl font-bold text-muted-foreground">No ratings yet</div>
+            )}
           </CardContent>
         </Card>
 

@@ -26,7 +26,9 @@ import {
   Building2,
   Bot,
   Shield,
-  CreditCard
+  CreditCard,
+  Star,
+  
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -54,7 +56,8 @@ const navigation = [
           { name: "FAQ", href: "/dashboard/knowledge/faq", icon: HelpCircle },
         ]
       },
-      { name: "Cases", href: "/dashboard/escalations", icon: Inbox }
+      { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
+      { name: "Ratings", href: "/dashboard/ratings", icon: Star },
     ]
   },
   {
