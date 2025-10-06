@@ -86,6 +86,7 @@ export default function EscalationsPage() {
           concern: e.concern,
           status: e.status,
           createdAt: e.createdAt,
+          caseOwner: e.caseOwner,
         }))
         console.log("Transformed escalations:", transformed)
         setEscalations(transformed)

@@ -45,6 +45,10 @@ export interface Escalation {
   concern: string
   status: "escalated" | "pending" | "resolved"
   createdAt: string
+  caseOwner?: {
+    _id: string
+    name: string
+  } | null
 }
 
 interface EscalationTableProps {
@@ -57,7 +61,7 @@ interface EscalationTableProps {
   onDelete?: (id: string) => void
 }
 
-type SortField = 'caseNumber' | 'customerName' | 'customerEmail' | 'concern' | 'status' | 'createdAt'
+type SortField = 'caseNumber' | 'customerName' | 'customerEmail' | 'concern' | 'status' | 'createdAt' | 'caseOwner'
 type SortDirection = 'asc' | 'desc'
 
 const statusColors = {
@@ -194,6 +198,7 @@ export function EscalationTable({
               <SortableHeader field="customerName">Customer</SortableHeader>
               <SortableHeader field="customerEmail">Email</SortableHeader>
               <SortableHeader field="concern">Concern</SortableHeader>
+              <SortableHeader field="caseOwner">Case Owner</SortableHeader>
               <SortableHeader field="status">Status</SortableHeader>
               <SortableHeader field="createdAt">Created</SortableHeader>
             </TableRow>
@@ -201,7 +206,7 @@ export function EscalationTable({
           <TableBody>
             {escalations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-[500px]">
+                <TableCell colSpan={8} className="h-[500px]">
                   <div className="flex flex-col items-center justify-center text-center">
                     <div className="rounded-full bg-muted p-6 mb-4">
                       <Mail className="h-12 w-12 text-muted-foreground" />
@@ -241,6 +246,14 @@ export function EscalationTable({
                       <TableCell>
                         <div className="max-w-[300px] truncate">
                           <span className="font-medium">{escalation.concern}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {escalation.caseOwner?.name || "Unassigned"}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
