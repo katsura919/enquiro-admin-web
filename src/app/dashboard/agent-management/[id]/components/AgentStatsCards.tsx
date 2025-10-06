@@ -24,7 +24,7 @@ interface AgentStatsCardsProps {
 export function AgentStatsCards({ stats }: AgentStatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="hover:shadow-md transition-shadow">
+      <Card className="bg-card shadow-none border-muted-gray hover:shadow-md transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-xl">
@@ -38,7 +38,7 @@ export function AgentStatsCards({ stats }: AgentStatsCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-md transition-shadow">
+      <Card className="bg-card shadow-none border-muted-gray hover:shadow-md transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-green-100 dark:bg-green-900 rounded-xl">
@@ -52,7 +52,7 @@ export function AgentStatsCards({ stats }: AgentStatsCardsProps) {
         </CardContent>
       </Card>
 
-      <Card className="hover:shadow-md transition-shadow">
+      <Card className="bg-card shadow-none border-muted-gray hover:shadow-md transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-xl">

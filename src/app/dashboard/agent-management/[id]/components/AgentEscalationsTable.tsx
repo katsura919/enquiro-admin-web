@@ -22,7 +22,7 @@ export function AgentEscalationsTable() {
   const router = useRouter()
 
   return (
-    <Card>
+    <Card className="bg-card shadow-none border-muted-gray">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />

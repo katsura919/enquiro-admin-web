@@ -4,7 +4,7 @@ import * as React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { 
-  ArrowLeft, 
+  ChevronLeft, 
   Edit, 
   Trash2, 
   XCircle
@@ -16,7 +16,6 @@ import api from "@/utils/api"
 // Import components
 import { AgentProfileCard } from "./components/AgentProfileCard"
 import { AgentStatsCards } from "./components/AgentStatsCards"
-import { AgentPerformanceOverview } from "./components/AgentPerformanceOverview"
 import { AgentEscalationsTable } from "./components/AgentEscalationsTable"
 
 interface Agent {
@@ -200,7 +199,7 @@ export default function AgentDetailsPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ChevronLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
         </div>
@@ -219,7 +218,7 @@ export default function AgentDetailsPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ChevronLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
         </div>
@@ -245,24 +244,13 @@ export default function AgentDetailsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            <ChevronLeft className="h-20 w-20   " />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">Agent Details</h1>
-            <p className="text-muted-foreground">View and manage agent information</p>
+            <h2 className="text-xl font-semibold">Agent Profile</h2>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleEdit}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        </div>
+
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -283,9 +271,6 @@ export default function AgentDetailsPage() {
         <div className="lg:col-span-8 space-y-6">
           {/* Performance Stats */}
           <AgentStatsCards stats={stats} />
-
-          {/* Performance Overview */}
-          <AgentPerformanceOverview agent={agent} stats={stats} />
 
           {/* Agent Escalations */}
           <AgentEscalationsTable />

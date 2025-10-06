@@ -63,7 +63,7 @@ export function AgentProfileCard({
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden bg-card border-muted-gray shadow-none">
         <CardContent className="p-0">
           {/* Profile Header */}
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 px-6 py-8">
