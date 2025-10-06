@@ -97,19 +97,23 @@ export function AgentEscalationsTable({ escalations, loading, currentPage, total
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                      <span className="ml-2 text-muted-foreground">Loading escalations...</span>
+                  <TableCell colSpan={5} className="h-[500px]">
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                        <span className="mt-2 text-muted-foreground block">Loading escalations...</span>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : escalations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <Mail className="h-8 w-8 text-muted-foreground mb-2" />
-                      <span className="text-muted-foreground">No escalations assigned to this agent</span>
+                  <TableCell colSpan={5} className="h-[500px]">
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <Mail className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                        <span className="text-muted-foreground">No escalations assigned to this agent</span>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>

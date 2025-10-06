@@ -74,9 +74,11 @@ export function AgentTable({
   if (loading) {
     return (
       <Card className="w-full">
-        <div className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading agents...</p>
+        <div className="flex items-center justify-center min-h-[600px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-muted-foreground">Loading agents...</p>
+          </div>
         </div>
       </Card>
     )
@@ -85,10 +87,12 @@ export function AgentTable({
   if (agents.length === 0) {
     return (
       <Card className="w-full">
-        <div className="p-8 text-center">
-          <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No agents found</h3>
-          <p className="text-muted-foreground">There are no agents to display at the moment.</p>
+        <div className="flex items-center justify-center min-h-[600px]">
+          <div className="text-center">
+            <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No agents found</h3>
+            <p className="text-muted-foreground">There are no agents to display at the moment.</p>
+          </div>
         </div>
       </Card>
     )

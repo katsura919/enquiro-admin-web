@@ -111,7 +111,7 @@ export function AgentProfileCard({
                       type="tel"
                       value={editForm.phone}
                       onChange={(e) => onFormChange('phone', e.target.value)}
-                      className="text-sm mt-1"
+                      className="text-sm mt-1 bg-card shadow-none"
                       placeholder="+1 555 666 7890"
                     />
                   ) : (
@@ -122,16 +122,6 @@ export function AgentProfileCard({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <MapPin className="h-4 w-4 text-gray-400" />
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Address:</p>
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    525 E 68th Street<br />
-                    New York, NY 10021-5-308-69
-                  </p>
-                </div>
-              </div>
 
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-gray-400" />
@@ -142,7 +132,7 @@ export function AgentProfileCard({
                       type="email"
                       value={editForm.email}
                       onChange={(e) => onFormChange('email', e.target.value)}
-                      className="text-sm mt-1"
+                      className="text-sm mt-1 bg-card shadow-none"
                       placeholder="hello@jeremyrose.com"
                     />
                   ) : (
@@ -160,7 +150,7 @@ export function AgentProfileCard({
                 variant="outline" 
                 size="sm" 
                 onClick={onEdit}
-                className="w-full mt-4"
+                className="w-full mt-4 bg-card shadow-none"
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Profile
@@ -173,10 +163,10 @@ export function AgentProfileCard({
       {/* Edit Profile Buttons - Below Card */}
       {isEditing && (
         <div className="flex gap-2 mt-4">
-          <Button size="sm" onClick={onSave} className="flex-1">
+          <Button size="sm" onClick={onSave} className="flex-1 cursor-pointer text-primary-foreground">
             Save Changes
           </Button>
-          <Button size="sm" variant="outline" onClick={onCancel} className="flex-1">
+          <Button size="sm" variant="outline" onClick={onCancel} className="flex-1 bg-card shadow-none cursor-pointer">
             Cancel
           </Button>
         </div>

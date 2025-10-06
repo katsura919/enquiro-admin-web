@@ -43,7 +43,7 @@ export function AgentStatsCards({ stats, counts, ratingStats }: AgentStatsCardsP
               <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts?.totalCases || 42}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts?.totalCases}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Total Cases</p>
             </div>
           </div>
@@ -57,7 +57,7 @@ export function AgentStatsCards({ stats, counts, ratingStats }: AgentStatsCardsP
               <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts?.totalResolvedCases || 0}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts?.totalResolvedCases}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Resolved Cases</p>
             </div>
           </div>
