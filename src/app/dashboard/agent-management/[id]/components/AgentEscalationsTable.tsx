@@ -15,11 +15,61 @@ import {
 import { 
   MessageSquare, 
   User, 
-  Calendar
+  Calendar,
+  Mail
 } from "lucide-react"
+import { format } from "date-fns"
 
-export function AgentEscalationsTable() {
+interface Escalation {
+  _id: string
+  caseNumber: string
+  customerName: string
+  customerEmail: string
+  concern: string
+  status: "escalated" | "pending" | "resolved"
+  createdAt: string
+}
+
+interface AgentEscalationsTableProps {
+  escalations: Escalation[]
+  loading: boolean
+}
+
+export function AgentEscalationsTable({ escalations, loading }: AgentEscalationsTableProps) {
   const router = useRouter()
+
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "MMM d, yyyy")
+    } catch {
+      return dateString
+    }
+  }
+
+  const getStatusInfo = (status: Escalation['status']) => {
+    switch (status) {
+      case 'escalated':
+        return { 
+          text: 'Escalated', 
+          className: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-200 dark:border-red-800' 
+        }
+      case 'pending':
+        return { 
+          text: 'Pending', 
+          className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800' 
+        }
+      case 'resolved':
+        return { 
+          text: 'Resolved', 
+          className: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-200 dark:border-green-800' 
+        }
+      default:
+        return { 
+          text: status, 
+          className: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 border-gray-200 dark:border-gray-800' 
+        }
+    }
+  }
 
   return (
     <Card className="bg-card shadow-none border-muted-gray">
@@ -42,115 +92,62 @@ export function AgentEscalationsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {/* Dummy escalation data */}
-              <TableRow className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-mono text-sm font-medium">
-                  ESC-2024-001
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">John Doe</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="max-w-[300px] truncate">
-                    <span className="font-medium">Product delivery issue - missing items</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-200 dark:border-red-800">
-                    Escalated
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Oct 5, 2025</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-              <TableRow className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-mono text-sm font-medium">
-                  ESC-2024-002
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Sarah Wilson</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="max-w-[300px] truncate">
-                    <span className="font-medium">Billing discrepancy - overcharged amount</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800">
-                    Pending
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Oct 4, 2025</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-              <TableRow className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-mono text-sm font-medium">
-                  ESC-2024-003
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Mike Johnson</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="max-w-[300px] truncate">
-                    <span className="font-medium">Service complaint - poor customer support</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-200 dark:border-green-800">
-                    Resolved
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Oct 3, 2025</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-              <TableRow className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-mono text-sm font-medium">
-                  ESC-2024-004
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">Emily Davis</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="max-w-[300px] truncate">
-                    <span className="font-medium">Technical issue - website login problems</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800">
-                    Pending
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">Oct 2, 2025</span>
-                  </div>
-                </TableCell>
-              </TableRow>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center">
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      <span className="ml-2 text-muted-foreground">Loading escalations...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : escalations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-32 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <Mail className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-muted-foreground">No escalations assigned to this agent</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                escalations.map((escalation) => {
+                  const statusInfo = getStatusInfo(escalation.status)
+                  return (
+                    <TableRow 
+                      key={escalation._id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => router.push(`/dashboard/escalations/${escalation._id}`)}
+                    >
+                      <TableCell className="font-mono text-sm font-medium">
+                        {escalation.caseNumber}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{escalation.customerName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[300px] truncate">
+                          <span className="font-medium">{escalation.concern || 'No concern provided'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusInfo.className}`}>
+                          {statusInfo.text}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">{formatDate(escalation.createdAt)}</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
             </TableBody>
           </Table>
         </div>

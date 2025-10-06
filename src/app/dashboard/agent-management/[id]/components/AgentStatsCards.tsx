@@ -17,11 +17,17 @@ interface AgentStats {
   totalMessages: number
 }
 
-interface AgentStatsCardsProps {
-  stats: AgentStats | null
+interface CountData {
+  totalCases: number
+  totalResolvedCases: number
 }
 
-export function AgentStatsCards({ stats }: AgentStatsCardsProps) {
+interface AgentStatsCardsProps {
+  stats: AgentStats | null
+  counts?: CountData | null
+}
+
+export function AgentStatsCards({ stats, counts }: AgentStatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="bg-card shadow-none border-muted-gray hover:shadow-md transition-shadow">
@@ -31,8 +37,8 @@ export function AgentStatsCards({ stats }: AgentStatsCardsProps) {
               <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.totalSessions || 42}</p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total Sessions</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts?.totalCases || 42}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total Cases</p>
             </div>
           </div>
         </CardContent>
@@ -45,7 +51,7 @@ export function AgentStatsCards({ stats }: AgentStatsCardsProps) {
               <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.resolvedSessions || 38}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{counts?.totalResolvedCases || 0}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">Resolved Cases</p>
             </div>
           </div>

@@ -39,6 +39,21 @@ interface AgentStats {
   totalMessages: number
 }
 
+interface Escalation {
+  _id: string
+  caseNumber: string
+  customerName: string
+  customerEmail: string
+  concern: string
+  status: "escalated" | "pending" | "resolved"
+  createdAt: string
+}
+
+interface CountData {
+  totalCases: number
+  totalResolvedCases: number
+}
+
 export default function AgentDetailsPage() {
   const params = useParams()
   const router = useRouter()
@@ -46,8 +61,10 @@ export default function AgentDetailsPage() {
   const agentId = params.id as string
 
   const [agent, setAgent] = React.useState<Agent | null>(null)
-  console.log("Agent:", agent)
   const [stats, setStats] = React.useState<AgentStats | null>(null)
+  const [escalations, setEscalations] = React.useState<Escalation[]>([])
+  const [counts, setCounts] = React.useState<CountData | null>(null)
+  const [escalationsLoading, setEscalationsLoading] = React.useState(false)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [isEditing, setIsEditing] = React.useState(false)
@@ -60,6 +77,7 @@ export default function AgentDetailsPage() {
   React.useEffect(() => {
     if (agentId && user?.businessId) {
       loadAgentDetails()
+      loadAgentEscalations()
     }
   }, [agentId, user?.businessId])
 
@@ -129,6 +147,31 @@ export default function AgentDetailsPage() {
       setError(err.response?.data?.error || err.message || "Failed to load agent details")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadAgentEscalations = async () => {
+    try {
+      setEscalationsLoading(true)
+      console.log('Fetching escalations for agent ID:', agentId)
+      
+      const response = await api.get(`/escalation/agent/${agentId}`, {
+        params: { 
+          limit: 5, // Show only recent 5 escalations on profile
+          status: 'all' 
+        }
+      })
+      
+      setEscalations(response.data.escalations || [])
+      setCounts(response.data.counts || null)
+      console.log('Agent escalations loaded:', response.data.escalations)
+      console.log('Agent counts loaded:', response.data.counts)
+    } catch (err: any) {
+      console.error('Failed to load agent escalations:', err)
+      // Don't show error for escalations, just keep empty array
+      setEscalations([])
+    } finally {
+      setEscalationsLoading(false)
     }
   }
 
@@ -270,10 +313,13 @@ export default function AgentDetailsPage() {
         {/* Right Column - Performance & Details */}
         <div className="lg:col-span-8 space-y-6">
           {/* Performance Stats */}
-          <AgentStatsCards stats={stats} />
+          <AgentStatsCards stats={stats} counts={counts} />
 
           {/* Agent Escalations */}
-          <AgentEscalationsTable />
+          <AgentEscalationsTable 
+            escalations={escalations}
+            loading={escalationsLoading}
+          />
         </div>
       </div>
     </div>
