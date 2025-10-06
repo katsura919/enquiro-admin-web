@@ -34,6 +34,7 @@ interface CaseOwnerComboboxProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  currentAgentName?: string; // Current agent name to display
 }
 
 export function CaseOwnerCombobox({
@@ -42,7 +43,8 @@ export function CaseOwnerCombobox({
   businessId,
   placeholder = "Select agent...",
   disabled = false,
-  className
+  className,
+  currentAgentName
 }: CaseOwnerComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -121,7 +123,7 @@ export function CaseOwnerCombobox({
               <UserCircle className="h-4 w-4 text-muted-foreground" />
             )}
             <span className="text-sm">
-              {saving ? "Saving..." : selectedAgent ? selectedAgent.name : placeholder}
+              {saving ? "Saving..." : value && currentAgentName ? currentAgentName : selectedAgent ? selectedAgent.name : placeholder}
             </span>
           </div>
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />

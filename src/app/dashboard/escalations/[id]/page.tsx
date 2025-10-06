@@ -200,32 +200,27 @@ export default function EscalationDetailsPage() {
       console.log('Case owner update response:', response.data);
       
       if (response.data.success) {
-        // Update escalation state with new case owner
-        const updatedEscalation = { ...escalation };
-        if (agentId) {
-          // Fetch the selected agent details
-          try {
-            const agentResponse = await api.get(`/agent/${agentId}`);
-            updatedEscalation.caseOwner = agentResponse.data;
-            console.log('Agent details fetched:', agentResponse.data);
-          } catch (error) {
-            console.error('Error fetching agent details:', error);
-          }
-        } else {
-          updatedEscalation.caseOwner = undefined;
-        }
-        setEscalation(updatedEscalation);
+        // The backend returns the updated escalation with populated caseOwner
+        const updatedEscalationData = response.data.data;
+        
+        // Update escalation state with the response data
+        setEscalation(prev => prev ? {
+          ...prev,
+          caseOwner: updatedEscalationData.caseOwner || undefined
+        } : null);
         
         // Add activity
         const newActivity: Activity = {
           id: `act-${Date.now()}`,
           action: agentId ? "Case Owner Assigned" : "Case Owner Unassigned",
           timestamp: new Date().toISOString(),
-          details: agentId ? `Assigned to agent` : "Case unassigned"
+          details: updatedEscalationData.caseOwner 
+            ? `Assigned to ${updatedEscalationData.caseOwner.name}` 
+            : "Case unassigned"
         };
         setActivities([newActivity, ...activities]);
         
-        console.log('Case owner updated successfully');
+        console.log('Case owner updated successfully', updatedEscalationData.caseOwner);
       } else {
         console.error('Case owner update failed:', response.data);
       }
@@ -535,6 +530,7 @@ return (
         handleStatusChange={handleStatusChange}
         handleCaseOwnerChange={handleCaseOwnerChange}
         businessId={escalation.businessId}
+        currentOwnerName={escalation.caseOwner?.name}
       />
     )}
     {/* Main Content */}

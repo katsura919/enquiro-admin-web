@@ -25,6 +25,7 @@ interface EscalationHeaderProps {
   handleStatusChange: (status: string) => void;
   handleCaseOwnerChange?: (agentId: string) => void;
   businessId?: string; // Add businessId for filtering agents
+  currentOwnerName?: string; // Current case owner name for placeholder
 }
 
 export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
@@ -38,6 +39,7 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
   handleStatusChange,
   handleCaseOwnerChange,
   businessId,
+  currentOwnerName,
 }) => (
   <div className="border-b border-border bg-background w-full">
     <div className="px-4 py-3 md:px-6 md:py-4">
@@ -126,6 +128,7 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
               onValueChange={handleCaseOwnerChange || (() => {})}
               businessId={businessId}
               placeholder="Assign agent..."
+              currentAgentName={currentOwnerName}
               className="w-[200px]"
             />
           </div>
