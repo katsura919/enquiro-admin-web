@@ -22,6 +22,7 @@ import { useAuth } from "@/lib/auth"
 import Link from "next/link"
 import QR from "@/components/dashboard/QR"
 import api from "@/utils/api"
+import { ChartAreaInteractive } from "@/components/dashboard/dashboard-escalation-chart"
 
 interface BusinessData {
   _id: string
@@ -198,6 +199,13 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Escalations Chart */}
+      {businessData._id && (
+        <div className="mb-8">
+          <ChartAreaInteractive businessId={businessData._id} />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3 mb-8">
         {/* Chat Interface */}
