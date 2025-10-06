@@ -9,6 +9,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { 
   ArrowLeft, 
   Edit, 
@@ -337,32 +345,6 @@ export default function AgentDetailsPage() {
                 </div>
               </div>
 
-              {/* Edit Profile Buttons */}
-              {isEditing && (
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={handleProfileSave} className="flex-1">
-                      Save
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={handleProfileCancel} className="flex-1">
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation Tabs */}
-              <div className="px-6 py-3 bg-gray-50 dark:bg-gray-800">
-                <div className="flex space-x-6">
-                  <button className="text-sm font-medium text-blue-600 border-b-2 border-blue-600 pb-2">
-                    Timeline
-                  </button>
-                  <button className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 pb-2">
-                    About
-                  </button>
-                </div>
-              </div>
-
               {/* Contact Information */}
               <div className="px-6 py-4">
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
@@ -422,35 +404,7 @@ export default function AgentDetailsPage() {
                   </div>
                 </div>
 
-                <Separator className="my-4" />
 
-                {/* Basic Information */}
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
-                  Basic Information
-                </h3>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Birthday:</span>
-                    <span className="text-sm text-gray-900 dark:text-white">June 5, 1992</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Gender:</span>
-                    <span className="text-sm text-gray-900 dark:text-white">Male</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Joined:</span>
-                    <span className="text-sm text-gray-900 dark:text-white">
-                      {agent.createdAt ? format(new Date(agent.createdAt), "MMM dd, yyyy") : 'Unknown'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
-                    <Badge className={`text-xs ${getStatusColor(agent)}`}>
-                      {getStatusText(agent)}
-                    </Badge>
-                  </div>
-                </div>
                 
                 {/* Edit Profile Button */}
                 {!isEditing && (
@@ -467,6 +421,18 @@ export default function AgentDetailsPage() {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Edit Profile Buttons - Below Card */}
+          {isEditing && (
+            <div className="flex gap-2 mt-4">
+              <Button size="sm" onClick={handleProfileSave} className="flex-1">
+                Save Changes
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleProfileCancel} className="flex-1">
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Right Column - Performance & Details */}
@@ -627,30 +593,144 @@ export default function AgentDetailsPage() {
             </CardContent>
           </Card>
 
-          {/* Quick Actions & Management */}
+          {/* Agent Escalations */}
           <Card>
             <CardHeader>
-              <CardTitle>Management Actions</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Recent Escalations
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Button variant="outline" className="justify-start h-12" onClick={() => window.open(`mailto:${agent.email}`)}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Email
-                </Button>
-                {agent.phone && (
-                  <Button variant="outline" className="justify-start h-12" onClick={() => window.open(`tel:${agent.phone}`)}>
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call Agent
-                  </Button>
-                )}
-                <Button variant="outline" className="justify-start h-12" onClick={handleEdit}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Details
-                </Button>
-                <Button variant="outline" className="justify-start h-12">
-                  <Users className="h-4 w-4 mr-2" />
-                  View Sessions
+              <div className="bg-card border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Case #</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Concern</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Created</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* Dummy escalation data */}
+                    <TableRow className="cursor-pointer hover:bg-muted/50">
+                      <TableCell className="font-mono text-sm font-medium">
+                        ESC-2024-001
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">John Doe</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[300px] truncate">
+                          <span className="font-medium">Product delivery issue - missing items</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-200 dark:border-red-800">
+                          Escalated
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Oct 5, 2025</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow className="cursor-pointer hover:bg-muted/50">
+                      <TableCell className="font-mono text-sm font-medium">
+                        ESC-2024-002
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Sarah Wilson</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[300px] truncate">
+                          <span className="font-medium">Billing discrepancy - overcharged amount</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800">
+                          Pending
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Oct 4, 2025</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow className="cursor-pointer hover:bg-muted/50">
+                      <TableCell className="font-mono text-sm font-medium">
+                        ESC-2024-003
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Mike Johnson</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[300px] truncate">
+                          <span className="font-medium">Service complaint - poor customer support</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-200 dark:border-green-800">
+                          Resolved
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Oct 3, 2025</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow className="cursor-pointer hover:bg-muted/50">
+                      <TableCell className="font-mono text-sm font-medium">
+                        ESC-2024-004
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">Emily Davis</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[300px] truncate">
+                          <span className="font-medium">Technical issue - website login problems</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800">
+                          Pending
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm">Oct 2, 2025</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+              
+              {/* View All Button */}
+              <div className="flex justify-center mt-4">
+                <Button variant="outline" onClick={() => router.push('/dashboard/escalations')}>
+                  View All Escalations
                 </Button>
               </div>
             </CardContent>
