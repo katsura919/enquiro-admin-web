@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { useAuth } from "@/lib/auth"
+import api from "@/utils/api"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,145 +35,28 @@ import {
   ChevronRight
 } from "lucide-react"
 import { format } from "date-fns"
+import EmptyState from "./components/EmptyState"
+import { RatingStatsLoader, RatingDistributionLoader, RatingTableLoader } from "./components/LoadingStates"
 
-// Dummy data based on agent-rating-model
-const dummyRatings = [
-  {
-    _id: "1",
-    businessId: "bus123",
-    sessionId: "ses001",
-    agentId: "agent001",
-    agentName: "Sarah Johnson",
-    agentEmail: "sarah@company.com",
-    caseNumber: "CASE-2024-001",
-    rating: 5,
-    feedback: "Excellent service! Very helpful and resolved my issue quickly.",
-    ratedAt: new Date("2024-10-05T14:30:00"),
-    createdAt: new Date("2024-10-05T14:30:00")
-  },
-  {
-    _id: "2",
-    businessId: "bus123",
-    sessionId: "ses002",
-    agentId: "agent002",
-    agentName: "Michael Chen",
-    agentEmail: "michael@company.com",
-    caseNumber: "CASE-2024-002",
-    rating: 4,
-    feedback: "Good experience overall, took a bit longer than expected but resolved successfully.",
-    ratedAt: new Date("2024-10-05T13:15:00"),
-    createdAt: new Date("2024-10-05T13:15:00")
-  },
-  {
-    _id: "3",
-    businessId: "bus123",
-    sessionId: "ses003",
-    agentId: "agent001",
-    agentName: "Sarah Johnson",
-    agentEmail: "sarah@company.com",
-    caseNumber: "CASE-2024-003",
-    rating: 5,
-    feedback: "Outstanding! Sarah was very professional and knowledgeable.",
-    ratedAt: new Date("2024-10-05T11:45:00"),
-    createdAt: new Date("2024-10-05T11:45:00")
-  },
-  {
-    _id: "4",
-    businessId: "bus123",
-    sessionId: "ses004",
-    agentId: "agent003",
-    agentName: "Emily Rodriguez",
-    agentEmail: "emily@company.com",
-    caseNumber: "CASE-2024-004",
-    rating: 3,
-    feedback: "Average service, could have been more responsive.",
-    ratedAt: new Date("2024-10-05T10:20:00"),
-    createdAt: new Date("2024-10-05T10:20:00")
-  },
-  {
-    _id: "5",
-    businessId: "bus123",
-    sessionId: "ses005",
-    agentId: "agent002",
-    agentName: "Michael Chen",
-    agentEmail: "michael@company.com",
-    caseNumber: "CASE-2024-005",
-    rating: 5,
-    feedback: "Perfect! Michael understood my problem immediately and provided a great solution.",
-    ratedAt: new Date("2024-10-04T16:30:00"),
-    createdAt: new Date("2024-10-04T16:30:00")
-  },
-  {
-    _id: "6",
-    businessId: "bus123",
-    sessionId: "ses006",
-    agentId: "agent004",
-    agentName: "David Kim",
-    agentEmail: "david@company.com",
-    caseNumber: "CASE-2024-006",
-    rating: 4,
-    feedback: "Very satisfied with the help I received.",
-    ratedAt: new Date("2024-10-04T14:10:00"),
-    createdAt: new Date("2024-10-04T14:10:00")
-  },
-  {
-    _id: "7",
-    businessId: "bus123",
-    sessionId: "ses007",
-    agentId: "agent003",
-    agentName: "Emily Rodriguez",
-    agentEmail: "emily@company.com",
-    caseNumber: "CASE-2024-007",
-    rating: 2,
-    feedback: "Not very helpful, had to repeat my issue multiple times.",
-    ratedAt: new Date("2024-10-04T11:25:00"),
-    createdAt: new Date("2024-10-04T11:25:00")
-  },
-  {
-    _id: "8",
-    businessId: "bus123",
-    sessionId: "ses008",
-    agentId: "agent001",
-    agentName: "Sarah Johnson",
-    agentEmail: "sarah@company.com",
-    caseNumber: "CASE-2024-008",
-    rating: 5,
-    feedback: "Absolutely wonderful experience! Highly recommend.",
-    ratedAt: new Date("2024-10-03T15:40:00"),
-    createdAt: new Date("2024-10-03T15:40:00")
-  },
-  {
-    _id: "9",
-    businessId: "bus123",
-    sessionId: "ses009",
-    agentId: "agent004",
-    agentName: "David Kim",
-    agentEmail: "david@company.com",
-    caseNumber: "CASE-2024-009",
-    rating: 4,
-    feedback: "Great service, very professional approach.",
-    ratedAt: new Date("2024-10-03T13:20:00"),
-    createdAt: new Date("2024-10-03T13:20:00")
-  },
-  {
-    _id: "10",
-    businessId: "bus123",
-    sessionId: "ses010",
-    agentId: "agent002",
-    agentName: "Michael Chen",
-    agentEmail: "michael@company.com",
-    caseNumber: "CASE-2024-010",
-    rating: 5,
-    feedback: "Exceeded expectations! Very thorough and patient.",
-    ratedAt: new Date("2024-10-03T09:50:00"),
-    createdAt: new Date("2024-10-03T09:50:00")
-  }
-]
+// Type definition for rating
+type Rating = {
+  _id: string
+  businessId: string
+  sessionId: string
+  agentId: string
+  agentName: string
+  agentEmail: string
+  caseNumber: string
+  rating: number
+  feedback: string | null
+  ratedAt: Date
+  createdAt: Date
+}
 
 // Calculate stats
-const calculateStats = (ratings: typeof dummyRatings) => {
+const calculateStats = (ratings: Rating[]) => {
   const totalRatings = ratings.length
-  const averageRating = ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings
+  const averageRating = totalRatings > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / totalRatings : 0
   
   const ratingDistribution = {
     5: ratings.filter(r => r.rating === 5).length,
@@ -189,15 +74,79 @@ const calculateStats = (ratings: typeof dummyRatings) => {
 }
 
 export default function RatingsPage() {
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRating, setFilterRating] = useState<string>("all")
   const [currentPage, setCurrentPage] = useState(1)
+  const [ratings, setRatings] = useState<Rating[]>([])
+  const [ratingDistribution, setRatingDistribution] = useState<{rating: number, count: number}[]>([])
+  const [loading, setLoading] = useState(true)
+  const [distributionLoading, setDistributionLoading] = useState(true)
   const itemsPerPage = 10
 
-  const stats = calculateStats(dummyRatings)
+  // Fetch ratings from API
+  useEffect(() => {
+    const fetchRatings = async () => {
+      if (!user?.businessId) return
+
+      try {
+        setLoading(true)
+        const response = await api.get(`/agent-rating?businessId=${user.businessId}&limit=100`)
+        if (response.data.success) {
+          // Transform the data to match our expected format
+          const transformedRatings = response.data.data.map((rating: any) => ({
+            _id: rating._id,
+            businessId: rating.businessId._id || rating.businessId,
+            sessionId: rating.sessionId._id || rating.sessionId,
+            agentId: rating.agentId._id || rating.agentId,
+            agentName: rating.agentId?.name || "Unknown Agent",
+            agentEmail: rating.agentId?.email || "",
+            caseNumber: rating.caseNumber || "N/A",
+            rating: rating.rating,
+            feedback: rating.feedback,
+            ratedAt: new Date(rating.ratedAt),
+            createdAt: new Date(rating.createdAt)
+          }))
+          setRatings(transformedRatings)
+        }
+      } catch (error) {
+        console.error("Error fetching ratings:", error)
+        setRatings([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRatings()
+  }, [user?.businessId])
+
+  // Fetch rating distribution from API
+  useEffect(() => {
+    const fetchDistribution = async () => {
+      if (!user?.businessId) return
+
+      try {
+        setDistributionLoading(true)
+        const response = await api.get(`/agent-rating/business/${user.businessId}/distribution`)
+        if (response.data.success) {
+          setRatingDistribution(response.data.data)
+        }
+      } catch (error) {
+        console.error("Error fetching rating distribution:", error)
+        setRatingDistribution([])
+      } finally {
+        setDistributionLoading(false)
+      }
+    }
+
+    fetchDistribution()
+  }, [user?.businessId])
+
+  // Calculate stats from real data
+  const stats = calculateStats(ratings)
 
   // Filter ratings
-  const filteredRatings = dummyRatings.filter(rating => {
+  const filteredRatings = ratings.filter(rating => {
     const matchesSearch = 
       rating.agentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       rating.caseNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -238,68 +187,39 @@ export default function RatingsPage() {
     return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
   }
 
+  // Show empty state if not loading and no ratings
+  if (!loading && ratings.length === 0) {
+    return (
+      <div className="w-full mx-auto p-6 space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Customer Ratings</h1>
+            <p className="text-muted-foreground">Monitor and analyze customer satisfaction ratings</p>
+          </div>
+        </div>
+        <EmptyState />
+      </div>
+    )
+  }
+
   return (
     <div className="w-full mx-auto p-6 space-y-6">
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Star className="h-4 w-4" />
-              Average Rating
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">{stats.averageRating}/5</div>
-            <div className="flex gap-1 mt-2">
-              {renderStars(Math.round(parseFloat(stats.averageRating)))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/20 dark:to-green-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Total Ratings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">{stats.totalRatings}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/20 dark:to-purple-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              5-Star Ratings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">{stats.ratingDistribution[5]}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {((stats.ratingDistribution[5] / stats.totalRatings) * 100).toFixed(1)}% of total
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Unique Agents
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">
-              {new Set(dummyRatings.map(r => r.agentId)).size}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Customer Ratings</h1>
+          <p className="text-muted-foreground">Monitor and analyze customer satisfaction ratings</p>
+        </div>
+        <Button variant="outline">
+          <Download className="h-4 w-4 mr-2" />
+          Export Report
+        </Button>
       </div>
 
       {/* Rating Distribution */}
+      {distributionLoading ? (
+        <RatingDistributionLoader />
+      ) : (
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle>Rating Distribution</CardTitle>
@@ -307,32 +227,51 @@ export default function RatingsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[5, 4, 3, 2, 1].map((stars) => (
-              <div key={stars} className="flex items-center gap-4">
-                <div className="flex items-center gap-2 w-24">
-                  <span className="text-sm font-medium">{stars}</span>
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                </div>
-                <div className="flex-1">
-                  <div className="h-8 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all"
-                      style={{
-                        width: `${(stats.ratingDistribution[stars as keyof typeof stats.ratingDistribution] / stats.totalRatings) * 100}%`
-                      }}
-                    />
+            {[5, 4, 3, 2, 1].map((stars) => {
+              const distItem = ratingDistribution.find(d => d.rating === stars)
+              const count = distItem?.count || 0
+              const totalCount = ratingDistribution.reduce((sum, d) => sum + d.count, 0) || 1
+              const percentage = (count / totalCount) * 100
+              
+              return (
+                <div key={stars} className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 w-24">
+                    <span className="text-sm font-medium">{stars}</span>
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="h-8 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all"
+                        style={{
+                          width: `${percentage}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium w-16 text-right">
+                    {count} ({percentage.toFixed(0)}%)
                   </div>
                 </div>
-                <div className="text-sm font-medium w-16 text-right">
-                  {stats.ratingDistribution[stars as keyof typeof stats.ratingDistribution]} ({((stats.ratingDistribution[stars as keyof typeof stats.ratingDistribution] / stats.totalRatings) * 100).toFixed(0)}%)
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </CardContent>
       </Card>
+      )}
 
       {/* Filters and Search */}
+      {loading ? (
+        <Card className="border-0 shadow-sm">
+          <CardHeader>
+            <CardTitle>All Ratings</CardTitle>
+            <CardDescription>View and filter customer feedback</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RatingTableLoader />
+          </CardContent>
+        </Card>
+      ) : (
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle>All Ratings</CardTitle>
@@ -380,7 +319,13 @@ export default function RatingsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedRatings.length === 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      Loading ratings...
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedRatings.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       No ratings found
@@ -471,6 +416,7 @@ export default function RatingsPage() {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   )
 }
