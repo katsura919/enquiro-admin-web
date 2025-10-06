@@ -71,6 +71,8 @@ export default function AgentDetailsPage() {
   const [counts, setCounts] = React.useState<CountData | null>(null)
   const [ratingStats, setRatingStats] = React.useState<RatingStats | null>(null)
   const [escalationsLoading, setEscalationsLoading] = React.useState(false)
+  const [escalationsPage, setEscalationsPage] = React.useState(1)
+  const [escalationsTotalPages, setEscalationsTotalPages] = React.useState(1)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [isEditing, setIsEditing] = React.useState(false)
@@ -83,10 +85,15 @@ export default function AgentDetailsPage() {
   React.useEffect(() => {
     if (agentId && user?.businessId) {
       loadAgentDetails()
-      loadAgentEscalations()
       loadAgentRatings()
     }
   }, [agentId, user?.businessId])
+
+  React.useEffect(() => {
+    if (agentId) {
+      loadAgentEscalations()
+    }
+  }, [agentId, escalationsPage])
 
   const loadAgentDetails = async () => {
     try {
@@ -160,17 +167,19 @@ export default function AgentDetailsPage() {
   const loadAgentEscalations = async () => {
     try {
       setEscalationsLoading(true)
-      console.log('Fetching escalations for agent ID:', agentId)
+      console.log('Fetching escalations for agent ID:', agentId, 'page:', escalationsPage)
       
       const response = await api.get(`/escalation/agent/${agentId}`, {
         params: { 
-          limit: 5, // Show only recent 5 escalations on profile
+          limit: 10, // Show 10 escalations per page
+          page: escalationsPage,
           status: 'all' 
         }
       })
       
       setEscalations(response.data.escalations || [])
       setCounts(response.data.counts || null)
+      setEscalationsTotalPages(response.data.totalPages || 1)
       console.log('Agent escalations loaded:', response.data.escalations)
       console.log('Agent counts loaded:', response.data.counts)
     } catch (err: any) {
@@ -180,6 +189,10 @@ export default function AgentDetailsPage() {
     } finally {
       setEscalationsLoading(false)
     }
+  }
+
+  const handleEscalationsPageChange = (newPage: number) => {
+    setEscalationsPage(newPage)
   }
 
   const loadAgentRatings = async () => {
@@ -347,6 +360,9 @@ export default function AgentDetailsPage() {
           <AgentEscalationsTable 
             escalations={escalations}
             loading={escalationsLoading}
+            currentPage={escalationsPage}
+            totalPages={escalationsTotalPages}
+            onPageChange={handleEscalationsPageChange}
           />
         </div>
       </div>

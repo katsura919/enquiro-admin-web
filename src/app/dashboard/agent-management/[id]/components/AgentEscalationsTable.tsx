@@ -33,9 +33,12 @@ interface Escalation {
 interface AgentEscalationsTableProps {
   escalations: Escalation[]
   loading: boolean
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
 }
 
-export function AgentEscalationsTable({ escalations, loading }: AgentEscalationsTableProps) {
+export function AgentEscalationsTable({ escalations, loading, currentPage, totalPages, onPageChange }: AgentEscalationsTableProps) {
   const router = useRouter()
 
   const formatDate = (dateString: string) => {
@@ -74,7 +77,7 @@ export function AgentEscalationsTable({ escalations, loading }: AgentEscalations
   return (
     <Card className="bg-card shadow-none border-muted-gray">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-secondary-foreground">
           <MessageSquare className="h-5 w-5" />
           Recent Escalations
         </CardTitle>
@@ -152,12 +155,32 @@ export function AgentEscalationsTable({ escalations, loading }: AgentEscalations
           </Table>
         </div>
         
-        {/* View All Button */}
-        <div className="flex justify-center mt-4">
-          <Button variant="outline" onClick={() => router.push('/dashboard/escalations')}>
-            View All Escalations
-          </Button>
-        </div>
+        {/* Pagination Controls */}
+        {escalations.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 px-2">
+            <div className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => onPageChange(currentPage - 1)}
+              >
+                Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => onPageChange(currentPage + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
