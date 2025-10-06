@@ -262,8 +262,11 @@ export default function FAQPage() {
               <ScrollArea className="h-[calc(100vh-180px)] rounded-lg">
                 <div className="space-y-4 pr-4 pb-2">
                   {loading ? (
-                    <div className="flex items-center justify-center min-h-[400px] p-12">
-                      <div className="animate-spin rounded-full h-12 w-12 border-none"></div>
+                    <div className="flex items-center justify-center min-h-[600px]">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+                        <p className="text-sm text-muted-foreground">Loading FAQs...</p>
+                      </div>
                     </div>
                   ) : faqs.length === 0 ? (
                     <EmptyState 
