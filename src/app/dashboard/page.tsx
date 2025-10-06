@@ -207,7 +207,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3 mb-8">
+      <div className="mb-8">
         {/* Chat Interface */}
         <QR 
           key={businessData._id} // Force re-render when business data changes
@@ -215,124 +215,6 @@ export default function DashboardPage() {
           businessLogo={businessData.logo}
           businessName={businessData.name}
         />
-
-        {/* Agent Status */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="pb-4 px-6 pt-6">
-            <CardTitle className="text-foreground flex items-center gap-2">
-              <UserCheck className="h-5 w-5" />
-              Agent Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-6 pb-6">
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium">Available</span>
-              </div>
-              <Badge variant="outline">{dashboardData.agents.available}</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium">In Chat</span>
-              </div>
-              <Badge variant="outline">{dashboardData.agents.inChat}</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <span className="text-sm font-medium">Away</span>
-              </div>
-              <Badge variant="outline">{dashboardData.agents.away}</Badge>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                <span className="text-sm font-medium">Offline</span>
-              </div>
-              <Badge variant="outline">{dashboardData.agents.offline}</Badge>
-            </div>
-
-            <Button asChild variant="outline" className="w-full mt-4">
-              <Link href="/dashboard/realtime-dashboard">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                View Details
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activity & Knowledge Base */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="pb-4 px-6 pt-6">
-            <CardTitle className="text-foreground flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Recent Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-6 pb-6">
-            {dashboardData.recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg border border-border/50">
-                <div className={`w-2 h-2 rounded-full mt-2 ${getStatusColor(activity.status)}`}></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {activity.message}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-            <Button asChild variant="outline" className="w-full mt-4">
-              <Link href="/dashboard/sessions">
-                <Calendar className="h-4 w-4 mr-2" />
-                View All Sessions
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Knowledge Base Overview */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
-          <CardHeader className="pb-4 px-6 pt-6">
-            <CardTitle className="text-foreground flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              Knowledge Base
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-6 pb-6">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-muted/30 rounded-lg border border-border/50 text-center">
-                <div className="text-lg font-bold text-foreground">{dashboardData.knowledge.products}</div>
-                <div className="text-xs text-muted-foreground">Products</div>
-              </div>
-              <div className="p-3 bg-muted/30 rounded-lg border border-border/50 text-center">
-                <div className="text-lg font-bold text-foreground">{dashboardData.knowledge.services}</div>
-                <div className="text-xs text-muted-foreground">Services</div>
-              </div>
-              <div className="p-3 bg-muted/30 rounded-lg border border-border/50 text-center">
-                <div className="text-lg font-bold text-foreground">{dashboardData.knowledge.policies}</div>
-                <div className="text-xs text-muted-foreground">Policies</div>
-              </div>
-              <div className="p-3 bg-muted/30 rounded-lg border border-border/50 text-center">
-                <div className="text-lg font-bold text-foreground">{dashboardData.knowledge.faqs}</div>
-                <div className="text-xs text-muted-foreground">FAQs</div>
-              </div>
-            </div>
-            <Button asChild variant="outline" className="w-full mt-4">
-              <Link href="/dashboard/knowledge">
-                <Brain className="h-4 w-4 mr-2" />
-                Manage Knowledge
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )
