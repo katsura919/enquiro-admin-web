@@ -204,17 +204,7 @@ export default function RatingsPage() {
 
   return (
     <div className="w-full mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Customer Ratings</h1>
-          <p className="text-muted-foreground">Monitor and analyze customer satisfaction ratings</p>
-        </div>
-        <Button variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Export Report
-        </Button>
-      </div>
+
 
       {/* Rating Distribution */}
       {distributionLoading ? (
