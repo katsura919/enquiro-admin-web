@@ -54,8 +54,7 @@ const navigation = [
           { name: "FAQ", href: "/dashboard/knowledge/faq", icon: HelpCircle },
         ]
       },
-      { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
-      { name: "Chat Sessions", href: "/dashboard/sessions", icon: MessageSquare },
+      { name: "Cases", href: "/dashboard/escalations", icon: Inbox }
     ]
   },
   {

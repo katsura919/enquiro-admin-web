@@ -54,6 +54,11 @@ interface CountData {
   totalResolvedCases: number
 }
 
+interface RatingStats {
+  averageRating: number
+  totalRatings: number
+}
+
 export default function AgentDetailsPage() {
   const params = useParams()
   const router = useRouter()
@@ -64,6 +69,7 @@ export default function AgentDetailsPage() {
   const [stats, setStats] = React.useState<AgentStats | null>(null)
   const [escalations, setEscalations] = React.useState<Escalation[]>([])
   const [counts, setCounts] = React.useState<CountData | null>(null)
+  const [ratingStats, setRatingStats] = React.useState<RatingStats | null>(null)
   const [escalationsLoading, setEscalationsLoading] = React.useState(false)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
@@ -78,6 +84,7 @@ export default function AgentDetailsPage() {
     if (agentId && user?.businessId) {
       loadAgentDetails()
       loadAgentEscalations()
+      loadAgentRatings()
     }
   }, [agentId, user?.businessId])
 
@@ -172,6 +179,27 @@ export default function AgentDetailsPage() {
       setEscalations([])
     } finally {
       setEscalationsLoading(false)
+    }
+  }
+
+  const loadAgentRatings = async () => {
+    try {
+      console.log('Fetching ratings for agent ID:', agentId)
+      
+      const response = await api.get(`/agent-rating/agent/${agentId}`, {
+        params: { 
+          limit: 1 // We only need the stats, not all ratings
+        }
+      })
+      
+      if (response.data.success && response.data.stats) {
+        setRatingStats(response.data.stats)
+        console.log('Agent ratings loaded:', response.data.stats)
+      }
+    } catch (err: any) {
+      console.error('Failed to load agent ratings:', err)
+      // Don't show error for ratings, just keep null
+      setRatingStats(null)
     }
   }
 
@@ -313,7 +341,7 @@ export default function AgentDetailsPage() {
         {/* Right Column - Performance & Details */}
         <div className="lg:col-span-8 space-y-6">
           {/* Performance Stats */}
-          <AgentStatsCards stats={stats} counts={counts} />
+          <AgentStatsCards stats={stats} counts={counts} ratingStats={ratingStats} />
 
           {/* Agent Escalations */}
           <AgentEscalationsTable 

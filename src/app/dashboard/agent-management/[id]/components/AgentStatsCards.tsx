@@ -22,12 +22,18 @@ interface CountData {
   totalResolvedCases: number
 }
 
+interface RatingStats {
+  averageRating: number
+  totalRatings: number
+}
+
 interface AgentStatsCardsProps {
   stats: AgentStats | null
   counts?: CountData | null
+  ratingStats?: RatingStats | null
 }
 
-export function AgentStatsCards({ stats, counts }: AgentStatsCardsProps) {
+export function AgentStatsCards({ stats, counts, ratingStats }: AgentStatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="bg-card shadow-none border-muted-gray hover:shadow-md transition-shadow">
@@ -67,14 +73,14 @@ export function AgentStatsCards({ stats, counts }: AgentStatsCardsProps) {
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats?.customerRating ? stats.customerRating.toFixed(1) : '8.6'}
+                  {ratingStats?.averageRating ? ratingStats.averageRating.toFixed(1) : '0.0'}
                 </p>
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star
                       key={star}
                       className={`h-4 w-4 ${
-                        star <= Math.floor(stats?.customerRating || 4.3)
+                        star <= Math.floor(ratingStats?.averageRating || 0)
                           ? 'text-yellow-400 fill-yellow-400'
                           : 'text-gray-300 dark:text-gray-600'
                       }`}
@@ -82,7 +88,9 @@ export function AgentStatsCards({ stats, counts }: AgentStatsCardsProps) {
                   ))}
                 </div>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Customer Rating</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Customer Rating {ratingStats?.totalRatings ? `(${ratingStats.totalRatings})` : ''}
+              </p>
             </div>
           </div>
         </CardContent>
