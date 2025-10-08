@@ -8,19 +8,13 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { 
-  User, 
-  Upload, 
-  Camera, 
-  X, 
   Check, 
   Save, 
   Shield, 
   Eye, 
   EyeOff, 
   Lock, 
-  Mail, 
   Smartphone,
-  Key,
   Clock,
   Globe,
   AlertTriangle
@@ -58,9 +52,17 @@ interface PasswordChangeData {
 
 export default function AccountSettingsPage() {
   const { user: authUser } = useAuth()
-  const fileInputRef = useRef<HTMLInputElement>(null)
   
+  const [initialUserData, setInitialUserData] = useState(dummyUser)
   const [userData, setUserData] = useState(dummyUser)
+  const [initialSecuritySettings, setInitialSecuritySettings] = useState<SecuritySettings>({
+    twoFactorEnabled: false,
+    emailNotifications: true,
+    loginAlerts: true,
+    sessionTimeout: 30,
+    lastPasswordChange: "2024-10-15T10:30:00Z",
+    activeSessions: 3
+  })
   const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
     twoFactorEnabled: false,
     emailNotifications: true,
@@ -78,11 +80,29 @@ export default function AccountSettingsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  const [profilePreview, setProfilePreview] = useState<string>(dummyUser.profilePicture)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [activeSection, setActiveSection] = useState<'password' | null>(null)
+
+  // Check if there are changes
+  const hasChanges = () => {
+    const userDataChanged = (
+      userData.firstName !== initialUserData.firstName ||
+      userData.lastName !== initialUserData.lastName ||
+      userData.email !== initialUserData.email ||
+      userData.phoneNumber !== initialUserData.phoneNumber
+    )
+    
+    const securityChanged = (
+      securitySettings.twoFactorEnabled !== initialSecuritySettings.twoFactorEnabled ||
+      securitySettings.emailNotifications !== initialSecuritySettings.emailNotifications ||
+      securitySettings.loginAlerts !== initialSecuritySettings.loginAlerts ||
+      securitySettings.sessionTimeout !== initialSecuritySettings.sessionTimeout
+    )
+    
+    return userDataChanged || securityChanged
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setUserData(prev => ({ ...prev, [field]: value }))
@@ -96,31 +116,6 @@ export default function AccountSettingsPage() {
     setPasswordData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target?.result as string
-        setProfilePreview(result)
-        setUserData(prev => ({ ...prev, profilePicture: result }))
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleProfileUploadClick = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleRemoveProfile = () => {
-    setProfilePreview("https://ui-avatars.com/api/?name=" + encodeURIComponent(userData.firstName + "+" + userData.lastName))
-    setUserData(prev => ({ ...prev, profilePicture: "" }))
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
-  }
-
   const handleSave = async () => {
     setIsSaving(true)
     setIsSuccess(false)
@@ -128,6 +123,8 @@ export default function AccountSettingsPage() {
     try {
       // TODO: Implement API call
       await new Promise(resolve => setTimeout(resolve, 1000))
+      setInitialUserData(userData) // Update initial data after successful save
+      setInitialSecuritySettings(securitySettings) // Update initial settings after successful save
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
     } catch (error) {
@@ -195,36 +192,6 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <User className="h-6 w-6 text-primary" />
-            </div>
-            Account & Security Settings
-          </h1>
-          <p className="text-muted-foreground mt-1">Manage your personal information, account security and privacy settings</p>
-        </div>
-        <Button 
-          onClick={handleSave} 
-          disabled={isSaving}
-          className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto"
-        >
-          {isSaving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </>
-          )}
-        </Button>
-      </div>
-
       {/* Success Message */}
       {isSuccess && (
         <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
@@ -237,110 +204,33 @@ export default function AccountSettingsPage() {
 
       <div className="w-full max-w-4xl space-y-6">
         {/* Personal Information Card */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+        <Card className="border-muted-gray bg-card shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground">Personal Information</CardTitle>
             <p className="text-sm text-muted-foreground">Your account details and profile information</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Profile Picture Section */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">Profile Picture</Label>
-              <div className="flex items-start gap-6">
-                <div className="relative group">
-                  <div className="w-24 h-24 border-2 border-dashed border-border rounded-full flex items-center justify-center bg-muted/30 hover:bg-muted/50 transition-colors overflow-hidden">
-                    {profilePreview ? (
-                      <>
-                        <img
-                          src={profilePreview}
-                          alt="Profile picture"
-                          className="w-full h-full object-cover rounded-full"
-                          onError={() => setProfilePreview("https://ui-avatars.com/api/?name=" + encodeURIComponent(userData.firstName + "+" + userData.lastName))}
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="text-xs"
-                            onClick={handleProfileUploadClick}
-                          >
-                            <Camera className="h-3 w-3 mr-1" />
-                            Change
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        className="h-full w-full flex-col gap-2 text-muted-foreground hover:text-foreground rounded-full"
-                        onClick={handleProfileUploadClick}
-                      >
-                        <Upload className="h-6 w-6" />
-                        <span className="text-xs">Upload</span>
-                      </Button>
-                    )}
-                  </div>
-                  {profilePreview && userData.profilePicture && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                      onClick={handleRemoveProfile}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    Upload your profile picture. Recommended size: 200x200px
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleProfileUploadClick}
-                      className="text-sm"
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Choose File
-                    </Button>
-                    <div className="text-sm text-muted-foreground flex items-center">
-                      or drag and drop
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </div>
-
             {/* Personal Details */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
+                <Label htmlFor="firstName" className="text-sm font-medium text-foreground">First Name</Label>
                 <Input
                   id="firstName"
                   value={userData.firstName}
                   onChange={(e) => handleInputChange('firstName', e.target.value)}
                   placeholder="Enter your first name"
-                  className="bg-background border-border focus:border-primary"
+                  className="bg-card text-foreground border-border shadow-none"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
+                <Label htmlFor="lastName" className="text-sm font-medium text-foreground">Last Name</Label>
                 <Input
                   id="lastName"
                   value={userData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
                   placeholder="Enter your last name"
-                  className="bg-background border-border focus:border-primary"
+                  className="bg-card text-foreground border-border shadow-none"
                 />
               </div>
             </div>
@@ -348,25 +238,25 @@ export default function AccountSettingsPage() {
             {/* Contact Information */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   value={userData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email"
-                  className="bg-background border-border focus:border-primary"
+                  className="bg-card text-foreground border-border shadow-none"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number</Label>
+                <Label htmlFor="phoneNumber" className="text-sm font-medium text-foreground">Phone Number</Label>
                 <Input
                   id="phoneNumber"
                   value={userData.phoneNumber}
                   onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                   placeholder="Enter your phone number"
-                  className="bg-background border-border focus:border-primary"
+                  className="bg-card text-foreground border-border shadow-none"
                 />
               </div>
             </div>
@@ -423,11 +313,34 @@ export default function AccountSettingsPage() {
                 </div>
               )}
             </div>
+
+            {/* Save Button - Only show when there are changes */}
+            {hasChanges() && (
+              <div className="pt-6 border-t border-border">
+                <Button 
+                  onClick={handleSave} 
+                  disabled={isSaving}
+                  className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto w-full"
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Security Overview Card */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+        <Card className="border-muted-gray bg-card shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground flex items-center gap-2">
               <Shield className="h-5 w-5" />
@@ -469,7 +382,7 @@ export default function AccountSettingsPage() {
         </Card>
 
         {/* Password Management Card */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+        <Card className="border-muted-gray bg-card shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground flex items-center gap-2">
               <Lock className="h-5 w-5" />
@@ -495,7 +408,7 @@ export default function AccountSettingsPage() {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="currentPassword" className="text-sm font-medium">Current Password</Label>
+                  <Label htmlFor="currentPassword" className="text-sm font-medium text-foreground">Current Password</Label>
                   <div className="relative">
                     <Input
                       id="currentPassword"
@@ -503,7 +416,7 @@ export default function AccountSettingsPage() {
                       value={passwordData.currentPassword}
                       onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
                       placeholder="Enter your current password"
-                      className="bg-background border-border focus:border-primary pr-10"
+                      className="bg-card text-foreground border-border shadow-none pr-10"
                     />
                     <Button
                       type="button"
@@ -518,7 +431,7 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-sm font-medium">New Password</Label>
+                  <Label htmlFor="newPassword" className="text-sm font-medium text-foreground">New Password</Label>
                   <div className="relative">
                     <Input
                       id="newPassword"
@@ -526,7 +439,7 @@ export default function AccountSettingsPage() {
                       value={passwordData.newPassword}
                       onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
                       placeholder="Enter your new password"
-                      className="bg-background border-border focus:border-primary pr-10"
+                      className="bg-card text-foreground border-border shadow-none pr-10"
                     />
                     <Button
                       type="button"
@@ -561,7 +474,7 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm New Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">Confirm New Password</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -569,7 +482,7 @@ export default function AccountSettingsPage() {
                       value={passwordData.confirmPassword}
                       onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
                       placeholder="Confirm your new password"
-                      className="bg-background border-border focus:border-primary pr-10"
+                      className="bg-card text-foreground border-border shadow-none pr-10"
                     />
                     <Button
                       type="button"
@@ -613,7 +526,7 @@ export default function AccountSettingsPage() {
         </Card>
 
         {/* Security Preferences Card */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+        <Card className="border-muted-gray bg-card shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground flex items-center gap-2">
               <Smartphone className="h-5 w-5" />
@@ -663,7 +576,7 @@ export default function AccountSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sessionTimeout" className="text-base font-medium">Session Timeout (minutes)</Label>
+                <Label htmlFor="sessionTimeout" className="text-base font-medium text-foreground">Session Timeout (minutes)</Label>
                 <p className="text-sm text-muted-foreground mb-2">
                   Automatically log out after period of inactivity
                 </p>
@@ -674,7 +587,7 @@ export default function AccountSettingsPage() {
                   max="480"
                   value={securitySettings.sessionTimeout}
                   onChange={(e) => handleSecuritySettingChange('sessionTimeout', parseInt(e.target.value))}
-                  className="bg-background border-border focus:border-primary w-32"
+                  className="bg-card text-foreground border-border shadow-none w-32"
                 />
               </div>
             </div>

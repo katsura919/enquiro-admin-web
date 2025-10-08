@@ -70,9 +70,7 @@ const navigation = [
   {
     category: "Settings",
     items: [
-      { name: "Account & Security", href: "/dashboard/settings", icon: Settings },
-      { name: "Business", href: "/dashboard/settings/business", icon: Building2 },
-      { name: "Chatbot", href: "/dashboard/settings/chatbot", icon: Bot },
+      { name: "Settings", href: "/dashboard/settings", icon: Settings },
     ]
   }
 ]
@@ -220,7 +218,11 @@ export default function DashboardLayout({
                       {/* Category Items */}
                       <div className="space-y-1">
                         {section.items.map((item, index) => {
-                          const isActive = pathname === item.href || (item.children && item.children.some(child => pathname === child.href))
+                          // Check if current path matches the item or any of its children
+                          // Also check if it's the settings page and we're on any settings sub-route
+                          const isActive = pathname === item.href || 
+                                          (item.children && item.children.some(child => pathname === child.href)) ||
+                                          (item.href === '/dashboard/settings' && pathname.startsWith('/dashboard/settings'))
                           const isExpanded = expandedItems.includes(item.name)
                           const hasChildren = item.children && item.children.length > 0
                           

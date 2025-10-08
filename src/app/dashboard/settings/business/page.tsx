@@ -37,6 +37,15 @@ export default function BusinessSettingsPage() {
     address: ""
   })
   
+  const [initialBusinessData, setInitialBusinessData] = useState<BusinessData>({
+    name: "",
+    slug: "",
+    description: "",
+    logo: "",
+    category: "",
+    address: ""
+  })
+  
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -46,6 +55,18 @@ export default function BusinessSettingsPage() {
   const [uploadError, setUploadError] = useState<string>("")
   const [uploadSuccess, setUploadSuccess] = useState(false)
 
+  // Check if there are changes
+  const hasChanges = () => {
+    return (
+      businessData.name !== initialBusinessData.name ||
+      businessData.slug !== initialBusinessData.slug ||
+      businessData.description !== initialBusinessData.description ||
+      businessData.logo !== initialBusinessData.logo ||
+      businessData.category !== initialBusinessData.category ||
+      businessData.address !== initialBusinessData.address
+    )
+  }
+
   // Fetch business data
   useEffect(() => {
     const fetchBusinessData = async () => {
@@ -54,6 +75,7 @@ export default function BusinessSettingsPage() {
       try {
         const response = await api.get(`/business/${businessId}`)
         setBusinessData(response.data)
+        setInitialBusinessData(response.data)
         setLogoPreview(response.data.logo || "")
       } catch (error) {
         console.error("Error fetching business data:", error)
@@ -93,6 +115,7 @@ export default function BusinessSettingsPage() {
     
     try {
       await api.put(`/business/${businessId}`, businessData)
+      setInitialBusinessData(businessData) // Update initial data after successful save
       setIsSuccess(true)
       setTimeout(() => setIsSuccess(false), 3000)
     } catch (error) {
@@ -224,36 +247,6 @@ export default function BusinessSettingsPage() {
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Building className="h-6 w-6 text-primary" />
-            </div>
-            Business Settings
-          </h1>
-          <p className="text-muted-foreground mt-1">Manage your business information and branding</p>
-        </div>
-        <Button 
-          onClick={handleSave} 
-          disabled={isSaving}
-          className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto"
-        >
-          {isSaving ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Saving...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Save Changes
-            </>
-          )}
-        </Button>
-      </div>
-
       {/* Success Message */}
       {isSuccess && (
         <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
@@ -286,15 +279,15 @@ export default function BusinessSettingsPage() {
 
       <div className="w-full max-w-4xl">
         {/* Business Settings Card */}
-        <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
+        <Card className="border-muted-gray bg-card shadow-none">
           <CardHeader className="pb-4">
-            <CardTitle className="text-xl text-foreground">Business Information</CardTitle>
+            <CardTitle className="text-xl text-foreground">Business Settings</CardTitle>
             <p className="text-sm text-muted-foreground">Manage your business details, branding, and contact information</p>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Logo Upload Section */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Business Logo</Label>
+              <Label className="text-sm font-medium text-foreground">Business Logo</Label>
               <div className="flex items-start gap-6">
                 <div className="relative group">
                   <div className="w-24 h-24 border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/30 hover:bg-muted/50 transition-colors overflow-hidden">
@@ -336,17 +329,6 @@ export default function BusinessSettingsPage() {
                       </Button>
                     )}
                   </div>
-                  {logoPreview && !isUploadingLogo && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                      onClick={handleRemoveLogo}
-                      disabled={isUploadingLogo}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
                 </div>
                 <div className="flex-1 space-y-2">
                   <p className="text-sm text-muted-foreground">
@@ -357,7 +339,7 @@ export default function BusinessSettingsPage() {
                       variant="outline"
                       size="sm"
                       onClick={handleLogoUploadClick}
-                      className="text-sm"
+                      className="text-sm bg-card border-border text-secondary-foreground cursor-pointer"
                       disabled={isUploadingLogo}
                     >
                       {isUploadingLogo ? (
@@ -378,12 +360,6 @@ export default function BusinessSettingsPage() {
                       </div>
                     )}
                   </div>
-                  {businessData.logo && !isUploadingLogo && (
-                    <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                      <Check className="h-3 w-3" />
-                      Logo is stored securely on Cloudinary
-                    </p>
-                  )}
                 </div>
               </div>
               <input
@@ -398,31 +374,31 @@ export default function BusinessSettingsPage() {
             {/* Business Details */}
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">Business Name *</Label>
+                <Label htmlFor="name" className="text-sm font-medium text-foreground">Business Name *</Label>
                 <Input
                   id="name"
                   value={businessData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter your business name"
-                  className="bg-background border-border focus:border-primary"
+                  className="bg-card text-foreground border-border shadow-none"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-sm font-medium">Category</Label>
+                <Label htmlFor="category" className="text-sm font-medium text-foreground">Category</Label>
                 <Input
                   id="category"
                   value={businessData.category}
                   onChange={(e) => handleInputChange('category', e.target.value)}
                   placeholder="e.g., E-commerce, Healthcare"
-                  className="bg-background border-border focus:border-primary"
+                  className="bg-card text-foreground border-border shadow-none"
                 />
               </div>
             </div>
 
             {/* URL Slug */}
             <div className="space-y-2">
-              <Label htmlFor="slug" className="text-sm font-medium">URL Slug *</Label>
+              <Label htmlFor="slug" className="text-sm font-medium text-foreground">URL Slug *</Label>
               <div className="flex items-center space-x-2">
                 <div className="flex-1 relative">
                   <Input
@@ -430,7 +406,7 @@ export default function BusinessSettingsPage() {
                     value={businessData.slug}
                     onChange={(e) => handleInputChange('slug', e.target.value)}
                     placeholder="your-business-url"
-                    className="bg-background border-border focus:border-primary pr-16"
+                    className="bg-card text-foreground border-border shadow-none pr-16"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
                     .chat
@@ -460,29 +436,52 @@ export default function BusinessSettingsPage() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+              <Label htmlFor="description" className="text-sm font-medium text-foreground">Description</Label>
               <Textarea
                 id="description"
                 value={businessData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Tell us about your business..."
                 rows={3}
-                className="bg-background border-border focus:border-primary resize-none"
+                className="bg-card text-foreground border-border shadow-none resize-none"
               />
             </div>
 
             {/* Contact Information */}
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-sm font-medium">Business Address</Label>
+              <Label htmlFor="address" className="text-sm font-medium text-foreground">Business Address</Label>
               <Textarea
                 id="address"
                 value={businessData.address}
                 onChange={(e) => handleInputChange('address', e.target.value)}
                 placeholder="Enter your business address..."
                 rows={3}
-                className="bg-background border-border focus:border-primary resize-none"
+                className="bg-card text-foreground border-border shadow-none resize-none"
               />
             </div>
+
+            {/* Save Button - Only show when there are changes */}
+            {hasChanges() && (
+              <div className="pt-6 border-t border-border">
+                <Button 
+                  onClick={handleSave} 
+                  disabled={isSaving}
+                  className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto w-full"
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
