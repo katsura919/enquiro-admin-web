@@ -156,7 +156,7 @@ export default function DashboardLayout({
         {/* Sidebar - fixed on the left */}
         <div
           className={cn(
-            "fixed top-0 left-0 z-40 flex flex-col h-screen transition-all duration-300 ease-out bg-sidebar backdrop-blur-xl border-r border-border",
+            "fixed top-0 left-0 z-50 flex flex-col h-screen transition-all duration-300 ease-out bg-sidebar backdrop-blur-xl border-r border-border",
             isSidebarOpen ? "w-80" : "lg:w-20 -translate-x-full lg:translate-x-0"
           )}
         >
