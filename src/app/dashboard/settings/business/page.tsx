@@ -42,6 +42,9 @@ export default function BusinessSettingsPage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [logoPreview, setLogoPreview] = useState<string>("")
   const [copied, setCopied] = useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+  const [uploadError, setUploadError] = useState<string>("")
+  const [uploadSuccess, setUploadSuccess] = useState(false)
 
   // Fetch business data
   useEffect(() => {
@@ -103,16 +106,69 @@ export default function BusinessSettingsPage() {
     return `${window.location.origin}/chat/${businessData.slug}`
   }
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadLogoToServer = async (file: File) => {
+    if (!businessId) return
+    
+    setIsUploadingLogo(true)
+    setUploadError("")
+    setUploadSuccess(false)
+    
+    try {
+      // Create FormData to send the file
+      const formData = new FormData()
+      formData.append('logo', file)
+      
+      // Upload to backend API
+      const response = await api.post(`/business/${businessId}/logo`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      
+      // Update the business data with the new logo URL from Cloudinary
+      const cloudinaryUrl = response.data.data.logo
+      setBusinessData(prev => ({ ...prev, logo: cloudinaryUrl }))
+      setLogoPreview(cloudinaryUrl)
+      
+      setUploadSuccess(true)
+      setTimeout(() => setUploadSuccess(false), 3000)
+      
+    } catch (error: any) {
+      console.error("Error uploading logo:", error)
+      setUploadError(error.response?.data?.error || "Failed to upload logo. Please try again.")
+      setTimeout(() => setUploadError(""), 5000)
+    } finally {
+      setIsUploadingLogo(false)
+    }
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setUploadError("Please select an image file")
+        setTimeout(() => setUploadError(""), 3000)
+        return
+      }
+      
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError("File size must be less than 10MB")
+        setTimeout(() => setUploadError(""), 3000)
+        return
+      }
+      
+      // Show preview immediately
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
         setLogoPreview(result)
-        setBusinessData(prev => ({ ...prev, logo: result }))
       }
       reader.readAsDataURL(file)
+      
+      // Upload to server
+      await uploadLogoToServer(file)
     }
   }
 
@@ -120,11 +176,28 @@ export default function BusinessSettingsPage() {
     fileInputRef.current?.click()
   }
 
-  const handleRemoveLogo = () => {
-    setLogoPreview("")
-    setBusinessData(prev => ({ ...prev, logo: "" }))
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+  const handleRemoveLogo = async () => {
+    if (!businessId) return
+    
+    try {
+      // Update business to remove logo URL
+      await api.put(`/business/${businessId}`, {
+        ...businessData,
+        logo: ""
+      })
+      
+      setLogoPreview("")
+      setBusinessData(prev => ({ ...prev, logo: "" }))
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+      
+      setUploadSuccess(true)
+      setTimeout(() => setUploadSuccess(false), 3000)
+    } catch (error) {
+      console.error("Error removing logo:", error)
+      setUploadError("Failed to remove logo. Please try again.")
+      setTimeout(() => setUploadError(""), 3000)
     }
   }
 
@@ -191,6 +264,26 @@ export default function BusinessSettingsPage() {
         </div>
       )}
 
+      {/* Logo Upload Success */}
+      {uploadSuccess && (
+        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
+          <div className="p-1 bg-green-100 dark:bg-green-900 rounded-full">
+            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+          </div>
+          <p className="text-green-800 dark:text-green-200 font-medium">Logo uploaded successfully!</p>
+        </div>
+      )}
+
+      {/* Logo Upload Error */}
+      {uploadError && (
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
+          <div className="p-1 bg-red-100 dark:bg-red-900 rounded-full">
+            <X className="h-4 w-4 text-red-600 dark:text-red-400" />
+          </div>
+          <p className="text-red-800 dark:text-red-200 font-medium">{uploadError}</p>
+        </div>
+      )}
+
       <div className="w-full max-w-4xl">
         {/* Business Settings Card */}
         <Card className="border-0 shadow-sm bg-card/50 backdrop-blur">
@@ -205,7 +298,12 @@ export default function BusinessSettingsPage() {
               <div className="flex items-start gap-6">
                 <div className="relative group">
                   <div className="w-24 h-24 border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/30 hover:bg-muted/50 transition-colors overflow-hidden">
-                    {logoPreview ? (
+                    {isUploadingLogo ? (
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                        <span className="text-xs text-muted-foreground">Uploading...</span>
+                      </div>
+                    ) : logoPreview ? (
                       <>
                         <img
                           src={logoPreview}
@@ -219,6 +317,7 @@ export default function BusinessSettingsPage() {
                             variant="secondary"
                             className="text-xs"
                             onClick={handleLogoUploadClick}
+                            disabled={isUploadingLogo}
                           >
                             <Camera className="h-3 w-3 mr-1" />
                             Change
@@ -230,18 +329,20 @@ export default function BusinessSettingsPage() {
                         variant="ghost"
                         className="h-full w-full flex-col gap-2 text-muted-foreground hover:text-foreground"
                         onClick={handleLogoUploadClick}
+                        disabled={isUploadingLogo}
                       >
                         <Upload className="h-6 w-6" />
                         <span className="text-xs">Upload Logo</span>
                       </Button>
                     )}
                   </div>
-                  {logoPreview && (
+                  {logoPreview && !isUploadingLogo && (
                     <Button
                       size="sm"
                       variant="destructive"
                       className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
                       onClick={handleRemoveLogo}
+                      disabled={isUploadingLogo}
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -249,22 +350,40 @@ export default function BusinessSettingsPage() {
                 </div>
                 <div className="flex-1 space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    Upload your business logo or provide a URL. Recommended size: 200x200px
+                    Upload your business logo. Recommended size: 500x500px. Max file size: 10MB.
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleLogoUploadClick}
                       className="text-sm"
+                      disabled={isUploadingLogo}
                     >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Choose File
+                      {isUploadingLogo ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Choose File
+                        </>
+                      )}
                     </Button>
-                    <div className="text-sm text-muted-foreground flex items-center">
-                      or drag and drop
-                    </div>
+                    {!isUploadingLogo && (
+                      <div className="text-sm text-muted-foreground">
+                        Accepts: JPG, PNG, GIF, WebP
+                      </div>
+                    )}
                   </div>
+                  {businessData.logo && !isUploadingLogo && (
+                    <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Logo is stored securely on Cloudinary
+                    </p>
+                  )}
                 </div>
               </div>
               <input
