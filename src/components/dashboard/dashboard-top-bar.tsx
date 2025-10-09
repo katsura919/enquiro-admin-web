@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { NotificationBell } from "@/components/notifications"
 
 interface TopbarProps {
   onMenuToggle?: () => void
@@ -161,15 +162,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
         </Button>
 
         {/* Notifications */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent relative"
-        >
-          <Bell className="h-4 w-4 text-foreground" />
-          {/* Notification dot */}
-          <div className="absolute -top-1 -right-1 h-2 w-2 bg-destructive rounded-full"></div>
-        </Button>
+        <NotificationBell />
 
         {/* Theme toggle */}
         <div className="flex items-center">

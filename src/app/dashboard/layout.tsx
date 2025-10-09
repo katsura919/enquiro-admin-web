@@ -37,6 +37,7 @@ import ProtectedRoute from '@/components/protected-route'
 import Topbar from '@/components/dashboard/dashboard-top-bar'
 import { useAuth } from '@/lib/auth'
 import LoadingScreen from "@/components/ui/loading-screen"
+import { NotificationProvider } from '@/context/NotificationContext'
 
 
 
@@ -81,7 +82,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -152,7 +153,8 @@ export default function DashboardLayout({
   // Otherwise, show the full dashboard
   return (
     <ProtectedRoute>
-      <div className="min-h-screen ">
+      <NotificationProvider businessId={user?.businessId}>
+        <div className="min-h-screen ">
         {/* Sidebar - fixed on the left */}
         <div
           className={cn(
@@ -420,6 +422,7 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+      </NotificationProvider>
     </ProtectedRoute>
   )
 }
