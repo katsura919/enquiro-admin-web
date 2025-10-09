@@ -56,9 +56,9 @@ export default function ServiceTable({ services, onEdit, onDelete, onToggleStatu
       return 'Custom Quote'
     }
     
-    const formatted = new Intl.NumberFormat('en-US', {
+    const formatted = new Intl.NumberFormat('en-PH', {
       style: 'currency',
-      currency: pricing.currency
+      currency: 'PHP'
     }).format(pricing.amount)
     
     switch (pricing.type) {

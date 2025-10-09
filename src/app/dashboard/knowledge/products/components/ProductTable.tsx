@@ -50,9 +50,9 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
   const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-PH', {
       style: 'currency',
-      currency: currency
+      currency: 'PHP'
     }).format(amount)
   }
 
