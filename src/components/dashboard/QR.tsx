@@ -133,12 +133,12 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
 
 
   return (
-    <Card className="lg:col-span-2 border-0 shadow-sm bg-card/50 backdrop-blur">
+    <Card className="bg-card border-muted-gray shadow-none ">
       <CardHeader className="pb-4 px-6 pt-6">
         <CardTitle className="text-foreground flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Public Chat Interface
+            Link to your chat interface
           </div>
           <Button
             asChild
@@ -147,7 +147,6 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
             className="text-xs"
           >
             <Link href="/dashboard/settings/chatbot">
-              <Settings className="h-4 w-4 mr-1" />
               Customize
             </Link>
           </Button>
@@ -156,9 +155,6 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
       <CardContent className="space-y-6 px-6 pb-6">
         {/* URL Section */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-foreground">
-            Your public chat URL
-          </Label>
           <div className="flex gap-2">
             <Input
               readOnly
@@ -168,7 +164,7 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
             <Button
               onClick={handleCopy}
               variant="outline"
-              className="shrink-0 border-border text-primary hover:bg-accent"
+              className="shrink-0 border-border text-secondary-foreground hover:bg-accent"
             >
               <Copy className="h-4 w-4" />
               {copied ? "Copied!" : "Copy"}

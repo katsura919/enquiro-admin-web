@@ -23,6 +23,7 @@ import Link from "next/link"
 import QR from "@/components/dashboard/QR"
 import api from "@/utils/api"
 import { ChartAreaInteractive } from "@/components/dashboard/dashboard-escalation-chart"
+import { RatingsBarChart } from "@/components/dashboard/rating-bar-chart"
 
 interface BusinessData {
   _id: string
@@ -329,15 +330,18 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="mb-8">
-        {/* Chat Interface */}
-        <QR 
-          key={businessData._id} // Force re-render when business data changes
-          businessSlug={businessData.slug} 
-          businessLogo={businessData.logo}
-          businessName={businessData.name}
-        />
-      </div>
+      {/* QR Component and Ratings Distribution Side by Side */}
+      {businessData._id && (
+        <div className="grid gap-6 md:grid-cols-2 mb-8">
+          <QR 
+            key={businessData._id} // Force re-render when business data changes
+            businessSlug={businessData.slug} 
+            businessLogo={businessData.logo}
+            businessName={businessData.name}
+          />
+          <RatingsBarChart businessId={businessData._id} />
+        </div>
+      )}
     </div>
   )
 } 
