@@ -144,7 +144,7 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
             asChild
             variant="outline"
             size="sm"
-            className="text-xs"
+            className="text-xs bg-card"
           >
             <Link href="/dashboard/settings/chatbot">
               Customize
@@ -159,12 +159,12 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
             <Input
               readOnly
               value={chatUrl}
-              className="bg-background text-foreground border-border"
+              className="bg-card shadow-none text-foreground border-muted-gray"
             />
             <Button
               onClick={handleCopy}
               variant="outline"
-              className="shrink-0 border-border text-secondary-foreground hover:bg-accent"
+              className="shrink-0 border-muted-gray text-secondary-foreground hover:bg-accent bg-card shadow-none cursor-pointer"
             >
               <Copy className="h-4 w-4" />
               {copied ? "Copied!" : "Copy"}
@@ -195,11 +195,11 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
             />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={downloadQR}>
+            <Button variant="outline" size="sm" onClick={downloadQR} className="shadow-none bg-card cursor-pointer">
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="shadow-none bg-card">
               <Link href={chatUrl} target="_blank">
                 <Eye className="h-4 w-4 mr-2" />
                 Preview

@@ -60,32 +60,32 @@ export function EscalationCountCards({
       count: counts.total,
       status: "all" as const,
       icon: FileText,
-      cardClass: "bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20",
-      badgeColor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+      cardClass: "bg-gradient-to-br from-blue-200 to-blue-400 dark:from-blue-900/20 dark:to-blue-800/20",
+      badgeColor: "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
     },
     {
       title: "Escalated",
       count: counts.escalated,
       status: "escalated" as const,
       icon: AlertTriangle,
-      cardClass: "bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20",
-      badgeColor: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+      cardClass: "bg-gradient-to-br from-red-200 to-red-400 dark:from-red-900/20 dark:to-red-800/20",
+      badgeColor: "bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200"
     },
     {
       title: "Pending",
       count: counts.pending,
       status: "pending" as const,
       icon: Clock,
-      cardClass: "bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/20 dark:to-yellow-800/20",
-      badgeColor: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+      cardClass: "bg-gradient-to-br from-yellow-200 to-yellow-400 dark:from-yellow-900/20 dark:to-yellow-800/20",
+      badgeColor: "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
     },
     {
       title: "Resolved",
       count: counts.resolved,
       status: "resolved" as const,
       icon: CheckCircle,
-      cardClass: "bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/20 dark:to-green-800/20",
-      badgeColor: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+      cardClass: "bg-gradient-to-br from-green-200 to-green-400 dark:from-green-900/20 dark:to-green-800/20",
+      badgeColor: "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200"
     }
   ]
 
@@ -128,7 +128,7 @@ export function EscalationCountCards({
       {cards.map((card) => (
         <Card
           key={card.status}
-          className={`border-0 shadow-sm ${card.cardClass} cursor-pointer transition-all duration-200 hover:shadow-md`}
+          className={`border-muted-gray shadow-none ${card.cardClass} cursor-pointer transition-all duration-200 hover:shadow-md`}
           onClick={() => onCountClick?.(card.status)}
         >
           <CardHeader className="pb-3 px-6 pt-6">

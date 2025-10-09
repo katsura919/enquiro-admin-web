@@ -95,7 +95,7 @@ export function RatingsBarChart({ businessId }: RatingsBarChartProps) {
   return (
     <Card className="bg-card shadow-none border-muted-gray">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-secondary-foreground">
           <Star className="h-5 w-5" />
           Ratings Distribution
         </CardTitle>
