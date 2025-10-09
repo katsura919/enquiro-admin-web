@@ -24,6 +24,7 @@ import QR from "@/components/dashboard/QR"
 import api from "@/utils/api"
 import { ChartAreaInteractive } from "@/components/dashboard/dashboard-escalation-chart"
 import { RatingsBarChart } from "@/components/dashboard/rating-bar-chart"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface BusinessData {
   _id: string
@@ -224,10 +225,68 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="w-full mx-auto p-6 flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
+      <div className="w-full mx-auto p-6 space-y-8">
+        {/* Skeleton for Performance Metrics */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border-muted-gray shadow-none">
+              <CardHeader className="pb-3 px-6 pt-6">
+                <Skeleton className="h-4 w-32" />
+              </CardHeader>
+              <CardContent className="px-6 pb-6">
+                <Skeleton className="h-8 w-20" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Skeleton for Escalations Chart */}
+        <div className="mb-8">
+          <Card className="border-muted-gray shadow-none">
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-64 mt-2" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-[350px] w-full" />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Skeleton for QR and Ratings Chart */}
+        <div className="grid gap-6 md:grid-cols-2 mb-8">
+          {/* QR Skeleton */}
+          <Card className="border-muted-gray shadow-none">
+            <CardHeader className="pb-4 px-6 pt-6">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6 px-6 pb-6">
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="flex flex-col items-center space-y-4">
+                <Skeleton className="h-[340px] w-[340px]" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-9 w-28" />
+                  <Skeleton className="h-9 w-24" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Ratings Chart Skeleton */}
+          <Card className="border-muted-gray shadow-none">
+            <CardHeader>
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-40 mt-2" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-[300px] w-full" />
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
