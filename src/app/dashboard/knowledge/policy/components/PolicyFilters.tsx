@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Search } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface PolicyFiltersProps {
   searchTerm: string
@@ -57,16 +58,17 @@ export default function PolicyFilters({
           <Label className="text-xs font-medium text-muted-foreground mb-2 block uppercase tracking-wide">
             Type
           </Label>
-          <select 
-            className="w-full px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            value={selectedType}
-            onChange={(e) => onTypeChange(e.target.value)}
-          >
-            <option value="All">All Types</option>
-            {policyTypes.map(type => (
-              <option key={type.value} value={type.value}>{type.label}</option>
-            ))}
-          </select>
+          <Select value={selectedType} onValueChange={onTypeChange}>
+            <SelectTrigger className="w-full bg-background">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Types</SelectItem>
+              {policyTypes.map(type => (
+                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         {/* Status Filter */}
@@ -74,7 +76,7 @@ export default function PolicyFilters({
           <Label className="text-xs font-medium text-muted-foreground mb-2 block uppercase tracking-wide">
             Status
           </Label>
-          <div className="flex items-center space-x-3 px-3 py-2 border border-input rounded-md bg-background">
+          <div className="flex items-center space-x-3 px-3 py-2 border border-input rounded-md bg-card">
             <Switch
               id="activeOnly"
               checked={showActiveOnly}

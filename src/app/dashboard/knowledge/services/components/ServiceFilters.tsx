@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Search } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface ServiceFiltersProps {
   searchTerm: string
@@ -52,39 +53,40 @@ export default function ServiceFilters({
       {/* Category Filter */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Category</Label>
-        <select 
-          className="w-full bg-background px-3 py-2 border border-input rounded-md"
-          value={selectedCategory}
-          onChange={(e) => onCategoryChange(e.target.value)}
-        >
-          <option value="All">All Categories</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+          <SelectTrigger className="w-full bg-background">
+            <SelectValue placeholder="" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map(cat => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Pricing Type Filter */}
       <div className="space-y-2">
         <Label className="text-sm font-medium">Pricing Type</Label>
-        <select 
-          className="w-full bg-background px-3 py-2 border border-input rounded-md"
-          value={selectedPricingType}
-          onChange={(e) => onPricingTypeChange(e.target.value)}
-        >
-          <option value="All">All Pricing</option>
-          <option value="fixed">Fixed Price</option>
-          <option value="hourly">Hourly Rate</option>
-          <option value="package">Package Deal</option>
-          <option value="quote">Custom Quote</option>
-        </select>
+        <Select value={selectedPricingType} onValueChange={onPricingTypeChange}>
+          <SelectTrigger className="w-full bg-background">
+            <SelectValue placeholder="All Pricing" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">All Pricing</SelectItem>
+            <SelectItem value="fixed">Fixed Price</SelectItem>
+            <SelectItem value="hourly">Hourly Rate</SelectItem>
+            <SelectItem value="package">Package Deal</SelectItem>
+            <SelectItem value="quote">Custom Quote</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Filters */}
       <div className="space-y-3">
         <Label className="text-sm font-medium">Filters</Label>
         
-        <div className="flex items-center space-x-2 px-3 py-2 border border-input rounded-md bg-background">
+        <div className="flex items-center space-x-2 px-3 py-2 border border-input rounded-md bg-card">
           <Switch
             id="activeOnly"
             checked={showActiveOnly}
