@@ -100,7 +100,7 @@ export function AgentTable({
 
   return (
     <div className="space-y-4">
-      <Card className="bg-card w-full border-border shadow-none">
+      <Card className="bg-card w-full border-border shadow-none rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>

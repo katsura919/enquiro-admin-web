@@ -175,7 +175,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="hidden sm:flex h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent"
+              className="hidden sm:flex h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent cursor-pointer"
             >
               <User className="h-4 w-4 text-foreground" />
             </Button>

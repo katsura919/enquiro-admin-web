@@ -6,7 +6,7 @@ import { EscalationTable, Escalation } from "./components/EscalationTable"
 import { EscalationCountCards } from "./components/EscalationCountCards"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Filter } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import api from "@/utils/api"
@@ -130,22 +130,20 @@ export default function EscalationsPage() {
           placeholder="Search by customer, case #, or concern..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="bg-card max-w-md flex-1 sm:flex-none"
+          className="bg-card shadow-none max-w-md flex-1 sm:flex-none"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="bg-card flex items-center gap-2 min-w-[120px]">
-              <Filter className="w-4 h-4" />
-              Filter: {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleCountCardClick("all")}>All</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleCountCardClick("escalated")}>Escalated</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleCountCardClick("pending")}>Pending</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleCountCardClick("resolved")}>Resolved</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Select value={status} onValueChange={(value) => handleCountCardClick(value as "all" | "escalated" | "pending" | "resolved")}>
+          <SelectTrigger className="bg-card min-w-[180px]">
+            <Filter className="w-4 h-4" />
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent align="end">
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="escalated">Escalated</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="resolved">Resolved</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Escalation Table */}

@@ -20,7 +20,7 @@ export function ThemeSwitch() {
       <Button
         variant="ghost"
         size="sm"
-        className="h-9 w-9 p-0 rounded-lg"
+        className="h-9 w-9 p-0 rounded-lg cursor-pointer"
         disabled
       >
         <div className="h-4 w-4 rounded-full bg-muted animate-pulse" />
@@ -47,7 +47,7 @@ export function ThemeSwitch() {
     <Button
       variant="ghost"
       size="sm"
-      className="h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent relative"
+      className="h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-accent relative cursor-pointer"
       onClick={handleToggle}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
     >

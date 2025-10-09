@@ -409,7 +409,7 @@ export default function AgentManagementPage() {
           </div>
           
           {/* Add Agent */}
-          <Button onClick={openCreateDialog} size="sm" className="gap-2">
+          <Button onClick={openCreateDialog} size="sm" className="gap-2 cursor-pointer">
             <Plus className="h-4 w-4" />
             Add agent
           </Button>

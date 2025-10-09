@@ -40,7 +40,7 @@ interface FAQCardProps {
 export default function FAQCard({ faq, onEdit, onDelete, onToggleStatus }: FAQCardProps) {
   return (
     <TooltipProvider>
-      <Card className={`transition-all ${faq.isActive ? '' : 'opacity-60'} bg-card border-none`}>
+      <Card className={`transition-all ${faq.isActive ? '' : 'opacity-60'} bg-card border-muted-gray cursor-pointer shadow-none`}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-3">

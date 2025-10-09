@@ -62,7 +62,7 @@ export default function PolicyCard({ policy, onEdit, onDelete, onToggleStatus }:
 
   return (
     <TooltipProvider>
-      <Card className={`transition-all ${policy.isActive ? '' : 'opacity-60'} bg-card border-none `}>
+      <Card className={`transition-all ${policy.isActive ? '' : 'opacity-60'} bg-card border-muted-gray cursor-pointer shadow-none `}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-3">

@@ -142,7 +142,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="Enter full name"
-                className={errors.name ? "border-destructive" : ""}
+                className={errors.name ? "border-destructive" : "shadow-none"}
               />
               {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
             </div>
@@ -186,17 +186,17 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     placeholder={agent ? "New password" : "Enter password"}
-                    className={errors.password ? "border-destructive focus:border-destructive pr-10" : "pr-10"}
+                    className={errors.password ? "border-destructive focus:border-destructive pr-10" : "pr-10 "}
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent cursor-pointer"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      <EyeOff className="h-4 w-4 text-muted-foreground cu" />
                     ) : (
                       <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
@@ -222,7 +222,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent cursor-pointer"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
@@ -244,14 +244,14 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
               variant="outline" 
               onClick={onClose} 
               disabled={loading}
-              className="min-w-[80px]"
+              className="min-w-[80px] cursor-pointer"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={loading}
-              className="min-w-[120px]"
+              className="min-w-[120px] cursor-pointer"
             >
               {loading ? (
                 <>

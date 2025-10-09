@@ -210,9 +210,9 @@ export default function RatingsPage() {
       {distributionLoading ? (
         <RatingDistributionLoader />
       ) : (
-      <Card className="border-0 shadow-sm">
+      <Card className="bg-card border-muted-gray shadow-none">
         <CardHeader>
-          <CardTitle>Rating Distribution</CardTitle>
+          <CardTitle className="text-secondary-foreground">Rating Distribution</CardTitle>
           <CardDescription>Breakdown of ratings by star count</CardDescription>
         </CardHeader>
         <CardContent>
@@ -262,9 +262,9 @@ export default function RatingsPage() {
           </CardContent>
         </Card>
       ) : (
-      <Card className="border-0 shadow-sm">
+      <Card className="bg-card border-muted-gray shadow-none">
         <CardHeader>
-          <CardTitle>All Ratings</CardTitle>
+          <CardTitle className="text-secondary-foreground">All Ratings</CardTitle>
           <CardDescription>View and filter customer feedback</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -275,7 +275,7 @@ export default function RatingsPage() {
                 placeholder="Search by agent, case number, or feedback..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-card shadow-none"
               />
             </div>
             <div className="flex gap-2">

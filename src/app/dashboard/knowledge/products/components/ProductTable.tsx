@@ -111,7 +111,7 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
 
   return (
     <TooltipProvider>
-      <div className="border rounded-lg">
+      <div className="border rounded-lg ">
         <Table className="bg-card rounded-lg">
           <TableHeader>
             <TableRow>
