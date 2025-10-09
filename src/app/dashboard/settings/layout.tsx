@@ -111,71 +111,52 @@ export default function SettingsLayout({
         isMobile && !isSidebarOpen && "-translate-x-full",
         isMobile && isSidebarOpen && "translate-x-0"
       )}>
-        <div className="px-6 py-4 border-b border-border/50 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-1 rounded-lg">
-                <Settings className="h-5 w-5 text-secondary-foreground" />
-              </div>
-              <div>
-                <h2 className="font-semibold text-secondary-foreground">Settings</h2>
-                <p className="text-xs text-secondary-foreground/70">Manage your preferences</p>
-              </div>
-            </div>
-            {/* Close button for mobile */}
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsSidebarOpen(false)}
-                className="h-8 w-8 p-0 md:hidden text-white hover:bg-white/10"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
+
         
-        <nav className="p-4 space-y-2 overflow-y-auto flex-1">
-          {settingsNavigation.map((item) => {
+        <nav className="p-4 space-y-0 overflow-y-auto flex-1">
+          {settingsNavigation.map((item, index) => {
             const isActive = pathname === item.href
             const Icon = item.icon
             
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-start gap-3 p-3 rounded-lg transition-all duration-200",
-                  isActive
-                    ? "bg-secondary-foreground/10 text-secondary-foreground"
-                    : "text-white/70 hover:bg-secondary-foreground/10"
-                )}
-                onClick={() => {
-                  if (isMobile) {
-                    setIsSidebarOpen(false)
-                  }
-                }}
-              >
-                <Icon className={cn(
-                  "h-5 w-5 flex-shrink-0 mt-0.5",
-                  isActive ? "text-secondary-foreground" : "text-secondary-foreground"
-                )} />
-                <div className="flex-1 min-w-0">
-                  <p className={cn(
-                    "text-sm font-medium",
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-start gap-3 p-3 rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-secondary-foreground/10 text-secondary-foreground"
+                      : "text-white/70 hover:bg-secondary-foreground/10"
+                  )}
+                  onClick={() => {
+                    if (isMobile) {
+                      setIsSidebarOpen(false)
+                    }
+                  }}
+                >
+                  <Icon className={cn(
+                    "h-5 w-5 flex-shrink-0 mt-0.5",
                     isActive ? "text-secondary-foreground" : "text-secondary-foreground"
-                  )}>
-                    {item.name}
-                  </p>
-                  <p className={cn(
-                    "text-xs mt-0.5 line-clamp-2",
-                    isActive ? "text-secondary-foreground/70" : "text-secondary-foreground"
-                  )}>
-                    {item.description}
-                  </p>
-                </div>
-              </Link>
+                  )} />
+                  <div className="flex-1 min-w-0">
+                    <p className={cn(
+                      "text-sm font-medium",
+                      isActive ? "text-secondary-foreground" : "text-secondary-foreground"
+                    )}>
+                      {item.name}
+                    </p>
+                    <p className={cn(
+                      "text-xs mt-0.5 line-clamp-2",
+                      isActive ? "text-secondary-foreground/70" : "text-secondary-foreground"
+                    )}>
+                      {item.description}
+                    </p>
+                  </div>
+                </Link>
+                {index < settingsNavigation.length - 1 && (
+                  <div className="my-2 border-t border-muted-gray" />
+                )}
+              </div>
             )
           })}
         </nav>

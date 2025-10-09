@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,19 +20,21 @@ import {
   AlertTriangle
 } from "lucide-react"
 import { useAuth } from "@/lib/auth"
+import api from "@/utils/api"
+import { toast } from "sonner"
 
-// Dummy user data based on userModel.js
-const dummyUser = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phoneNumber: "+1234567890",
-  profilePicture: "https://ui-avatars.com/api/?name=John+Doe",
-  isVerified: true,
-  businessId: "Business Name",
-  role: "Admin",
-  createdAt: "2024-01-15T10:30:00Z",
-  lastLogin: "2024-12-01T14:22:00Z",
+interface UserData {
+  _id?: string
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber: string
+  profilePicture?: string
+  isVerified: boolean
+  businessId: string
+  role: string
+  createdAt?: string
+  lastLogin?: string
 }
 
 interface SecuritySettings {
@@ -53,8 +55,24 @@ interface PasswordChangeData {
 export default function AccountSettingsPage() {
   const { user: authUser } = useAuth()
   
-  const [initialUserData, setInitialUserData] = useState(dummyUser)
-  const [userData, setUserData] = useState(dummyUser)
+  const [initialUserData, setInitialUserData] = useState<UserData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    isVerified: false,
+    businessId: "",
+    role: ""
+  })
+  const [userData, setUserData] = useState<UserData>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    isVerified: false,
+    businessId: "",
+    role: ""
+  })
   const [initialSecuritySettings, setInitialSecuritySettings] = useState<SecuritySettings>({
     twoFactorEnabled: false,
     emailNotifications: true,
@@ -77,13 +95,57 @@ export default function AccountSettingsPage() {
     confirmPassword: ""
   })
   
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [activeSection, setActiveSection] = useState<'password' | null>(null)
+  const [validationErrors, setValidationErrors] = useState<{
+    email?: string
+    phoneNumber?: string
+  }>({})
+  const [passwordErrors, setPasswordErrors] = useState<{
+    currentPassword?: string
+    newPassword?: string
+    confirmPassword?: string
+  }>({})
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      setIsLoading(true)
+      const response = await api.get('/user/info')
+      const user = response.data
+      
+      const userInfo: UserData = {
+        _id: user._id,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+        profilePicture: user.profilePicture,
+        isVerified: user.isVerified || false,
+        businessId: user.businessId || "",
+        role: user.role || "",
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin
+      }
+      
+      setUserData(userInfo)
+      setInitialUserData(userInfo)
+    } catch (err: any) {
+      console.error("Error fetching user data:", err)
+      toast.error(err.response?.data?.error || "Failed to load user data")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Check if there are changes
   const hasChanges = () => {
@@ -104,54 +166,184 @@ export default function AccountSettingsPage() {
     return userDataChanged || securityChanged
   }
 
+  const validateEmail = (email: string): string | undefined => {
+    if (!email) return "Email is required"
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) return "Please enter a valid email address"
+    return undefined
+  }
+
+  const validatePhoneNumber = (phoneNumber: string): string | undefined => {
+    if (!phoneNumber) return undefined // Phone number is optional
+    const phoneRegex = /^\+?[\d\s\-()]+$/
+    if (!phoneRegex.test(phoneNumber)) return "Phone number can only contain numbers, spaces, +, -, and ()"
+    // Additional check for only digits (after removing formatting characters)
+    const digitsOnly = phoneNumber.replace(/[\s\-()]/g, '')
+    if (!/^[\d+]+$/.test(digitsOnly)) return "Phone number must contain only numbers"
+    return undefined
+  }
+
   const handleInputChange = (field: string, value: string) => {
-    setUserData(prev => ({ ...prev, [field]: value }))
+    setUserData((prev: UserData) => ({ ...prev, [field]: value }))
+    
+    // Validate on change
+    if (field === 'email') {
+      const error = validateEmail(value)
+      setValidationErrors(prev => ({ ...prev, email: error }))
+    } else if (field === 'phoneNumber') {
+      const error = validatePhoneNumber(value)
+      setValidationErrors(prev => ({ ...prev, phoneNumber: error }))
+    }
   }
 
   const handleSecuritySettingChange = (setting: keyof SecuritySettings, value: boolean | number) => {
     setSecuritySettings(prev => ({ ...prev, [setting]: value }))
   }
 
+  const validatePasswordField = (field: keyof PasswordChangeData, value: string): string | undefined => {
+    if (field === 'currentPassword') {
+      if (!value) return "Current password is required"
+      return undefined
+    }
+    
+    if (field === 'newPassword') {
+      if (!value) return "New password is required"
+      if (value.length < 6) return "Password must be at least 6 characters long"
+      if (passwordData.currentPassword && value === passwordData.currentPassword) {
+        return "New password must be different from current password"
+      }
+      return undefined
+    }
+    
+    if (field === 'confirmPassword') {
+      if (!value) return "Please confirm your new password"
+      if (passwordData.newPassword && value !== passwordData.newPassword) {
+        return "Passwords do not match"
+      }
+      return undefined
+    }
+  }
+
   const handlePasswordChange = (field: keyof PasswordChangeData, value: string) => {
     setPasswordData(prev => ({ ...prev, [field]: value }))
+    
+    // Validate on change
+    const error = validatePasswordField(field, value)
+    setPasswordErrors(prev => ({ ...prev, [field]: error }))
+    
+    // Also revalidate confirm password when new password changes
+    if (field === 'newPassword' && passwordData.confirmPassword) {
+      const confirmError = validatePasswordField('confirmPassword', passwordData.confirmPassword)
+      setPasswordErrors(prev => ({ ...prev, confirmPassword: confirmError }))
+    }
   }
 
   const handleSave = async () => {
+    // Validate before saving
+    const emailError = validateEmail(userData.email)
+    const phoneError = validatePhoneNumber(userData.phoneNumber)
+    
+    if (emailError || phoneError) {
+      setValidationErrors({
+        email: emailError,
+        phoneNumber: phoneError
+      })
+      toast.error("Please fix validation errors before saving")
+      return
+    }
+
     setIsSaving(true)
-    setIsSuccess(false)
     
     try {
-      // TODO: Implement API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setInitialUserData(userData) // Update initial data after successful save
-      setInitialSecuritySettings(securitySettings) // Update initial settings after successful save
-      setIsSuccess(true)
-      setTimeout(() => setIsSuccess(false), 3000)
-    } catch (error) {
-      console.error("Error updating account:", error)
+      if (!userData._id) {
+        throw new Error("User ID not found")
+      }
+
+      // Prepare update data (excluding password)
+      const updateData = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        phoneNumber: userData.phoneNumber,
+        profilePicture: userData.profilePicture
+      }
+
+      const response = await api.put(`/user/${userData._id}`, updateData)
+      
+      // Update both current and initial data with the response
+      const updatedUser = response.data
+      const userInfo: UserData = {
+        _id: updatedUser._id,
+        firstName: updatedUser.firstName || "",
+        lastName: updatedUser.lastName || "",
+        email: updatedUser.email || "",
+        phoneNumber: updatedUser.phoneNumber || "",
+        profilePicture: updatedUser.profilePicture,
+        isVerified: updatedUser.isVerified || false,
+        businessId: updatedUser.businessId || "",
+        role: updatedUser.role || "",
+        createdAt: updatedUser.createdAt,
+        lastLogin: updatedUser.lastLogin
+      }
+      
+      setUserData(userInfo)
+      setInitialUserData(userInfo)
+      setInitialSecuritySettings(securitySettings)
+      
+      toast.success("Account settings updated successfully!")
+    } catch (err: any) {
+      console.error("Error updating account:", err)
+      toast.error(err.response?.data?.error || "Failed to update account")
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      // TODO: Show error
+    // Validate all fields before submitting
+    const currentPasswordError = validatePasswordField('currentPassword', passwordData.currentPassword)
+    const newPasswordError = validatePasswordField('newPassword', passwordData.newPassword)
+    const confirmPasswordError = validatePasswordField('confirmPassword', passwordData.confirmPassword)
+    
+    if (currentPasswordError || newPasswordError || confirmPasswordError) {
+      setPasswordErrors({
+        currentPassword: currentPasswordError,
+        newPassword: newPasswordError,
+        confirmPassword: confirmPasswordError
+      })
+      toast.error("Please fix validation errors before submitting")
       return
     }
 
-    setIsLoading(true)
+    setIsChangingPassword(true)
     try {
-      // TODO: Implement API call for password change
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await api.post('/user/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      })
+      
+      // Clear form and close section on success
       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+      setPasswordErrors({})
       setActiveSection(null)
-      setIsSuccess(true)
-      setTimeout(() => setIsSuccess(false), 3000)
-    } catch (error) {
-      console.error("Error changing password:", error)
+      
+      // Update last password change date
+      setSecuritySettings(prev => ({
+        ...prev,
+        lastPasswordChange: new Date().toISOString()
+      }))
+      setInitialSecuritySettings(prev => ({
+        ...prev,
+        lastPasswordChange: new Date().toISOString()
+      }))
+      
+      toast.success("Password changed successfully!")
+    } catch (err: any) {
+      console.error("Error changing password:", err)
+      const errorMessage = err.response?.data?.error || "Failed to change password"
+      toast.error(errorMessage)
     } finally {
-      setIsLoading(false)
+      setIsChangingPassword(false)
     }
   }
 
@@ -166,19 +358,6 @@ export default function AccountSettingsPage() {
 
   const passwordStrength = getPasswordStrength(passwordData.newPassword)
 
-  if (isLoading && activeSection) {
-    return (
-      <div className="w-full flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground mt-2">
-            {activeSection === 'password' ? 'Changing password...' : 'Loading account settings...'}
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   if (isLoading) {
     return (
       <div className="w-full flex items-center justify-center py-12">
@@ -192,16 +371,6 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="w-full">
-      {/* Success Message */}
-      {isSuccess && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
-          <div className="p-1 bg-green-100 dark:bg-green-900 rounded-full">
-            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-          </div>
-          <p className="text-green-800 dark:text-green-200 font-medium">Account settings updated successfully!</p>
-        </div>
-      )}
-
       <div className="w-full max-w-4xl space-y-6">
         {/* Personal Information Card */}
         <Card className="border-muted-gray bg-card shadow-none">
@@ -245,8 +414,16 @@ export default function AccountSettingsPage() {
                   value={userData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="Enter your email"
-                  className="bg-card text-foreground border-border shadow-none"
+                  className={`bg-card text-foreground border-border shadow-none ${
+                    validationErrors.email ? 'border-red-500 focus-visible:ring-red-500' : ''
+                  }`}
                 />
+                {validationErrors.email && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    {validationErrors.email}
+                  </p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -256,70 +433,27 @@ export default function AccountSettingsPage() {
                   value={userData.phoneNumber}
                   onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                   placeholder="Enter your phone number"
-                  className="bg-card text-foreground border-border shadow-none"
+                  className={`bg-card text-foreground border-border shadow-none ${
+                    validationErrors.phoneNumber ? 'border-red-500 focus-visible:ring-red-500' : ''
+                  }`}
                 />
+                {validationErrors.phoneNumber && (
+                  <p className="text-sm text-red-500 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    {validationErrors.phoneNumber}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Account Status Information */}
-            <div className="pt-4 border-t border-border/50">
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Verification Status</Label>
-                  <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={userData.isVerified ? "default" : "secondary"}
-                      className={userData.isVerified ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" : ""}
-                    >
-                      {userData.isVerified ? (
-                        <>
-                          <Shield className="h-3 w-3 mr-1" />
-                          Verified
-                        </>
-                      ) : (
-                        "Not Verified"
-                      )}
-                    </Badge>
-                  </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Role</Label>
-                  <Badge variant="outline" className="w-fit">
-                    {userData.role}
-                  </Badge>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Business</Label>
-                  <p className="text-sm text-muted-foreground">{userData.businessId}</p>
-                </div>
-              </div>
-
-              {userData.createdAt && (
-                <div className="pt-4 mt-4 border-t border-border/50 space-y-2">
-                  <div className="grid gap-4 md:grid-cols-2 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Member since:</span>
-                      <span className="ml-2 font-medium">{new Date(userData.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    {userData.lastLogin && (
-                      <div>
-                        <span className="text-muted-foreground">Last login:</span>
-                        <span className="ml-2 font-medium">{new Date(userData.lastLogin).toLocaleDateString()}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Save Button - Only show when there are changes */}
             {hasChanges() && (
               <div className="pt-6 border-t border-border">
                 <Button 
                   onClick={handleSave} 
-                  disabled={isSaving}
+                  disabled={isSaving || !!validationErrors.email || !!validationErrors.phoneNumber}
                   className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto w-full"
                 >
                   {isSaving ? (
@@ -416,7 +550,9 @@ export default function AccountSettingsPage() {
                       value={passwordData.currentPassword}
                       onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
                       placeholder="Enter your current password"
-                      className="bg-card text-foreground border-border shadow-none pr-10"
+                      className={`bg-card text-foreground border-border shadow-none pr-10 ${
+                        passwordErrors.currentPassword ? 'border-red-500 focus-visible:ring-red-500' : ''
+                      }`}
                     />
                     <Button
                       type="button"
@@ -428,6 +564,12 @@ export default function AccountSettingsPage() {
                       {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
+                  {passwordErrors.currentPassword && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {passwordErrors.currentPassword}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -439,7 +581,9 @@ export default function AccountSettingsPage() {
                       value={passwordData.newPassword}
                       onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
                       placeholder="Enter your new password"
-                      className="bg-card text-foreground border-border shadow-none pr-10"
+                      className={`bg-card text-foreground border-border shadow-none pr-10 ${
+                        passwordErrors.newPassword ? 'border-red-500 focus-visible:ring-red-500' : ''
+                      }`}
                     />
                     <Button
                       type="button"
@@ -451,7 +595,13 @@ export default function AccountSettingsPage() {
                       {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
-                  {passwordData.newPassword && (
+                  {passwordErrors.newPassword && (
+                    <p className="text-sm text-red-500 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      {passwordErrors.newPassword}
+                    </p>
+                  )}
+                  {passwordData.newPassword && !passwordErrors.newPassword && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Password Strength:</span>
@@ -482,7 +632,9 @@ export default function AccountSettingsPage() {
                       value={passwordData.confirmPassword}
                       onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
                       placeholder="Confirm your new password"
-                      className="bg-card text-foreground border-border shadow-none pr-10"
+                      className={`bg-card text-foreground border-border shadow-none pr-10 ${
+                        passwordErrors.confirmPassword ? 'border-red-500 focus-visible:ring-red-500' : ''
+                      }`}
                     />
                     <Button
                       type="button"
@@ -494,10 +646,10 @@ export default function AccountSettingsPage() {
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
-                  {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+                  {passwordErrors.confirmPassword && (
                     <p className="text-sm text-red-500 flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
-                      Passwords do not match
+                      {passwordErrors.confirmPassword}
                     </p>
                   )}
                 </div>
@@ -505,16 +657,33 @@ export default function AccountSettingsPage() {
                 <div className="flex gap-3 pt-2">
                   <Button 
                     onClick={handleChangePassword}
-                    disabled={!passwordData.currentPassword || !passwordData.newPassword || passwordData.newPassword !== passwordData.confirmPassword}
+                    disabled={
+                      isChangingPassword || 
+                      !passwordData.currentPassword || 
+                      !passwordData.newPassword || 
+                      !passwordData.confirmPassword ||
+                      !!passwordErrors.currentPassword || 
+                      !!passwordErrors.newPassword || 
+                      !!passwordErrors.confirmPassword
+                    }
                     className="bg-primary hover:bg-primary/90"
                   >
-                    Change Password
+                    {isChangingPassword ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Changing...
+                      </>
+                    ) : (
+                      "Change Password"
+                    )}
                   </Button>
                   <Button 
-                    variant="outline" 
+                    variant="outline"
+                    disabled={isChangingPassword}
                     onClick={() => {
                       setActiveSection(null)
                       setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+                      setPasswordErrors({})
                     }}
                   >
                     Cancel

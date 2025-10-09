@@ -97,9 +97,13 @@ export default function DashboardPage() {
   const [businessData, setBusinessData] = useState<BusinessData | null>(null)
   const [loading, setLoading] = useState(true)
   const [averageRating, setAverageRating] = useState<number | null>(null)
-  const [escalatedCount, setEscalatedCount] = useState<number | null>(null)
+  const [escalatedCount, setEscalatedCount] = useState<number>(0)
+  const [sessionsCount, setSessionsCount] = useState<number>(0)
+  const [agentsCount, setAgentsCount] = useState<number>(0)
   const [ratingLoading, setRatingLoading] = useState(true)
   const [escalatedLoading, setEscalatedLoading] = useState(true)
+  const [sessionsLoading, setSessionsLoading] = useState(true)
+  const [agentsLoading, setAgentsLoading] = useState(true)
 
   // Fetch business data
   useEffect(() => {
@@ -155,13 +159,57 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Error fetching escalated count:", error)
-        setEscalatedCount(null)
+        setEscalatedCount(0)
       } finally {
         setEscalatedLoading(false)
       }
     }
 
     fetchEscalatedCount()
+  }, [user?.businessId])
+
+  // Fetch sessions count
+  useEffect(() => {
+    const fetchSessionsCount = async () => {
+      if (!user?.businessId) return
+
+      try {
+        setSessionsLoading(true)
+        const response = await api.get(`/analytics/sessions/${user.businessId}/count`)
+        if (response.data.success) {
+          setSessionsCount(response.data.data.sessionsCount)
+        }
+      } catch (error) {
+        console.error("Error fetching sessions count:", error)
+        setSessionsCount(0)
+      } finally {
+        setSessionsLoading(false)
+      }
+    }
+
+    fetchSessionsCount()
+  }, [user?.businessId])
+
+  // Fetch agents count
+  useEffect(() => {
+    const fetchAgentsCount = async () => {
+      if (!user?.businessId) return
+
+      try {
+        setAgentsLoading(true)
+        const response = await api.get(`/analytics/agents/${user.businessId}/count`)
+        if (response.data.success) {
+          setAgentsCount(response.data.data.agentsCount)
+        }
+      } catch (error) {
+        console.error("Error fetching agents count:", error)
+        setAgentsCount(0)
+      } finally {
+        setAgentsLoading(false)
+      }
+    }
+
+    fetchAgentsCount()
   }, [user?.businessId])
 
   const getStatusColor = (status: string) => {
@@ -199,65 +247,79 @@ export default function DashboardPage() {
 
       {/* Performance Metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Total Escalated Cases
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            {escalatedLoading ? (
-              <div className="text-xl font-bold text-muted-foreground">Loading...</div>
-            ) : escalatedCount !== null ? (
-              <div className="text-2xl font-bold text-foreground">{escalatedCount}</div>
-            ) : (
-              <div className="text-xl font-bold text-muted-foreground">0</div>
-            )}
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/escalations">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/20 dark:to-red-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+            <CardHeader className="pb-3 px-6 pt-6">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Escalated Cases
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              {escalatedLoading ? (
+                <div className="text-xl font-bold text-muted-foreground">Loading...</div>
+              ) : (
+                <div className="text-2xl font-bold text-foreground">{escalatedCount}</div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/20 dark:to-green-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Customer Satisfaction
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            {ratingLoading ? (
-              <div className="text-xl font-bold text-muted-foreground">Loading...</div>
-            ) : averageRating !== null ? (
-              <div className="text-2xl font-bold text-foreground">{averageRating}/5</div>
-            ) : (
-              <div className="text-xl font-bold text-muted-foreground">No ratings yet</div>
-            )}
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/ratings">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/20 dark:to-green-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+            <CardHeader className="pb-3 px-6 pt-6">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Customer Satisfaction
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              {ratingLoading ? (
+                <div className="text-xl font-bold text-muted-foreground">Loading...</div>
+              ) : averageRating !== null ? (
+                <div className="text-2xl font-bold text-foreground">{averageRating}/5</div>
+              ) : (
+                <div className="text-xl font-bold text-muted-foreground">No ratings yet</div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/20 dark:to-purple-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Resolution Rate
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">{dashboardData.performance.resolutionRate}%</div>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/sessions">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/20 dark:to-purple-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+            <CardHeader className="pb-3 px-6 pt-6">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Chat Sessions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              {sessionsLoading ? (
+                <div className="text-xl font-bold text-muted-foreground">Loading...</div>
+              ) : (
+                <div className="text-2xl font-bold text-foreground">{sessionsCount}</div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-          <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              First Contact Resolution
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-6 pb-6">
-            <div className="text-2xl font-bold text-foreground">{dashboardData.performance.firstContactResolution}%</div>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/agent-management">
+          <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+            <CardHeader className="pb-3 px-6 pt-6">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Total Agents
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              {agentsLoading ? (
+                <div className="text-xl font-bold text-muted-foreground">Loading...</div>
+              ) : (
+                <div className="text-2xl font-bold text-foreground">{agentsCount}</div>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Escalations Chart */}
