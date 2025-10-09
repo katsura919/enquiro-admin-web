@@ -35,14 +35,6 @@ interface StatusOverview {
   description: string;
 }
 
-interface AgentPerformance {
-  name: string;
-  status: string;
-  chatsHandled: number;
-  avgResponseTime: string;
-  efficiency: number;
-}
-
 interface AgentStatusOverviewProps {
   agents?: Agent[];
 }
@@ -137,21 +129,6 @@ export function AgentStatusOverview({ agents = [] }: AgentStatusOverviewProps) {
     ]);
   }, [agents]);
 
-  const [agentPerformance, setAgentPerformance] = useState<AgentPerformance[]>([]);
-
-  useEffect(() => {
-    // Convert agents to performance data
-    const performance = agents.map(agent => ({
-      name: agent.name,
-      status: agent.status,
-      chatsHandled: agent.totalChats,
-      avgResponseTime: '1m 23s', // Would be calculated from real data
-      efficiency: Math.floor(Math.random() * 20) + 80 // Mock efficiency
-    }));
-    
-    setAgentPerformance(performance);
-  }, [agents]);
-
   const getStatusColor = (color: string) => {
     switch (color) {
       case 'green':
@@ -216,43 +193,6 @@ export function AgentStatusOverview({ agents = [] }: AgentStatusOverviewProps) {
                       className="h-2"
                     />
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Agent Performance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Top Performers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {agentPerformance.slice(0, 5).map((agent, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
-                    <span className="text-xs font-medium">
-                      {agent.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-medium">{agent.name}</p>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={getStatusBadgeVariant(agent.status)} className="text-xs">
-                        {agent.status}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {agent.chatsHandled} chats
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium">{agent.avgResponseTime}</p>
-                  <p className="text-xs text-muted-foreground">avg response</p>
                 </div>
               </div>
             ))}

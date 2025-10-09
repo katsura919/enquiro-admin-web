@@ -146,7 +146,6 @@ export function AgentsTable({ filterOnline = false, agents: propAgents }: Agents
                 className="pl-8 w-64"
               />
             </div>
-            <Button size="sm">Add Agent</Button>
           </div>
         </div>
       </CardHeader>
@@ -157,10 +156,6 @@ export function AgentsTable({ filterOnline = false, agents: propAgents }: Agents
               <TableRow>
                 <TableHead>Agent</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Active Chats</TableHead>
-                <TableHead>Total Chats</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -177,10 +172,6 @@ export function AgentsTable({ filterOnline = false, agents: propAgents }: Agents
                       </div>
                     </TableCell>
                     <TableCell><div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div></TableCell>
-                    <TableCell><div className="h-4 w-8 bg-gray-200 animate-pulse rounded"></div></TableCell>
-                    <TableCell><div className="h-4 w-8 bg-gray-200 animate-pulse rounded"></div></TableCell>
-                    <TableCell><div className="h-4 w-16 bg-gray-200 animate-pulse rounded"></div></TableCell>
-                    <TableCell><div className="h-4 w-4 bg-gray-200 animate-pulse rounded"></div></TableCell>
                   </TableRow>
                 ))
               ) : filteredAgents.length > 0 ? (
@@ -210,44 +201,11 @@ export function AgentsTable({ filterOnline = false, agents: propAgents }: Agents
                         </span>
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <MessageSquare className="h-4 w-4 mr-1 text-muted-foreground" />
-                        {agent.activeChats}
-                      </div>
-                    </TableCell>
-                    <TableCell>{agent.totalChats}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {formatLastActive(agent.lastActive)}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <UserCheck className="mr-2 h-4 w-4" />
-                            View Profile
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Send Message
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600">
-                            <UserX className="mr-2 h-4 w-4" />
-                            Deactivate
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
                     No agents found matching your search.
                   </TableCell>
                 </TableRow>

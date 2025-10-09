@@ -130,7 +130,7 @@ export default function LoginPage() {
             {/* Login Button */}
             <Button 
               type="submit" 
-              className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium text-base"
+              className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium text-base cursor-pointer"
               disabled={isLoading}
             >
               {isLoading ? (

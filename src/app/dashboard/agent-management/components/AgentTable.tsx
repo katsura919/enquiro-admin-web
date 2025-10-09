@@ -73,8 +73,8 @@ export function AgentTable({
 
   if (loading) {
     return (
-      <Card className="w-full">
-        <div className="flex items-center justify-center min-h-[600px]">
+      <Card className="w-full border-muted-gray">
+        <div className="flex items-center justify-center min-h-[700px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Loading agents...</p>
