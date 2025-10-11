@@ -4,11 +4,9 @@ import * as React from "react"
 import { useRouter, useParams } from "next/navigation"
 import api from "@/utils/api"
 import { useAuth } from "@/lib/auth"
-import { ArrowLeft, FileText, Plus } from "lucide-react"
+import { ChevronLeft, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
 import { CaseNotes } from "../components/CaseNotes"
 import type { CaseNote } from '../components/CaseNotes'
 
@@ -31,9 +29,6 @@ export default function CaseNotesPage() {
   const [caseNotes, setCaseNotes] = React.useState<CaseNote[]>([])
   const [loading, setLoading] = React.useState(false)
   const [loadingNotes, setLoadingNotes] = React.useState(false)
-  const [page, setPage] = React.useState(1)
-  const [totalPages, setTotalPages] = React.useState(1)
-  const [totalNotes, setTotalNotes] = React.useState(0)
 
   const fetchEscalation = async () => {
     if (!id) return
@@ -49,11 +44,12 @@ export default function CaseNotesPage() {
     }
   }
 
-  const fetchNotes = async (pageNum = 1) => {
+  const fetchNotes = async () => {
     if (!id) return
     setLoadingNotes(true)
     try {
-      const response = await api.get(`/notes/escalation/${id}?page=${pageNum}&limit=10`)
+      // Fetch all notes without pagination
+      const response = await api.get(`/notes/escalation/${id}?limit=1000`)
       if (response.data.success && response.data.data?.notes) {
         const notes = response.data.data.notes.map((note: any) => ({
           id: note._id,
@@ -62,12 +58,8 @@ export default function CaseNotesPage() {
           createdAt: note.createdAt
         }))
         setCaseNotes(notes)
-        setTotalPages(response.data.data.pagination?.totalPages || 1)
-        setTotalNotes(response.data.data.pagination?.totalNotes || 0)
       } else {
         setCaseNotes([])
-        setTotalPages(1)
-        setTotalNotes(0)
       }
     } catch (error) {
       console.error('Error fetching notes:', error)
@@ -79,8 +71,8 @@ export default function CaseNotesPage() {
 
   React.useEffect(() => {
     fetchEscalation()
-    fetchNotes(page)
-  }, [id, page])
+    fetchNotes()
+  }, [id])
 
   const addCaseNote = async (content: string) => {
     if (!content.trim()) return
@@ -93,8 +85,7 @@ export default function CaseNotesPage() {
       
       if (response.data.success && response.data.data) {
         // Refresh notes to show the new note
-        fetchNotes(1) // Go to first page to see the latest note
-        setPage(1)
+        fetchNotes()
       } else {
         alert('Failed to create note.')
       }
@@ -108,7 +99,7 @@ export default function CaseNotesPage() {
     try {
       const response = await api.delete(`/notes/${noteId}`)
       if (response.data.success) {
-        fetchNotes(page) // Refresh current page
+        fetchNotes() // Refresh notes
       }
     } catch (error) {
       console.error('Error deleting note:', error)
@@ -123,21 +114,30 @@ export default function CaseNotesPage() {
     router.push(`/dashboard/escalations/${id}`)
   }
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage)
-  }
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded w-1/3 mb-6"></div>
-            <div className="space-y-4">
-              <div className="h-32 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
-              <div className="h-24 bg-muted rounded"></div>
+      <div className="min-h-screen bg-muted/30">
+        <div className="border-b bg-background/95 backdrop-blur sticky top-0 z-10 shadow-sm">
+          <div className="max-w-5xl mx-auto px-6 py-4">
+            <div className="animate-pulse space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="h-8 w-20 bg-muted rounded"></div>
+                <div className="h-6 w-px bg-border"></div>
+                <div className="h-10 w-10 bg-muted rounded-lg"></div>
+                <div className="space-y-2">
+                  <div className="h-6 w-32 bg-muted rounded"></div>
+                  <div className="h-4 w-48 bg-muted rounded"></div>
+                </div>
+              </div>
+              <div className="h-16 bg-muted/50 rounded-lg"></div>
             </div>
+          </div>
+        </div>
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="animate-pulse space-y-6">
+            <div className="h-48 bg-muted rounded-lg"></div>
+            <div className="h-32 bg-muted rounded-lg"></div>
+            <div className="h-32 bg-muted rounded-lg"></div>
           </div>
         </div>
       </div>
@@ -145,105 +145,69 @@ export default function CaseNotesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-muted/30">
       {/* Header */}
-      <div className="border-b border-border/40 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleBackToEscalation}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Case
-              </Button>
-              <div className="flex items-center gap-3">
-                <FileText className="h-6 w-6 text-indigo-500" />
-                <div>
-                  <h1 className="text-2xl font-bold">Case Notes</h1>
-                  {escalation && (
-                    <p className="text-sm text-muted-foreground">
-                      {escalation.caseNumber} • {escalation.customerName}
-                    </p>
-                  )}
-                </div>
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-4 mb-3">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleBackToEscalation}
+              className="flex items-center hover:bg-muted cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="h-6 w-px bg-border" />
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+                <FileText className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">Case Notes</h1>
+                {escalation && (
+                  <p className="text-sm text-muted-foreground">
+                    {escalation.caseNumber} • {escalation.customerName}
+                  </p>
+                )}
               </div>
             </div>
-            <Badge variant="outline" className="bg-card">
-              {totalNotes} {totalNotes === 1 ? 'Note' : 'Notes'}
-            </Badge>
           </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="space-y-6">
-          {/* Case Summary Card */}
+          
+          {/* Case Summary Bar */}
           {escalation && (
-            <Card className="p-4 bg-card/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">{escalation.concern}</h3>
-                  <p className="text-sm text-muted-foreground">{escalation.customerEmail}</p>
-                </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
+              <div className="flex-1">
+                <p className="font-medium text-sm">{escalation.concern}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{escalation.customerEmail}</p>
+              </div>
+              <div className="flex items-center gap-3">
                 <Badge 
-                  variant={escalation.status === 'resolved' ? 'default' : 'secondary'}
+                  variant={escalation.status === 'resolved' ? 'default' : escalation.status === 'pending' ? 'secondary' : 'destructive'}
                   className="capitalize"
                 >
                   {escalation.status}
                 </Badge>
+                <Badge variant="outline" className="bg-background">
+                  {caseNotes.length} {caseNotes.length === 1 ? 'Note' : 'Notes'}
+                </Badge>
               </div>
-            </Card>
+            </div>
           )}
+        </div>
+      </div>
 
+      {/* Content */}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="space-y-6">
           {/* Notes Section */}
           <CaseNotes 
             notes={caseNotes}
             onAddNote={addCaseNote}
             onDeleteNote={deleteNote}
             formatDate={formatDate}
+            loading={loadingNotes}
           />
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-8">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page <= 1}
-              >
-                Previous
-              </Button>
-              
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-                  <Button
-                    key={pageNum}
-                    variant={pageNum === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(pageNum)}
-                    className="w-8 h-8"
-                  >
-                    {pageNum}
-                  </Button>
-                ))}
-              </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page >= totalPages}
-              >
-                Next
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>
