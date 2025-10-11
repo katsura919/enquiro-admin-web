@@ -60,7 +60,7 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
     }
 
     return (
-      <div className="p-2">
+      <div className="p-2 ">
         {/* File Preview */}
         {selectedFile && (
           <div className={`mb-4 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl transition-opacity ${uploadLoading ? 'opacity-60' : ''}`}>
@@ -153,14 +153,14 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
               onChange={(e) => onChange(e.target.value)}
               placeholder={selectedFile ? "Add a caption..." : placeholder}
               disabled={disabled}
-              className="flex-1 border-0 bg-card text-foreground h-10"
+              className="flex-1 border-muted-gray bg-card hover:bg-card text-foreground h-10 shadow-none"
             />
             
             <Button 
               type="submit" 
               disabled={disabled || (!value.trim() && !selectedFile)}
               size="icon"
-              className="shrink-0 h-10 w-10 bg-card hover:bg-slate-700 disabled:bg-card dark:disabled:bg-card dark:bg-card dark:hover:bg-slate-700"
+              className="shrink-0 h-10 w-10 bg-card text-secondary-foreground shadow-none border-muted-gray cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

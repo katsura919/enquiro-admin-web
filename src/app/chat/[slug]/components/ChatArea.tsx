@@ -122,8 +122,8 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
 
                     <div className="space-y-4">
                       {/* Case Number */}
-                      <div className="flex items-center justify-between p-4 bg-white border border-emerald-200 dark:border-emerald-800">
-                        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Case Number:</span>
+                      <div className="flex items-center justify-between p-4 bg-card  rounded-lg border-emerald-200 dark:border-emerald-800">
+                        <span className="text-sm font-medium text-secondary-foreground">Case Number:</span>
                         <div className="flex items-center gap-3">
                           <code className="text-sm font-mono bg-slate-100 dark:bg-slate-700 px-3 py-1.5 rounded-md text-slate-900 dark:text-slate-100">
                             {escalationResponse.caseNumber}
