@@ -177,12 +177,18 @@ export function AgentTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(agent)}>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation()
+                        onEdit(agent)
+                      }}>
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => onDelete(agent)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(agent)
+                        }}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />

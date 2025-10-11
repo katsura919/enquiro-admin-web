@@ -92,15 +92,13 @@ export function CaseNotesPreview({
           <h2 className="text-lg font-semibold">Case Notes</h2>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-card text-xs">{notes.length}</Badge>
+          <Badge variant="outline" className=" text-xs">{notes.length}</Badge>
           {hasMoreNotes && (
             <Button 
-              variant="outline" 
               size="sm"
               onClick={handleViewAllNotes}
-              className="flex items-center gap-1 text-xs"
+              className="flex items-center gap-1 bg-primary cursor-pointer"
             >
-              <Eye className="h-3 w-3" />
               View All Notes
             </Button>
           )}
@@ -149,9 +147,6 @@ export function CaseNotesPreview({
                       <span className="text-sm font-medium">{note.author}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onDeleteNote(note.id)}>
-                        <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                      </Button>
                     </div>
                   </div>
                   <div className="py-1">
@@ -167,24 +162,6 @@ export function CaseNotesPreview({
               </Card>
             ))}
             
-            {hasMoreNotes && (
-              <Card className="p-4 bg-muted/50 border-dashed">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Showing {maxDisplay} of {notes.length} notes
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleViewAllNotes}
-                    className="flex items-center gap-2 mx-auto"
-                  >
-                    <Eye className="h-4 w-4" />
-                    View All {notes.length} Notes
-                  </Button>
-                </div>
-              </Card>
-            )}
           </>
         )}
       </div>

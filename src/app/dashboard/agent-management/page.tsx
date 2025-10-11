@@ -200,11 +200,14 @@ export default function AgentManagementPage() {
       const response = await api.post('/agent', createData)
       setAgents(prev => [response.data, ...prev])
       toast.success("Agent created successfully")
-      closeDialogs()
     } catch (error: any) {
       toast.error(getErrorMessage(error, "Failed to create agent"))
     } finally {
       setLoading(false)
+      // Close dialog after a small delay to ensure proper cleanup
+      setTimeout(() => {
+        closeDialogs()
+      }, 100)
     }
   }
 
@@ -228,11 +231,14 @@ export default function AgentManagementPage() {
         )
       )
       toast.success("Agent updated successfully")
-      closeDialogs()
     } catch (error: any) {
       toast.error(getErrorMessage(error, "Failed to update agent"))
     } finally {
       setLoading(false)
+      // Close dialog after a small delay to ensure proper cleanup
+      setTimeout(() => {
+        closeDialogs()
+      }, 100)
     }
   }
 
@@ -251,11 +257,14 @@ export default function AgentManagementPage() {
         )
       )
       toast.success("Agent deleted successfully")
-      closeDialogs()
     } catch (error: any) {
       toast.error(getErrorMessage(error, "Failed to delete agent"))
     } finally {
       setLoading(false)
+      // Close dialog after a small delay to ensure proper cleanup
+      setTimeout(() => {
+        closeDialogs()
+      }, 100)
     }
   }
 
@@ -463,21 +472,27 @@ export default function AgentManagementPage() {
       )}
 
       {/* Dialogs */}
-      <AgentForm
-        open={showAgentForm}
-        onClose={closeDialogs}
-        onSubmit={editingAgent ? handleEditAgent : handleCreateAgent}
-        agent={editingAgent}
-        loading={loading}
-      />
+      {showAgentForm && (
+        <AgentForm
+          key={editingAgent?._id || 'new'}
+          open={showAgentForm}
+          onClose={closeDialogs}
+          onSubmit={editingAgent ? handleEditAgent : handleCreateAgent}
+          agent={editingAgent}
+          loading={loading}
+        />
+      )}
 
-      <DeleteAgentDialog
-        open={showDeleteDialog}
-        onClose={closeDialogs}
-        onConfirm={handleDeleteAgent}
-        agent={deletingAgent}
-        loading={loading}
-      />
+      {showDeleteDialog && (
+        <DeleteAgentDialog
+          key={deletingAgent?._id}
+          open={showDeleteDialog}
+          onClose={closeDialogs}
+          onConfirm={handleDeleteAgent}
+          agent={deletingAgent}
+          loading={loading}
+        />
+      )}
     </div>
   )
 }

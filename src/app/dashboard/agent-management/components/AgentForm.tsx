@@ -106,7 +106,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
 
     try {
       await onSubmit(formData)
-      onClose()
+      // Don't call onClose here - let the parent handle it after success
     } catch (error) {
       console.error('Form submission error:', error)
     }
@@ -121,8 +121,31 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        // Only allow closing when not loading and when dialog is being closed (isOpen = false)
+        if (!isOpen && !loading) {
+          onClose()
+        }
+      }}
+      modal={true}
+    >
+      <DialogContent 
+        className="sm:max-w-lg"
+        onPointerDownOutside={(e) => {
+          // Prevent closing by clicking outside when loading
+          if (loading) {
+            e.preventDefault()
+          }
+        }} 
+        onEscapeKeyDown={(e) => {
+          // Prevent closing with escape key when loading
+          if (loading) {
+            e.preventDefault()
+          }
+        }}
+      >
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold">
             {agent ? 'Edit Agent' : 'Add New Agent'}

@@ -26,15 +26,34 @@ export function DeleteAgentDialog({
   const handleConfirm = async () => {
     try {
       await onConfirm()
-      onClose()
+      // Don't call onClose here - let the parent handle it after success
     } catch (error) {
       console.error('Delete confirmation error:', error)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        // Only allow closing when not loading and when dialog is being closed (isOpen = false)
+        if (!isOpen && !loading) {
+          onClose()
+        }
+      }}
+      modal={true}
+    >
+      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => {
+        // Prevent closing by clicking outside when loading
+        if (loading) {
+          e.preventDefault()
+        }
+      }} onEscapeKeyDown={(e) => {
+        // Prevent closing with escape key when loading
+        if (loading) {
+          e.preventDefault()
+        }
+      }}>
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
