@@ -4,7 +4,7 @@ import * as React from "react"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ThemeSwitch } from "@/components/theme-switch"
-import { Menu, Bell, Search, User, LayoutDashboard, FolderKanban, MessageSquare, AlertTriangle, Settings, HelpCircle, Package, Wrench, FileText } from "lucide-react"
+import { Menu, Bell, Search, User, LayoutDashboard, FolderKanban, MessageSquare, AlertTriangle, Settings, HelpCircle, Package, Wrench, FileText, Notebook } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth"
 import {
@@ -54,6 +54,8 @@ const getPageInfo = (pathname: string) => {
       return { title: 'Business Settings', icon: Settings }
     case 'realtime-dashboard':
       return { title: 'Real-time Dashboard', icon: Settings }
+    case 'notes':
+      return { title: 'Notes', icon: Notebook }
     default:
       return { title: 'Dashboard', icon: LayoutDashboard }
   }
@@ -86,6 +88,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
     security: { label: 'Security' },
     chatbot: { label: 'Chatbot' },
     ratings: { label: 'Ratings' },
+    notes: { label: 'Notes' },
   };
   // Breadcrumb import
   // prettier-ignore

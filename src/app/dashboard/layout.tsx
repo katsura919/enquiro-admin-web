@@ -46,6 +46,7 @@ const navigation = [
     category: "MAIN",
     items: [
       { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
       { 
         name: "Knowledge Base", 
         href: "/dashboard/knowledge", 
@@ -57,7 +58,7 @@ const navigation = [
           { name: "FAQ", href: "/dashboard/knowledge/faq", icon: HelpCircle },
         ]
       },
-      { name: "Cases", href: "/dashboard/escalations", icon: Inbox },
+
       { name: "Ratings", href: "/dashboard/ratings", icon: Star },
     ]
   },

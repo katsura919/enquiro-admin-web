@@ -23,7 +23,7 @@ export function ViewAllActivities({ activities, formatDate }: ViewAllActivitiesP
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full">
+        <Button variant="outline" size="sm" className="w-full cursor-pointer">
           View All Activities
         </Button>
       </DrawerTrigger>
