@@ -308,7 +308,7 @@ export default function DashboardPage() {
       {/* Performance Metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Link href="/dashboard/escalations">
-          <Card className="border-muted-gray shadow-none bg-gradient-to-br from-red-200 to-red-400 dark:from-red-900/20 dark:to-red-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+          <Card className="border-muted-gray shadow-none bg-card cursor-pointer ">
             <CardHeader className="pb-3 px-6 pt-6">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
@@ -326,7 +326,7 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/dashboard/ratings">
-          <Card className="border-muted-gray shadow-none bg-gradient-to-br from-green-200 to-green-400 dark:from-green-900/20 dark:to-green-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+          <Card className="border-muted-gray shadow-none bg-card cursor-pointer">
             <CardHeader className="pb-3 px-6 pt-6">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
@@ -346,7 +346,7 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/dashboard/sessions">
-          <Card className="border-muted-gray shadow-none bg-gradient-to-br from-purple-200 to-purple-400 dark:from-purple-900/20 dark:to-purple-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+          <Card className="border-muted-gray shadow-none bg-card cursor-pointer">
             <CardHeader className="pb-3 px-6 pt-6">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
@@ -364,7 +364,7 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/dashboard/agent-management">
-          <Card className="border-muted-gray shadow-none bg-gradient-to-br from-orange-200 to-orange-400 dark:from-orange-900/20 dark:to-orange-800/20 cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
+          <Card className="border-muted-gray shadow-none bg-card cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]">
             <CardHeader className="pb-3 px-6 pt-6">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Users className="h-4 w-4" />

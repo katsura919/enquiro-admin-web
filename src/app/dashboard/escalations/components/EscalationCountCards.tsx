@@ -60,7 +60,7 @@ export function EscalationCountCards({
       count: counts.total,
       status: "all" as const,
       icon: FileText,
-      cardClass: "bg-gradient-to-br from-blue-200 to-blue-400 dark:from-blue-900/20 dark:to-blue-800/20",
+      cardClass: "bg-card border-muted-gray shadow-none",
       badgeColor: "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
     },
     {
@@ -68,7 +68,7 @@ export function EscalationCountCards({
       count: counts.escalated,
       status: "escalated" as const,
       icon: AlertTriangle,
-      cardClass: "bg-gradient-to-br from-red-200 to-red-400 dark:from-red-900/20 dark:to-red-800/20",
+      cardClass: "bg-card border-muted-gray shadow-none",
       badgeColor: "bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200"
     },
     {
@@ -76,7 +76,7 @@ export function EscalationCountCards({
       count: counts.pending,
       status: "pending" as const,
       icon: Clock,
-      cardClass: "bg-gradient-to-br from-yellow-200 to-yellow-400 dark:from-yellow-900/20 dark:to-yellow-800/20",
+      cardClass: "bg-card border-muted-gray shadow-none",
       badgeColor: "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
     },
     {
@@ -84,7 +84,7 @@ export function EscalationCountCards({
       count: counts.resolved,
       status: "resolved" as const,
       icon: CheckCircle,
-      cardClass: "bg-gradient-to-br from-green-200 to-green-400 dark:from-green-900/20 dark:to-green-800/20",
+      cardClass: "bg-card border-muted-gray shadow-none",
       badgeColor: "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200"
     }
   ]
