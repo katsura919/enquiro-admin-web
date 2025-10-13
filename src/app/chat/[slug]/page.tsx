@@ -864,8 +864,8 @@ export default function ChatPage() {
             onFileSelect={handleFileSelect}
             onFileClear={clearFile}
             uploadLoading={uploadLoading}
-            chatbotName={chatbotSettings?.chatbotName}
-            chatbotIcon={chatbotSettings?.chatbotIcon}
+            chatbotName={chatbotSettings?.chatbotName || "AI Assistant"}
+            chatbotIcon={chatbotSettings?.chatbotIcon || businessData?.logo}
           />
         </div>
 

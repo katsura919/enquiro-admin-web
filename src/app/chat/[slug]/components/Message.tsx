@@ -15,9 +15,10 @@ interface MessageProps {
   index: number
   onEscalationClick: (escalationData?: { type: 'new' | 'continue' | 'form', caseId?: string, sessionId?: string }) => void
   escalationInProgress?: boolean // Add this to prevent auto-trigger when escalation is already submitted
+  chatbotIcon?: string
 }
 
-export default function Message({ message, index, onEscalationClick, escalationInProgress = false }: MessageProps) {
+export default function Message({ message, index, onEscalationClick, escalationInProgress = false, chatbotIcon }: MessageProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<{
     url: string
@@ -237,15 +238,21 @@ export default function Message({ message, index, onEscalationClick, escalationI
     >
       {(message.senderType === "ai" || message.senderType === "agent") && (
         <div className="flex-shrink-0 mt-1">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden ${
             message.senderType === "agent"
               ? "bg-emerald-500 shadow-sm"
-              : "bg-slate-800 dark:bg-slate-200 shadow-sm"
+              : "bg-slate-100 dark:bg-slate-700 shadow-sm"
           }`}>
             {message.senderType === "agent" ? (
               <User className="h-4 w-4 text-white" />
+            ) : chatbotIcon ? (
+              <img 
+                src={chatbotIcon} 
+                alt="AI Assistant"
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <Bot className="h-4 w-4 text-white dark:text-slate-800" />
+              <Bot className="h-4 w-4 text-slate-600 dark:text-slate-300" />
             )}
           </div>
         </div>
@@ -259,10 +266,10 @@ export default function Message({ message, index, onEscalationClick, escalationI
         <div className={`
           px-4 py-3 text-sm relative 
           ${message.senderType === "ai" 
-            ? " text-forground" 
+            ? "bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-2xl rounded-tl-md" 
             : message.senderType === "agent"
-            ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-100 rounded-2xl rounded-bl-md"
-            : "bg-card text-foreground rounded-lg"
+            ? "bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 text-emerald-900 dark:text-emerald-100 rounded-2xl rounded-tl-md"
+            : "bg-slate-700 dark:bg-slate-600 text-white rounded-2xl rounded-tr-md"
           }
         `}>
           {/* Attachments */}
