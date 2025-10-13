@@ -134,7 +134,6 @@ export default function Home() {
         position="bottom-right"
         primaryColor="#3b82f6"
         title="Enquiro"
-        frontendUrl="https://enquiro.vercel.app/"
       />
     </div>
   )

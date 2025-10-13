@@ -169,13 +169,7 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
               )}
             </Button>
           </div>
-          
-          {!isLiveChatMode && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 flex items-center gap-2 pl-2">
-              <Paperclip className="h-3 w-3" />
-              File uploads are available when chatting with an agent
-            </p>
-          )}
+
         </form>
       </div>
     )
