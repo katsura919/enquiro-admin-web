@@ -11,6 +11,7 @@ import ChatArea from "./components/ChatArea"
 import EscalationDialog from "./components/EscalationDialog"
 import SupportRequestDialog from "./components/SupportRequestDialog"
 import AgentRatingDialog from "./components/AgentRatingDialog"
+import CaseFollowUpDialog from "./components/CaseFollowUpDialog"
 import { useLiveChat } from "./components/useLiveChat"
 import { ToastContainer } from "@/components/ui/toast"
 import { toast } from "@/hooks/useToast"
@@ -112,6 +113,9 @@ export default function ChatPage() {
   
   // Case continuation state
   const [continuationData, setContinuationData] = useState<ContinuationData | null>(null)
+  const [caseFollowUpVisible, setCaseFollowUpVisible] = useState(false)
+  const [caseFollowUpLoading, setCaseFollowUpLoading] = useState(false)
+  const [caseFollowUpError, setCaseFollowUpError] = useState<string | null>(null)
   
   // Agent rating state
   const [ratingDialogVisible, setRatingDialogVisible] = useState(false)
@@ -576,48 +580,10 @@ export default function ChatPage() {
 
   // Handle escalation click - now supports new, continue, and form escalations
   const handleEscalationClick = (escalationData?: { type: 'new' | 'continue' | 'form', caseId?: string, sessionId?: string }) => {
-    if (escalationData?.type === 'continue' && escalationData.caseId && escalationData.sessionId) {
-      // Handle case continuation
-      setContinuationData({
-        caseId: escalationData.caseId,
-        sessionId: escalationData.sessionId
-      })
-      
-      // Set the session to the existing one for continuation
-      setSessionId(escalationData.sessionId)
-      
-      // Mark that we have an escalation response (simulate for continuation)
-      setEscalationResponse({
-        _id: escalationData.caseId,
-        businessId: businessData?._id || '',
-        sessionId: escalationData.sessionId,
-        caseNumber: 'CONTINUING', // This will be updated when we fetch the real case data
-        customerName: 'Returning Customer',
-        customerEmail: '',
-        customerPhone: '',
-        concern: 'Case Continuation',
-        description: 'Continuing existing case',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })
-      
-      setWaitingForAgent(true)
-      
-      // Add system message about case continuation
-      const continuationMessage: ChatMessage = {
-        _id: `continuation-${Date.now()}`,
-        businessId: businessData?._id || '',
-        sessionId: escalationData.sessionId,
-        message: `Continuing your existing case. Connecting you to an available agent...`,
-        senderType: 'system',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setMessages(prev => [...prev, continuationMessage])
-      
-      // Request live chat with existing escalation
-      requestChat(escalationData.caseId, businessData?._id || '')
-      
+    if (escalationData?.type === 'continue') {
+      // Show case follow-up dialog to accept case number
+      setCaseFollowUpVisible(true)
+      setCaseFollowUpError(null)
     } else {
       // Check if live chat is enabled to determine which dialog to show
       const liveChatEnabled = chatbotSettings?.enableLiveChat !== false
@@ -629,6 +595,76 @@ export default function ChatPage() {
         // Show support request form (form-only mode)
         setSupportRequestVisible(true)
       }
+    }
+  }
+
+  // Handle case number submission for follow-up
+  const handleCaseNumberSubmit = async (caseNumber: string) => {
+    setCaseFollowUpLoading(true)
+    setCaseFollowUpError(null)
+
+    try {
+      if (!businessData?._id) {
+        setCaseFollowUpError('Business information not available.')
+        setCaseFollowUpLoading(false)
+        return
+      }
+
+      // Call API to validate case number and get escalation data
+      const response = await api.get(`/escalation/case/${caseNumber}?businessId=${businessData._id}`)
+      
+      const escalationData = response.data
+
+      // Set continuation data
+      setContinuationData({
+        caseId: escalationData._id,
+        sessionId: escalationData.sessionId
+      })
+      
+      // Set the session to the existing one for continuation
+      setSessionId(escalationData.sessionId)
+      
+      // Mark that we have an escalation response
+      setEscalationResponse({
+        _id: escalationData._id,
+        businessId: escalationData.businessId,
+        sessionId: escalationData.sessionId,
+        caseNumber: escalationData.caseNumber,
+        customerName: escalationData.customerName,
+        customerEmail: escalationData.customerEmail,
+        customerPhone: escalationData.customerPhone || '',
+        concern: escalationData.concern,
+        description: escalationData.description || '',
+        createdAt: escalationData.createdAt,
+        updatedAt: escalationData.updatedAt
+      })
+      
+      setWaitingForAgent(true)
+      
+      // Close the case follow-up dialog
+      setCaseFollowUpVisible(false)
+      
+      // Add system message about case continuation
+      const continuationMessage: ChatMessage = {
+        _id: `continuation-${Date.now()}`,
+        businessId: businessData._id,
+        sessionId: escalationData.sessionId,
+        message: `Case #${caseNumber} found! Welcome back, ${escalationData.customerName}. Connecting you to an available agent...`,
+        senderType: 'system',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, continuationMessage])
+      
+      // Request live chat with existing escalation ID and business ID
+      requestChat(escalationData._id, businessData._id)
+      
+    } catch (error: any) {
+      console.error('Error validating case number:', error)
+      const errorMessage = error.response?.data?.error || 'Case not found. Please check your case number and try again.'
+      setCaseFollowUpError(errorMessage)
+    } finally {
+      setCaseFollowUpLoading(false)
     }
   }
 
@@ -913,6 +949,15 @@ export default function ChatPage() {
           onSkip={handleRatingSkip}
           loading={ratingLoading}
           success={ratingSuccess}
+        />
+
+        {/* Case Follow-Up Dialog */}
+        <CaseFollowUpDialog
+          open={caseFollowUpVisible}
+          onOpenChange={setCaseFollowUpVisible}
+          onSubmit={handleCaseNumberSubmit}
+          isLoading={caseFollowUpLoading}
+          error={caseFollowUpError}
         />
 
         {/* Toast Container */}

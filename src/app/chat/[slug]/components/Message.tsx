@@ -151,29 +151,26 @@ export default function Message({ message, index, onEscalationClick, escalationI
 
   // Check if message contains escalation links
   const hasEscalationLink = (content: string) => {
-    return /\[([^\]]+)\]\(escalate:\/\/(new|continue(\?[^)]+)?|form(\?[^)]+)?)\)/g.test(content)
+    return /\[([^\]]+)\]\(escalate:\/\/(new|continue|form)\)/g.test(content)
   }
 
   // Extract escalation type and data from content
   const getEscalationData = (content: string) => {
-    // Check for continue escalation with case data
-    const continueMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/continue\?caseId=([^&]+)&sessionId=([^)]+)\)/)
+    // Check for continue escalation (no params needed)
+    const continueMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/continue\)/)
     if (continueMatch) {
       return {
         type: 'continue',
-        text: continueMatch[1],
-        caseId: continueMatch[2],
-        sessionId: continueMatch[3]
+        text: continueMatch[1]
       }
     }
 
     // Check for form-only escalation
-    const formMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/form(\?caseId=([^)]+))?\)/)
+    const formMatch = content.match(/\[([^\]]+)\]\(escalate:\/\/form\)/)
     if (formMatch) {
       return {
         type: 'form',
-        text: formMatch[1],
-        caseId: formMatch[3] || undefined
+        text: formMatch[1]
       }
     }
 
@@ -190,6 +187,7 @@ export default function Message({ message, index, onEscalationClick, escalationI
   }
 
   // Auto-trigger escalation dialog when escalation link is detected (only once per message)
+  // BUT NOT for 'continue' type - those should be manual clicks only
   useEffect(() => {
     if (
       message.senderType === "ai" && 
@@ -198,14 +196,19 @@ export default function Message({ message, index, onEscalationClick, escalationI
       !escalationTriggered && 
       !escalationInProgress // Don't auto-trigger if escalation is already in progress
     ) {
-      // Small delay to ensure the message is fully rendered before showing dialog
+      const escalationData = message.message ? getEscalationData(message.message) : null
+      
+      // Don't auto-trigger for 'continue' type - user must manually click
+      if (escalationData?.type === 'continue') {
+        setEscalationTriggered(true) // Mark as seen but don't trigger
+        return
+      }
+      
+      // Auto-trigger for 'new' and 'form' types only
       const timer = setTimeout(() => {
-        const escalationData = message.message ? getEscalationData(message.message) : null
         if (escalationData) {
           onEscalationClick({
-            type: escalationData.type as 'new' | 'continue' | 'form',
-            caseId: escalationData.caseId,
-            sessionId: escalationData.sessionId
+            type: escalationData.type as 'new' | 'continue' | 'form'
           })
         } else {
           onEscalationClick()
@@ -424,11 +427,9 @@ export default function Message({ message, index, onEscalationClick, escalationI
                   onClick={() => {
                     const escalationData = message.message ? getEscalationData(message.message) : null
                     if (escalationData && escalationData.type === 'continue') {
-                      // For returning customers, handle continuing the case
+                      // For returning customers, show case follow-up dialog
                       onEscalationClick({
-                        type: 'continue',
-                        caseId: escalationData.caseId,
-                        sessionId: escalationData.sessionId
+                        type: 'continue'
                       })
                     } else {
                       // For new customers, show the regular escalation dialog
