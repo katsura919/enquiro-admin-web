@@ -24,6 +24,7 @@ import QR from "@/components/dashboard/QR"
 import api from "@/utils/api"
 import { ChartAreaInteractive } from "@/components/dashboard/dashboard-escalation-chart"
 import { RatingsBarChart } from "@/components/dashboard/rating-bar-chart"
+import { LatestEscalations } from "@/components/dashboard/latest-escalations"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface BusinessData {
@@ -240,53 +241,75 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Skeleton for Escalations Chart */}
-        <div className="mb-8">
-          <Card className="border-muted-gray shadow-none">
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-64 mt-2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[350px] w-full" />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Skeleton for QR and Ratings Chart */}
-        <div className="grid gap-6 md:grid-cols-2 mb-8">
-          {/* QR Skeleton */}
-          <Card className="border-muted-gray shadow-none">
-            <CardHeader className="pb-4 px-6 pt-6">
-              <div className="flex items-center justify-between">
+        {/* Skeleton Grid Layout: Chart & Cards (left) + Latest Escalations (right, 2 rows) */}
+        <div className="grid gap-6 lg:grid-cols-12 mb-8">
+          {/* Escalations Chart Skeleton - Top left */}
+          <div className="lg:col-span-9">
+            <Card className="border-muted-gray shadow-none">
+              <CardHeader>
                 <Skeleton className="h-6 w-48" />
-                <Skeleton className="h-8 w-24" />
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6 px-6 pb-6">
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-full" />
-              </div>
-              <div className="flex flex-col items-center space-y-4">
-                <Skeleton className="h-[340px] w-[340px]" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-9 w-28" />
-                  <Skeleton className="h-9 w-24" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                <Skeleton className="h-4 w-64 mt-2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[350px] w-full" />
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Ratings Chart Skeleton */}
-          <Card className="border-muted-gray shadow-none">
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-40 mt-2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-[300px] w-full" />
-            </CardContent>
-          </Card>
+          {/* Latest Escalations Skeleton - Right side, spanning 2 rows */}
+          <div className="lg:col-span-3 lg:row-span-2">
+            <Card className="border-muted-gray shadow-none h-full">
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* QR Skeleton - Bottom left */}
+          <div className="lg:col-span-4">
+            <Card className="border-muted-gray shadow-none">
+              <CardHeader className="pb-4 px-6 pt-6">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 px-6 pb-6">
+                <div className="space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="flex flex-col items-center space-y-4">
+                  <Skeleton className="h-[240px] w-[240px]" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-9 w-28" />
+                    <Skeleton className="h-9 w-24" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Ratings Chart Skeleton - Bottom left */}
+          <div className="lg:col-span-5">
+            <Card className="border-muted-gray shadow-none">
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-40 mt-2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-[300px] w-full" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     )
@@ -382,23 +405,31 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Escalations Chart */}
+      {/* Grid Layout: Escalations Chart & Other Cards (left) + Latest Escalations (right, spanning 2 rows) */}
       {businessData._id && (
-        <div className="mb-8">
-          <ChartAreaInteractive businessId={businessData._id} />
-        </div>
-      )}
+        <div className="grid gap-6 lg:grid-cols-12 mb-8">
+          {/* Escalations Chart - Top left, full width */}
+          <div className="lg:col-span-9">
+            <ChartAreaInteractive businessId={businessData._id} />
+          </div>
 
-      {/* QR Component and Ratings Distribution Side by Side */}
-      {businessData._id && (
-        <div className="grid gap-6 md:grid-cols-2 mb-8">
-          <QR 
-            key={businessData._id} // Force re-render when business data changes
-            businessSlug={businessData.slug} 
-            businessLogo={businessData.logo}
-            businessName={businessData.name}
-          />
-          <RatingsBarChart businessId={businessData._id} />
+          {/* Latest Escalations - Right side, spanning 2 rows */}
+          <div className="lg:col-span-3 lg:row-span-2">
+            <LatestEscalations businessId={businessData._id} />
+          </div>
+
+          {/* QR Component and Ratings Distribution - Bottom left */}
+          <div className="lg:col-span-4">
+            <QR 
+              key={businessData._id} // Force re-render when business data changes
+              businessSlug={businessData.slug} 
+              businessLogo={businessData.logo}
+              businessName={businessData.name}
+            />
+          </div>
+          <div className="lg:col-span-5">
+            <RatingsBarChart businessId={businessData._id} />
+          </div>
         </div>
       )}
     </div>

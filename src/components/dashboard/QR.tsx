@@ -133,50 +133,35 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
 
 
   return (
-    <Card className="bg-card border-muted-gray shadow-none ">
-      <CardHeader className="pb-4 px-6 pt-6">
-        <CardTitle className="text-foreground flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Link to your chat interface
-          </div>
+    <Card className="bg-card border-muted-gray shadow-none h-full flex flex-col">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-secondary-foreground">
+            <div className="p-2 rounded-lg">
+              <Globe className="h-4 w-4 text-secondary-foreground" />
+            </div>
+            Chat Interface
+          </CardTitle>
           <Button
             asChild
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="text-xs bg-card"
+            className="text-xs h-8 text-muted-foreground hover:text-foreground"
           >
             <Link href="/dashboard/settings/chatbot">
-              Customize
+              <Settings className="h-3.5 w-3.5 mr-1.5" />
+              Settings
             </Link>
           </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6 px-6 pb-6">
-        {/* URL Section */}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              readOnly
-              value={chatUrl}
-              className="bg-card shadow-none text-foreground border-muted-gray"
-            />
-            <Button
-              onClick={handleCopy}
-              variant="outline"
-              className="shrink-0 border-muted-gray text-secondary-foreground hover:bg-accent bg-card shadow-none cursor-pointer"
-            >
-              <Copy className="h-4 w-4" />
-              {copied ? "Copied!" : "Copy"}
-            </Button>
-          </div>
         </div>
-
-        {/* QR Code Display */}
-        <div className="flex flex-col items-center space-y-4">
+      </CardHeader>
+      
+      <CardContent className="flex-1 flex flex-col space-y-6">
+        {/* QR Code Display - Centered */}
+        <div className="flex-1 flex flex-col items-center justify-center space-y-6">
           <div 
             ref={qrRef}
-            className="relative p-4 bg-white rounded-lg border border-border shadow-sm"
+            className="relative p-6 bg-white rounded-2xl border-2 border-border shadow-lg"
             style={{ backgroundColor: qrSettings.bgColor }}
           >
             <QRCodeSVG 
@@ -194,12 +179,22 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
               } : undefined}
             />
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={downloadQR} className="shadow-none bg-card cursor-pointer">
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 w-full max-w-sm">
+            <Button 
+              variant="outline" 
+              className="flex-1 shadow-none bg-card cursor-pointer hover:bg-accent"
+              onClick={downloadQR}
+            >
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
-            <Button asChild variant="outline" size="sm" className="shadow-none bg-card">
+            <Button 
+              asChild 
+              variant="outline" 
+              className="flex-1 shadow-none bg-card hover:bg-accent"
+            >
               <Link href={chatUrl} target="_blank">
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
@@ -208,6 +203,26 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
           </div>
         </div>
 
+        {/* URL Section - At Bottom */}
+        <div className="space-y-2 pt-4 border-t border-border">
+          <Label className="text-xs text-muted-foreground font-medium">Share Link</Label>
+          <div className="flex gap-2">
+            <Input
+              readOnly
+              value={chatUrl}
+              className="bg-muted/50 shadow-none text-sm text-foreground border-muted-gray font-mono"
+            />
+            <Button
+              onClick={handleCopy}
+              variant="outline"
+              size="sm"
+              className="shrink-0 border-muted-gray text-foreground hover:bg-accent bg-card shadow-none cursor-pointer"
+            >
+              <Copy className="h-4 w-4 mr-1.5" />
+              {copied ? "Copied!" : "Copy"}
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )
