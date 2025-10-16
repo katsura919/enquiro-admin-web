@@ -45,10 +45,10 @@ export default function Navbar() {
             className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-white"
           >
             <Image
-              src="/logo-blue.png"
+              src="/logo.png"
               alt="Enquiro Logo"
-              width={35}
-              height={30}
+              width={40}
+              height={35}
               className="mr-2"
             />
             <span className="font-bold text-xl text-white">Enquiro</span>
@@ -56,7 +56,7 @@ export default function Navbar() {
         </div>
 
         {/* Navigation Items */}
-        <NavItems items={navItems} className="text-gray-300" />
+        <NavItems items={navItems} className="text-white" />
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
@@ -115,7 +115,7 @@ export default function Navbar() {
             className="relative z-20 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-white"
           >
             <Image
-              src="/logo-blue.png"
+              src="/logo.png"
               alt="Enquiro Logo"
               width={32}
               height={32}

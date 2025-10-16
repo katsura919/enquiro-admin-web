@@ -70,7 +70,7 @@ export default function Home() {
                       <p className="mx-auto max-w-[700px] text-gray-300 text-base md:text-lg pb-5">
                        
                         All your{" "}
-                        <Highlight className="text-black dark:text-white p-1">
+                        <Highlight className="text-white dark:text-white p-1">
                           Live Chat, AI Chatbot, CRM and Workforce Management tools
                         </Highlight>
                         {" "}unified in one powerful platform.

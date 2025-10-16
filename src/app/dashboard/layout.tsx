@@ -166,7 +166,7 @@ export default function DashboardLayout({
           {/* Header */}
           <div className="flex h-20 shrink-0 items-center justify-between px-6">
             <Link 
-              href="/dashboard" 
+              href="/" 
               className={cn(
                 "flex items-center gap-3 text-white transition-all duration-300 ease-out group",
                 !isSidebarOpen && "lg:justify-center"
@@ -175,11 +175,12 @@ export default function DashboardLayout({
               {/* Logo icon */}
               <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
                 <Image
-                  src="/logo-blue.png"
+                  src="/logo.png"
                   alt="Enquiro Logo"
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={50}
                   className="rounded-lg"
+
                 />
               </div>
               {/* Brand name */}                
