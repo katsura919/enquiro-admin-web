@@ -55,7 +55,7 @@ const navigation: NavItem[] = [
   },
   {
     title: "Agent Management",
-    href: "/docs/agents",
+    href: "/docs/agent",
     icon: Users,
   },
   {

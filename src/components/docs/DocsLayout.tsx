@@ -25,7 +25,7 @@ interface DocsPageHeaderProps {
 export function DocsPageHeader({ heading, text, className }: DocsPageHeaderProps) {
   return (
     <div className={cn("space-y-4", className)}>
-      <h1 className="inline-block font-bold text-4xl lg:text-5xl bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+      <h1 className="inline-block font-bold text-4xl lg:text-5xl bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent py-2">
         {heading}
       </h1>
       {text && (

@@ -46,14 +46,6 @@ export default function DocsPage() {
             <div className="mx-auto w-full max-w-6xl">
               {/* Hero Section */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    <BookOpen className="h-4 w-4 text-white" />
-                  </div>
-                  <Badge variant="outline" className="text-xs text-white border-muted-gray">
-                    v1.0.0
-                  </Badge>
-                </div>
                 <DocsPageHeader 
                   heading="Documentation"
                   text="Everything you need to integrate and customize your chat support system. Built for developers, designed for scale."

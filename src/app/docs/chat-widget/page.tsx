@@ -49,18 +49,6 @@ export default function ChatWidgetDocsPage() {
             <div className="mx-auto w-full max-w-6xl">
               {/* Hero Section */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                    <MessageSquare className="h-4 w-4 text-white" />
-                  </div>
-                  <Badge variant="outline" className="text-xs border-gray-700">
-                    v2.0.1
-                  </Badge>
-                  <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300">
-                    <Package className="h-3 w-3 mr-1" />
-                    NPM Package
-                  </Badge>
-                </div>
                 <DocsPageHeader 
                   heading="Chat Widget"
                   text="A beautiful, customizable chat widget for React applications that works with ANY CSS framework or no framework at all!"
