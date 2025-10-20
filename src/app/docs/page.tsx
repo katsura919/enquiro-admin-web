@@ -417,7 +417,7 @@ cp .env.example .env`}
 
           {/* Table of Contents - Right Sidebar */}
           <div className="hidden xl:block">
-            <div className="sticky top-16 w-64 px-6 py-8">
+            <div className="fixed top-24 w-64 px-6 py-8 h-fit">
               <TableOfContents />
             </div>
           </div>

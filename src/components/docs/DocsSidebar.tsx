@@ -34,16 +34,6 @@ const navigation: NavItem[] = [
     icon: FileText,
   },
   {
-    title: "Introduction",
-    href: "/docs/introduction",
-    icon: FileText,
-  },
-  {
-    title: "Quick Start",
-    href: "/docs/quick-start",
-    icon: Zap,
-  },
-  {
     title: "Installation",
     href: "/docs/installation",
     icon: Settings,
@@ -60,18 +50,8 @@ const navigation: NavItem[] = [
   },
   {
     title: "Chat Widget",
-    href: "/docs/chat/widget",
+    href: "/docs/chat-widget",
     icon: Code,
-  },
-  {
-    title: "File Uploads",
-    href: "/docs/chat/file-uploads",
-    icon: Database,
-  },
-  {
-    title: "Chat Routing",
-    href: "/docs/chat/routing",
-    icon: Webhook,
   },
   {
     title: "Agent Management",
@@ -79,131 +59,11 @@ const navigation: NavItem[] = [
     icon: Users,
   },
   {
-    title: "Agent Dashboard",
-    href: "/docs/agents/dashboard",
-    icon: Users,
-  },
-  {
-    title: "Agent Status",
-    href: "/docs/agents/status",
-    icon: Users,
-  },
-  {
     title: "Escalations",
     href: "/docs/agents/escalations",
     icon: Shield,
   },
-  {
-    title: "Performance",
-    href: "/docs/agents/performance",
-    icon: Zap,
-  },
-  {
-    title: "Integration",
-    href: "/docs/integration",
-    icon: Code,
-  },
-  {
-    title: "REST API",
-    href: "/docs/integration/api",
-    icon: Code,
-  },
-  {
-    title: "Webhooks",
-    href: "/docs/integration/webhooks",
-    icon: Webhook,
-  },
-  {
-    title: "Socket Events",
-    href: "/docs/integration/sockets",
-    icon: Zap,
-  },
-  {
-    title: "Embed Widget",
-    href: "/docs/integration/embed",
-    icon: Code,
-  },
-  {
-    title: "Business Management",
-    href: "/docs/business",
-    icon: Settings,
-  },
-  {
-    title: "Multi-tenant Setup",
-    href: "/docs/business/multi-tenant",
-    icon: Settings,
-  },
-  {
-    title: "User Management",
-    href: "/docs/business/users",
-    icon: Users,
-  },
-  {
-    title: "Permissions",
-    href: "/docs/business/permissions",
-    icon: Shield,
-  },
-  {
-    title: "Knowledge Base",
-    href: "/docs/knowledge",
-    icon: Database,
-  },
-  {
-    title: "FAQ Management",
-    href: "/docs/knowledge/faq",
-    icon: Database,
-  },
-  {
-    title: "Articles",
-    href: "/docs/knowledge/articles",
-    icon: FileText,
-  },
-  {
-    title: "Search",
-    href: "/docs/knowledge/search",
-    icon: Database,
-  },
-  {
-    title: "Customization",
-    href: "/docs/customization",
-    icon: Palette,
-  },
-  {
-    title: "Themes",
-    href: "/docs/customization/themes",
-    icon: Palette,
-  },
-  {
-    title: "Branding",
-    href: "/docs/customization/branding",
-    icon: Palette,
-  },
-  {
-    title: "UI Components",
-    href: "/docs/customization/components",
-    icon: Code,
-  },
-  {
-    title: "Security",
-    href: "/docs/security",
-    icon: Shield,
-    badge: "Important",
-  },
-  {
-    title: "Authentication",
-    href: "/docs/security/auth",
-    icon: Shield,
-  },
-  {
-    title: "Data Privacy",
-    href: "/docs/security/privacy",
-    icon: Shield,
-  },
-  {
-    title: "Best Practices",
-    href: "/docs/security/best-practices",
-    icon: Shield,
-  },
+  
 ]
 
 interface DocsSidebarProps {

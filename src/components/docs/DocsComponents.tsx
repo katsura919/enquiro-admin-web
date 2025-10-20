@@ -43,7 +43,7 @@ export function CodeBlock({
       )}
       <div className="relative">
         <pre className={cn(
-          "overflow-x-auto p-4 bg-slate-950 text-slate-50 rounded-lg text-sm font-mono leading-relaxed",
+          "overflow-x-auto p-4 bg-white/10 text-slate-50 rounded-lg text-sm font-mono leading-relaxed",
           title && "rounded-t-none",
           "scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800"
         )}>
@@ -53,7 +53,7 @@ export function CodeBlock({
           <Button
             size="sm"
             variant="ghost"
-            className="absolute top-2 right-2 h-7 w-7 p-0 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 opacity-0 group-hover:opacity-100 transition-all duration-200"
+            className="absolute top-2 right-2 h-7 w-7 p-0 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer"
             onClick={copyToClipboard}
           >
             {copied ? (
