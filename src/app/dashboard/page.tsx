@@ -421,7 +421,7 @@ export default function DashboardPage() {
           {/* QR Component and Ratings Distribution - Bottom left */}
           <div className="lg:col-span-4">
             <QR 
-              key={businessData._id} // Force re-render when business data changes
+              key={businessData._id} 
               businessSlug={businessData.slug} 
               businessLogo={businessData.logo}
               businessName={businessData.name}

@@ -695,7 +695,7 @@ export default function AccountSettingsPage() {
         </Card>
 
         {/* Security Preferences Card */}
-        <Card className="border-muted-gray bg-card shadow-none">
+        {/* <Card className="border-muted-gray bg-card shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground flex items-center gap-2">
               <Smartphone className="h-5 w-5" />
@@ -761,7 +761,7 @@ export default function AccountSettingsPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   )

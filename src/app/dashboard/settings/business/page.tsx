@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Building, Save, Upload, Eye, ExternalLink, Camera, X, Check, Copy } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import api from "@/utils/api"
+import { toast } from "sonner"
 
 interface BusinessData {
   _id?: string
@@ -48,12 +49,9 @@ export default function BusinessSettingsPage() {
   
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
   const [logoPreview, setLogoPreview] = useState<string>("")
   const [copied, setCopied] = useState(false)
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
-  const [uploadError, setUploadError] = useState<string>("")
-  const [uploadSuccess, setUploadSuccess] = useState(false)
 
   // Check if there are changes
   const hasChanges = () => {
@@ -79,6 +77,7 @@ export default function BusinessSettingsPage() {
         setLogoPreview(response.data.logo || "")
       } catch (error) {
         console.error("Error fetching business data:", error)
+        toast.error("Failed to load business data")
       } finally {
         setIsLoading(false)
       }
@@ -111,15 +110,14 @@ export default function BusinessSettingsPage() {
     if (!businessId) return
     
     setIsSaving(true)
-    setIsSuccess(false)
     
     try {
       await api.put(`/business/${businessId}`, businessData)
       setInitialBusinessData(businessData) // Update initial data after successful save
-      setIsSuccess(true)
-      setTimeout(() => setIsSuccess(false), 3000)
+      toast.success("Business settings updated successfully!")
     } catch (error) {
       console.error("Error updating business:", error)
+      toast.error("Failed to update business settings")
     } finally {
       setIsSaving(false)
     }
@@ -133,8 +131,6 @@ export default function BusinessSettingsPage() {
     if (!businessId) return
     
     setIsUploadingLogo(true)
-    setUploadError("")
-    setUploadSuccess(false)
     
     try {
       // Create FormData to send the file
@@ -153,13 +149,11 @@ export default function BusinessSettingsPage() {
       setBusinessData(prev => ({ ...prev, logo: cloudinaryUrl }))
       setLogoPreview(cloudinaryUrl)
       
-      setUploadSuccess(true)
-      setTimeout(() => setUploadSuccess(false), 3000)
+      toast.success("Logo uploaded successfully!")
       
     } catch (error: any) {
       console.error("Error uploading logo:", error)
-      setUploadError(error.response?.data?.error || "Failed to upload logo. Please try again.")
-      setTimeout(() => setUploadError(""), 5000)
+      toast.error(error.response?.data?.error || "Failed to upload logo. Please try again.")
     } finally {
       setIsUploadingLogo(false)
     }
@@ -170,15 +164,13 @@ export default function BusinessSettingsPage() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setUploadError("Please select an image file")
-        setTimeout(() => setUploadError(""), 3000)
+        toast.error("Please select an image file")
         return
       }
       
       // Validate file size (10MB limit)
       if (file.size > 10 * 1024 * 1024) {
-        setUploadError("File size must be less than 10MB")
-        setTimeout(() => setUploadError(""), 3000)
+        toast.error("File size must be less than 10MB")
         return
       }
       
@@ -215,12 +207,10 @@ export default function BusinessSettingsPage() {
         fileInputRef.current.value = ""
       }
       
-      setUploadSuccess(true)
-      setTimeout(() => setUploadSuccess(false), 3000)
+      toast.success("Logo removed successfully!")
     } catch (error) {
       console.error("Error removing logo:", error)
-      setUploadError("Failed to remove logo. Please try again.")
-      setTimeout(() => setUploadError(""), 3000)
+      toast.error("Failed to remove logo. Please try again.")
     }
   }
 
@@ -229,8 +219,10 @@ export default function BusinessSettingsPage() {
       await navigator.clipboard.writeText(getChatUrl())
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+      toast.success("URL copied to clipboard!")
     } catch (err) {
       console.error('Failed to copy URL:', err)
+      toast.error("Failed to copy URL")
     }
   }
 
@@ -247,36 +239,6 @@ export default function BusinessSettingsPage() {
 
   return (
     <div className="w-full">
-      {/* Success Message */}
-      {isSuccess && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
-          <div className="p-1 bg-green-100 dark:bg-green-900 rounded-full">
-            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-          </div>
-          <p className="text-green-800 dark:text-green-200 font-medium">Business settings updated successfully!</p>
-        </div>
-      )}
-
-      {/* Logo Upload Success */}
-      {uploadSuccess && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
-          <div className="p-1 bg-green-100 dark:bg-green-900 rounded-full">
-            <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-          </div>
-          <p className="text-green-800 dark:text-green-200 font-medium">Logo uploaded successfully!</p>
-        </div>
-      )}
-
-      {/* Logo Upload Error */}
-      {uploadError && (
-        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
-          <div className="p-1 bg-red-100 dark:bg-red-900 rounded-full">
-            <X className="h-4 w-4 text-red-600 dark:text-red-400" />
-          </div>
-          <p className="text-red-800 dark:text-red-200 font-medium">{uploadError}</p>
-        </div>
-      )}
-
       <div className="w-full max-w-4xl">
         {/* Business Settings Card */}
         <Card className="border-muted-gray bg-card shadow-none">

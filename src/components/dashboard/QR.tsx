@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Copy, Globe, Eye, Download, Settings } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import Link from "next/link"
+import { useAuth } from "@/lib/auth"
+import api from "@/utils/api"
+import { toast } from "sonner"
 
 interface QRProps {
   businessSlug: string
@@ -16,20 +19,53 @@ interface QRProps {
 }
 
 export default function QR({ businessSlug, businessLogo, businessName = "Your Business" }: QRProps) {
+  const { user } = useAuth()
   const [copied, setCopied] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const qrRef = useRef<HTMLDivElement>(null)
   
-  // Fixed QR settings
-  const qrSettings = {
+  // QR settings from server
+  const [qrSettings, setQrSettings] = useState({
     size: 300,
     bgColor: "#ffffff",
     fgColor: "#000000",
     level: "M" as "L" | "M" | "Q" | "H",
     includeMargin: true,
     includeLogo: true
-  }
+  })
   
   const chatUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/chat/${businessSlug}`
+
+  // Fetch QR settings from server
+  useEffect(() => {
+    const fetchQRSettings = async () => {
+      if (!user?.businessId) return
+      
+      try {
+        setIsLoading(true)
+        const response = await api.get(`/qr-settings/${user.businessId}`)
+        if (response.data.success) {
+          const settings = response.data.data
+          const qrData = {
+            size: 300, // Keep size fixed
+            bgColor: settings.bgColor || "#ffffff",
+            fgColor: settings.fgColor || "#000000",
+            level: (settings.errorCorrectionLevel || "M") as "L" | "M" | "Q" | "H",
+            includeMargin: true, // Keep margin fixed
+            includeLogo: settings.includeLogo !== undefined ? settings.includeLogo : true
+          }
+          setQrSettings(qrData)
+        }
+      } catch (error) {
+        console.error("Error fetching QR settings:", error)
+        toast.error("Failed to load QR code settings")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchQRSettings()
+  }, [user?.businessId])
 
   // Create default logo using local logo file
   const createDefaultLogo = () => {
@@ -40,6 +76,7 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
     navigator.clipboard.writeText(chatUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    toast.success("Link copied to clipboard!")
   }
 
   const downloadQR = async () => {
@@ -114,9 +151,12 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
       link.download = `qr-code-${businessSlug}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
+      
+      toast.success("QR code downloaded successfully!")
 
     } catch (error) {
       console.error('Error downloading QR code:', error)
+      toast.error("Failed to download QR code")
       // Fallback to simple SVG download
       const svgData = new XMLSerializer().serializeToString(svg)
       const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
@@ -131,6 +171,39 @@ export default function QR({ businessSlug, businessLogo, businessName = "Your Bu
 
   const logoToUse = businessLogo || createDefaultLogo()
 
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-muted-gray shadow-none h-full flex flex-col">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2 text-secondary-foreground">
+              <div className="p-2 rounded-lg">
+                <Globe className="h-4 w-4 text-secondary-foreground" />
+              </div>
+              Chat Interface
+            </CardTitle>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="text-xs h-8 text-muted-foreground hover:text-foreground"
+            >
+              <Link href="/dashboard/settings/chatbot">
+                <Settings className="h-3.5 w-3.5 mr-1.5" />
+                Settings
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground mt-2 text-sm">Loading QR code...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card className="bg-card border-muted-gray shadow-none h-full flex flex-col">

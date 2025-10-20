@@ -12,6 +12,7 @@ import { MessageSquare, Save, Upload, Eye, Camera, X, Check, Bot, ZoomIn, ZoomOu
 import { QRCodeSVG } from "qrcode.react"
 import { useAuth } from "@/lib/auth"
 import api from "@/utils/api"
+import { toast } from "sonner"
 
 interface ChatbotSettings {
   _id?: string
@@ -58,7 +59,6 @@ export default function ChatbotSettingsPage() {
   
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
   const [iconPreview, setIconPreview] = useState<string>("")
   
   // QR Code settings
@@ -112,6 +112,7 @@ export default function ChatbotSettingsPage() {
         }
       } catch (error) {
         console.error("Error fetching chatbot settings:", error)
+        toast.error("Failed to load chatbot settings")
       } finally {
         setIsLoading(false)
       }
@@ -130,6 +131,7 @@ export default function ChatbotSettingsPage() {
         setBusinessData(response.data)
       } catch (error) {
         console.error("Error fetching business data:", error)
+        toast.error("Failed to load business data")
       }
     }
 
@@ -158,6 +160,7 @@ export default function ChatbotSettingsPage() {
         }
       } catch (error) {
         console.error("Error fetching QR settings:", error)
+        toast.error("Failed to load QR code settings")
       }
     }
 
@@ -285,7 +288,6 @@ export default function ChatbotSettingsPage() {
     
     setIsSaving(true)
     setIsSavingQr(true)
-    setIsSuccess(false)
     
     try {
       // Save chatbot settings
@@ -306,11 +308,11 @@ export default function ChatbotSettingsPage() {
       if (chatbotResponse.data.success && qrResponse.data.success) {
         setInitialSettings(settingsData) // Update initial settings after successful save
         setInitialQrSettings(qrSettings) // Update initial QR settings after successful save
-        setIsSuccess(true)
-        setTimeout(() => setIsSuccess(false), 3000)
+        toast.success("Chatbot settings updated successfully!")
       }
     } catch (error) {
       console.error("Error updating settings:", error)
+      toast.error("Failed to update settings")
     } finally {
       setIsSaving(false)
       setIsSavingQr(false)
@@ -440,6 +442,7 @@ export default function ChatbotSettingsPage() {
     navigator.clipboard.writeText(chatUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    toast.success("Link copied to clipboard!")
   }
 
   const downloadQR = async () => {
@@ -504,9 +507,12 @@ export default function ChatbotSettingsPage() {
       link.download = `qr-code-${businessData?.slug || 'chatbot'}.png`
       link.href = canvas.toDataURL('image/png')
       link.click()
+      
+      toast.success("QR code downloaded successfully!")
 
     } catch (error) {
       console.error('Error downloading QR code:', error)
+      toast.error("Failed to download QR code")
     }
   }
 
@@ -532,16 +538,6 @@ export default function ChatbotSettingsPage() {
   return (
     <div className="w-full">
  
-        {/* Success Message */}
-        {isSuccess && (
-          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
-            <div className="p-1 bg-green-100 dark:bg-green-900 rounded-full">
-              <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
-            </div>
-            <p className="text-green-800 dark:text-green-200 font-medium">Chatbot settings updated successfully!</p>
-          </div>
-        )}
-
         <div className="w-full max-w-4xl">
           {/* Chatbot Settings Card */}
           <Card className="border-muted-gray bg-card shadow-none ">
