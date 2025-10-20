@@ -10,7 +10,7 @@ interface DocsLayoutProps {
 
 export function DocsLayout({ children, className }: DocsLayoutProps) {
   return (
-    <div className={cn("w-full max-w-none flex-1 items-start md:grid md:grid-cols-[240px_minmax(0,1fr)_300px] md:gap-8 lg:gap-12", className)}>
+    <div className={cn("w-full max-w-none flex-1 items-start md:grid md:grid-cols-[288px_minmax(0,1fr)_300px] md:gap-8 lg:gap-12", className)}>
       {children}
     </div>
   )

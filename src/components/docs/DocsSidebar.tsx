@@ -32,86 +32,178 @@ const navigation: NavItem[] = [
     title: "Getting Started",
     href: "/docs",
     icon: FileText,
-    items: [
-      { title: "Introduction", href: "/docs/introduction" },
-      { title: "Quick Start", href: "/docs/quick-start" },
-      { title: "Installation", href: "/docs/installation" },
-    ]
+  },
+  {
+    title: "Introduction",
+    href: "/docs/introduction",
+    icon: FileText,
+  },
+  {
+    title: "Quick Start",
+    href: "/docs/quick-start",
+    icon: Zap,
+  },
+  {
+    title: "Installation",
+    href: "/docs/installation",
+    icon: Settings,
   },
   {
     title: "Chat System",
     href: "/docs/chat",
     icon: MessageSquare,
-    items: [
-      { title: "Live Chat", href: "/docs/chat/live-chat" },
-      { title: "Chat Widget", href: "/docs/chat/widget" },
-      { title: "File Uploads", href: "/docs/chat/file-uploads" },
-      { title: "Chat Routing", href: "/docs/chat/routing" },
-    ]
+  },
+  {
+    title: "Live Chat",
+    href: "/docs/chat/live-chat",
+    icon: MessageSquare,
+  },
+  {
+    title: "Chat Widget",
+    href: "/docs/chat/widget",
+    icon: Code,
+  },
+  {
+    title: "File Uploads",
+    href: "/docs/chat/file-uploads",
+    icon: Database,
+  },
+  {
+    title: "Chat Routing",
+    href: "/docs/chat/routing",
+    icon: Webhook,
   },
   {
     title: "Agent Management",
     href: "/docs/agents",
     icon: Users,
-    items: [
-      { title: "Agent Dashboard", href: "/docs/agents/dashboard" },
-      { title: "Agent Status", href: "/docs/agents/status" },
-      { title: "Escalations", href: "/docs/agents/escalations" },
-      { title: "Performance", href: "/docs/agents/performance" },
-    ]
+  },
+  {
+    title: "Agent Dashboard",
+    href: "/docs/agents/dashboard",
+    icon: Users,
+  },
+  {
+    title: "Agent Status",
+    href: "/docs/agents/status",
+    icon: Users,
+  },
+  {
+    title: "Escalations",
+    href: "/docs/agents/escalations",
+    icon: Shield,
+  },
+  {
+    title: "Performance",
+    href: "/docs/agents/performance",
+    icon: Zap,
   },
   {
     title: "Integration",
     href: "/docs/integration",
     icon: Code,
-    items: [
-      { title: "REST API", href: "/docs/integration/api" },
-      { title: "Webhooks", href: "/docs/integration/webhooks" },
-      { title: "Socket Events", href: "/docs/integration/sockets" },
-      { title: "Embed Widget", href: "/docs/integration/embed" },
-    ]
+  },
+  {
+    title: "REST API",
+    href: "/docs/integration/api",
+    icon: Code,
+  },
+  {
+    title: "Webhooks",
+    href: "/docs/integration/webhooks",
+    icon: Webhook,
+  },
+  {
+    title: "Socket Events",
+    href: "/docs/integration/sockets",
+    icon: Zap,
+  },
+  {
+    title: "Embed Widget",
+    href: "/docs/integration/embed",
+    icon: Code,
   },
   {
     title: "Business Management",
     href: "/docs/business",
     icon: Settings,
-    items: [
-      { title: "Multi-tenant Setup", href: "/docs/business/multi-tenant" },
-      { title: "User Management", href: "/docs/business/users" },
-      { title: "Permissions", href: "/docs/business/permissions" },
-    ]
+  },
+  {
+    title: "Multi-tenant Setup",
+    href: "/docs/business/multi-tenant",
+    icon: Settings,
+  },
+  {
+    title: "User Management",
+    href: "/docs/business/users",
+    icon: Users,
+  },
+  {
+    title: "Permissions",
+    href: "/docs/business/permissions",
+    icon: Shield,
   },
   {
     title: "Knowledge Base",
     href: "/docs/knowledge",
     icon: Database,
-    items: [
-      { title: "FAQ Management", href: "/docs/knowledge/faq" },
-      { title: "Articles", href: "/docs/knowledge/articles" },
-      { title: "Search", href: "/docs/knowledge/search" },
-    ]
+  },
+  {
+    title: "FAQ Management",
+    href: "/docs/knowledge/faq",
+    icon: Database,
+  },
+  {
+    title: "Articles",
+    href: "/docs/knowledge/articles",
+    icon: FileText,
+  },
+  {
+    title: "Search",
+    href: "/docs/knowledge/search",
+    icon: Database,
   },
   {
     title: "Customization",
     href: "/docs/customization",
     icon: Palette,
-    items: [
-      { title: "Themes", href: "/docs/customization/themes" },
-      { title: "Branding", href: "/docs/customization/branding" },
-      { title: "UI Components", href: "/docs/customization/components" },
-    ]
+  },
+  {
+    title: "Themes",
+    href: "/docs/customization/themes",
+    icon: Palette,
+  },
+  {
+    title: "Branding",
+    href: "/docs/customization/branding",
+    icon: Palette,
+  },
+  {
+    title: "UI Components",
+    href: "/docs/customization/components",
+    icon: Code,
   },
   {
     title: "Security",
     href: "/docs/security",
     icon: Shield,
     badge: "Important",
-    items: [
-      { title: "Authentication", href: "/docs/security/auth" },
-      { title: "Data Privacy", href: "/docs/security/privacy" },
-      { title: "Best Practices", href: "/docs/security/best-practices" },
-    ]
-  }
+  },
+  {
+    title: "Authentication",
+    href: "/docs/security/auth",
+    icon: Shield,
+  },
+  {
+    title: "Data Privacy",
+    href: "/docs/security/privacy",
+    icon: Shield,
+  },
+  {
+    title: "Best Practices",
+    href: "/docs/security/best-practices",
+    icon: Shield,
+  },
 ]
 
 interface DocsSidebarProps {
@@ -125,53 +217,32 @@ export function DocsSidebar({ className }: DocsSidebarProps) {
     <div className={cn("pb-12", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          <h2 className="mb-4 px-4 text-lg font-semibold tracking-tight">
             Documentation
           </h2>
-          <ScrollArea className="h-[calc(100vh-8rem)] px-1">
-            <div className="space-y-2">
+          <ScrollArea className="h-[calc(100vh-8rem)]">
+            <div className="space-y-1 pr-4">
               {navigation.map((item, index) => (
-                <div key={index} className="px-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 py-2">
-                      {item.icon && (
-                        <item.icon className="h-4 w-4 text-muted-foreground" />
-                      )}
-                      <Link 
-                        href={item.href}
-                        className={cn(
-                          "text-sm font-medium transition-colors hover:text-primary",
-                          pathname === item.href ? "text-primary" : "text-muted-foreground"
-                        )}
-                      >
-                        {item.title}
-                      </Link>
-                      {item.badge && (
-                        <Badge variant="secondary" className="text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  {item.items && (
-                    <div className="ml-6 space-y-1 border-l pl-4">
-                      {item.items.map((subItem, subIndex) => (
-                        <Link
-                          key={subIndex}
-                          href={subItem.href}
-                          className={cn(
-                            "block py-1 text-sm transition-colors hover:text-primary",
-                            pathname === subItem.href 
-                              ? "text-primary font-medium" 
-                              : "text-muted-foreground"
-                          )}
-                        >
-                          {subItem.title}
-                        </Link>
-                      ))}
-                    </div>
+                <Link
+                  key={index}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all hover:bg-accent",
+                    pathname === item.href 
+                      ? "bg-accent text-primary shadow-sm" 
+                      : "text-muted-foreground hover:text-foreground"
                   )}
-                </div>
+                >
+                  {item.icon && (
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                  )}
+                  <span className="flex-1">{item.title}</span>
+                  {item.badge && (
+                    <Badge variant="secondary" className="text-xs ml-auto">
+                      {item.badge}
+                    </Badge>
+                  )}
+                </Link>
               ))}
             </div>
           </ScrollArea>

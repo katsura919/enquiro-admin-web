@@ -32,10 +32,10 @@ export default function DocsPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="w-full">
+      <div className="w-full pt-20">
         <DocsLayout>
           {/* Sidebar */}
-          <aside className="fixed top-14 z-30 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:sticky md:block">
+          <aside className="fixed top-20 z-30 hidden h-[calc(100vh-5rem)] w-72 shrink-0 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:sticky md:block">
             <div className="px-6 py-6">
               <DocsSidebar />
             </div>
