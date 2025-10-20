@@ -64,7 +64,7 @@ export function TableOfContents({ className }: TableOfContentsProps) {
 
   return (
     <div className={cn("space-y-2", className)}>
-      <p className="font-medium">On This Page</p>
+      <p className="font-medium text-white">On This Page</p>
       <ScrollArea className="h-[calc(100vh-4rem)] pb-10">
         <div className="space-y-2">
           {toc.map((item) => (
@@ -72,12 +72,12 @@ export function TableOfContents({ className }: TableOfContentsProps) {
               key={item.id}
               href={`#${item.id}`}
               className={cn(
-                "block text-sm transition-colors hover:text-foreground",
+                "block text-sm transition-colors hover:text-white",
                 item.level > 2 && "pl-4",
                 item.level > 3 && "pl-8",
                 activeId === item.id
-                  ? "font-medium text-foreground"
-                  : "text-muted-foreground"
+                  ? "font-medium text-blue-400"
+                  : "text-gray-400"
               )}
             >
               {item.title}

@@ -77,7 +77,7 @@ export function DocsSidebar({ className }: DocsSidebarProps) {
     <div className={cn("pb-12", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <h2 className="mb-4 px-4 text-lg font-semibold tracking-tight">
+          <h2 className="mb-4 px-4 text-lg font-semibold tracking-tight text-white">
             Documentation
           </h2>
           <ScrollArea className="h-[calc(100vh-8rem)]">
@@ -87,10 +87,10 @@ export function DocsSidebar({ className }: DocsSidebarProps) {
                   key={index}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all hover:bg-accent",
+                    "flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm font-medium transition-all hover:bg-gray-900",
                     pathname === item.href 
-                      ? "bg-accent text-primary shadow-sm" 
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-gray-900 text-blue-400 shadow-sm" 
+                      : "text-gray-400 hover:text-white"
                   )}
                 >
                   {item.icon && (

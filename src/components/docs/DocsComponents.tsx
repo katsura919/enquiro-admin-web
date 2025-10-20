@@ -34,9 +34,9 @@ export function CodeBlock({
   return (
     <div className={cn("relative group", className)}>
       {title && (
-        <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border border-b-0 rounded-t-lg backdrop-blur-sm">
-          <span className="text-sm font-medium text-foreground">{title}</span>
-          <Badge variant="outline" className="text-xs bg-background/50">
+        <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-muted-gray rounded-t-lg backdrop-blur-sm">
+          <span className="text-sm font-medium text-white">{title}</span>
+          <Badge className="text-xs bg-white/10 border-muted-gray">
             {language}
           </Badge>
         </div>
@@ -91,34 +91,34 @@ export function FeatureCard({
     <Component
       href={href}
       className={cn(
-        "group relative overflow-hidden rounded-lg border bg-background p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5",
-        href && "hover:border-primary/50 cursor-pointer hover:-translate-y-1",
+        "group relative overflow-hidden rounded-lg border border-gray-800 bg-gray-950 p-6 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/20",
+        href && "hover:border-blue-800 cursor-pointer hover:-translate-y-1",
         className
       )}
     >
       <div className="flex items-start gap-4">
-        <div className="rounded-md bg-gradient-to-br from-primary/10 to-primary/20 p-2 group-hover:from-primary/20 group-hover:to-primary/30 transition-all duration-300">
-          <Icon className="h-5 w-5 text-primary" />
+        <div className="rounded-md bg-gradient-to-br from-blue-900/20 to-purple-900/30 p-2 group-hover:from-blue-900/30 group-hover:to-purple-900/40 transition-all duration-300">
+          <Icon className="h-5 w-5 text-blue-400" />
         </div>
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold group-hover:text-primary transition-colors">{title}</h3>
+            <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">{title}</h3>
             {badge && (
               <Badge variant="secondary" className="text-xs">
                 {badge}
               </Badge>
             )}
             {href && (
-              <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ExternalLink className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             )}
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-gray-400 leading-relaxed">
             {description}
           </p>
         </div>
       </div>
       {/* Subtle gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
     </Component>
   )
 }
@@ -134,14 +134,14 @@ interface StepProps {
 export function Step({ step, title, description, children, className }: StepProps) {
   return (
     <div className={cn("relative pl-8 pb-8 last:pb-0", className)}>
-      <div className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 text-xs font-semibold text-primary-foreground shadow-sm">
+      <div className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-xs font-semibold text-white shadow-sm">
         {step}
       </div>
       {/* Connecting line */}
-      <div className="absolute left-3 top-6 w-px h-full bg-border last:hidden" />
+      <div className="absolute left-3 top-6 w-px h-full bg-gray-800 last:hidden" />
       <div className="space-y-3">
-        <h3 className="font-semibold text-lg">{title}</h3>
-        <p className="text-muted-foreground leading-relaxed">{description}</p>
+        <h3 className="font-semibold text-lg text-white">{title}</h3>
+        <p className="text-gray-400 leading-relaxed">{description}</p>
         {children}
       </div>
     </div>

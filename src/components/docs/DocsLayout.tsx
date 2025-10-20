@@ -25,11 +25,11 @@ interface DocsPageHeaderProps {
 export function DocsPageHeader({ heading, text, className }: DocsPageHeaderProps) {
   return (
     <div className={cn("space-y-4", className)}>
-      <h1 className="inline-block font-bold text-3xl lg:text-4xl bg-gradient-to-r from-black to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+      <h1 className="inline-block font-bold text-4xl lg:text-5xl bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
         {heading}
       </h1>
       {text && (
-        <p className="text-xl text-muted-foreground max-w-2xl">
+        <p className="text-xl text-gray-400 max-w-2xl">
           {text}
         </p>
       )}

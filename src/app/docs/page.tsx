@@ -29,13 +29,13 @@ import Link from 'next/link'
 
 export default function DocsPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black">
       <Navbar />
       
       <div className="w-full pt-20">
         <DocsLayout>
           {/* Sidebar */}
-          <aside className="fixed top-20 z-30 hidden h-[calc(100vh-5rem)] w-72 shrink-0 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:sticky md:block">
+          <aside className="fixed top-20 z-30 hidden h-[calc(100vh-5rem)] w-72 shrink-0 border-r border-gray-800 bg-black/95 backdrop-blur md:sticky md:block">
             <div className="px-6 py-6">
               <DocsSidebar />
             </div>
@@ -50,7 +50,7 @@ export default function DocsPage() {
                   <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                     <BookOpen className="h-4 w-4 text-white" />
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs text-white border-muted-gray">
                     v1.0.0
                   </Badge>
                 </div>
@@ -60,19 +60,19 @@ export default function DocsPage() {
                 />
               </div>
 
-              <Separator className="my-8" />
+              <Separator className="my-8 bg-gray-800" />
 
               {/* Quick Start Cards */}
               <section className="space-y-6">
                 <div className="space-y-2">
-                  <h2 id="quick-start" className="text-2xl font-bold tracking-tight">Quick Start</h2>
-                  <p className="text-muted-foreground">
+                  <h2 id="quick-start" className="text-2xl font-bold tracking-tight text-white">Quick Start</h2>
+                  <p className="text-gray-400">
                     Get up and running with your chat support system in minutes.
                   </p>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 hover:shadow-lg transition-all duration-300">
+                  <Card className="border-gray-800 bg-gradient-to-br from-blue-950/20 to-purple-950/20 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300">
                     <CardHeader className="pb-4">
                       <div className="flex items-center gap-2">
                         <div className="rounded-md bg-primary/20 p-2">
@@ -93,7 +93,7 @@ export default function DocsPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-950/20 dark:to-blue-900/20 hover:shadow-lg transition-all duration-300">
+                  <Card className="border-gray-800 bg-gradient-to-br from-blue-950/20 to-blue-900/20 hover:shadow-lg hover:shadow-blue-900/20 transition-all duration-300">
                     <CardHeader className="pb-4">
                       <div className="flex items-center gap-2">
                         <div className="rounded-md bg-blue-100 p-2 dark:bg-blue-900">
@@ -106,7 +106,7 @@ export default function DocsPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button asChild variant="outline" size="sm" className="w-full shadow-sm">
+                      <Button asChild size="sm" className="w-full  shadow-sm">
                         <Link href="/docs/integration/api">
                           View API Docs <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
@@ -114,7 +114,7 @@ export default function DocsPage() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100 dark:border-green-800 dark:from-green-950/20 dark:to-green-900/20 hover:shadow-lg transition-all duration-300">
+                  <Card className="border-gray-800 bg-gradient-to-br from-green-950/20 to-green-900/20 hover:shadow-lg hover:shadow-green-900/20 transition-all duration-300">
                     <CardHeader className="pb-4">
                       <div className="flex items-center gap-2">
                         <div className="rounded-md bg-green-100 p-2 dark:bg-green-900">
@@ -127,7 +127,7 @@ export default function DocsPage() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <Button asChild variant="outline" size="sm" className="w-full shadow-sm">
+                      <Button asChild size="sm" className="w-full shadow-sm">
                         <Link href="/demo">
                           Try Demo <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
@@ -137,13 +137,13 @@ export default function DocsPage() {
                 </div>
               </section>
 
-              <Separator className="my-8" />
+              <Separator className="my-8 bg-gray-800" />
 
               {/* System Overview */}
               <section className="space-y-6">
                 <div className="space-y-2">
-                  <h2 id="overview" className="text-2xl font-bold tracking-tight">System Overview</h2>
-                  <p className="text-muted-foreground">
+                  <h2 id="overview" className="text-2xl font-bold tracking-tight text-white">System Overview</h2>
+                  <p className="text-gray-400">
                     Our chat support system provides everything you need to deliver exceptional customer support.
                   </p>
                 </div>
@@ -194,13 +194,13 @@ export default function DocsPage() {
                 </div>
               </section>
 
-              <Separator className="my-8" />
+              <Separator className="my-8 bg-gray-800" />
 
               {/* Quick Setup Guide */}
               <section className="space-y-6">
                 <div className="space-y-2">
-                  <h2 id="setup-guide" className="text-2xl font-bold tracking-tight">Quick Setup Guide</h2>
-                  <p className="text-muted-foreground">
+                  <h2 id="setup-guide" className="text-2xl font-bold tracking-tight text-white">Quick Setup Guide</h2>
+                  <p className="text-gray-400">
                     Follow these steps to get your chat system running in production.
                   </p>
                 </div>
@@ -278,27 +278,27 @@ cp .env.example .env`}
                 </div>
               </section>
 
-              <Separator className="my-8" />
+              <Separator className="my-8 bg-gray-800" />
 
               {/* Popular Topics */}
               <section className="space-y-6">
                 <div className="space-y-2">
-                  <h2 id="popular-topics" className="text-2xl font-bold tracking-tight">Popular Topics</h2>
-                  <p className="text-muted-foreground">
+                  <h2 id="popular-topics" className="text-2xl font-bold tracking-tight text-white">Popular Topics</h2>
+                  <p className="text-gray-400">
                     Most frequently accessed documentation sections.
                   </p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <Card className="group hover:shadow-md transition-shadow cursor-pointer">
+                  <Card className="group hover:shadow-md hover:shadow-blue-900/20 transition-shadow cursor-pointer border-gray-800 bg-gray-950">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <MessageSquare className="h-5 w-5 text-blue-500 mt-0.5" />
+                        <MessageSquare className="h-5 w-5 text-blue-400 mt-0.5" />
                         <div className="space-y-1">
-                          <h4 className="font-medium group-hover:text-primary transition-colors">
+                          <h4 className="font-medium text-white group-hover:text-blue-400 transition-colors">
                             Chat Widget Setup
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             Embed and customize the chat widget
                           </p>
                         </div>
@@ -306,15 +306,15 @@ cp .env.example .env`}
                     </CardContent>
                   </Card>
 
-                  <Card className="group hover:shadow-md transition-shadow cursor-pointer">
+                  <Card className="group hover:shadow-md hover:shadow-green-900/20 transition-shadow cursor-pointer border-gray-800 bg-gray-950">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <Code className="h-5 w-5 text-green-500 mt-0.5" />
+                        <Code className="h-5 w-5 text-green-400 mt-0.5" />
                         <div className="space-y-1">
-                          <h4 className="font-medium group-hover:text-primary transition-colors">
+                          <h4 className="font-medium text-white group-hover:text-green-400 transition-colors">
                             API Authentication
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             Secure your API endpoints
                           </p>
                         </div>
@@ -322,15 +322,15 @@ cp .env.example .env`}
                     </CardContent>
                   </Card>
 
-                  <Card className="group hover:shadow-md transition-shadow cursor-pointer">
+                  <Card className="group hover:shadow-md hover:shadow-yellow-900/20 transition-shadow cursor-pointer border-gray-800 bg-gray-950">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <Zap className="h-5 w-5 text-yellow-500 mt-0.5" />
+                        <Zap className="h-5 w-5 text-yellow-400 mt-0.5" />
                         <div className="space-y-1">
-                          <h4 className="font-medium group-hover:text-primary transition-colors">
+                          <h4 className="font-medium text-white group-hover:text-yellow-400 transition-colors">
                             Real-time Events
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             Handle socket events and webhooks
                           </p>
                         </div>
@@ -338,15 +338,15 @@ cp .env.example .env`}
                     </CardContent>
                   </Card>
 
-                  <Card className="group hover:shadow-md transition-shadow cursor-pointer">
+                  <Card className="group hover:shadow-md hover:shadow-purple-900/20 transition-shadow cursor-pointer border-gray-800 bg-gray-950">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <Users className="h-5 w-5 text-purple-500 mt-0.5" />
+                        <Users className="h-5 w-5 text-purple-400 mt-0.5" />
                         <div className="space-y-1">
-                          <h4 className="font-medium group-hover:text-primary transition-colors">
+                          <h4 className="font-medium text-white group-hover:text-purple-400 transition-colors">
                             Agent Status Management
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             Configure agent availability
                           </p>
                         </div>
@@ -354,15 +354,15 @@ cp .env.example .env`}
                     </CardContent>
                   </Card>
 
-                  <Card className="group hover:shadow-md transition-shadow cursor-pointer">
+                  <Card className="group hover:shadow-md hover:shadow-pink-900/20 transition-shadow cursor-pointer border-gray-800 bg-gray-950">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <Palette className="h-5 w-5 text-pink-500 mt-0.5" />
+                        <Palette className="h-5 w-5 text-pink-400 mt-0.5" />
                         <div className="space-y-1">
-                          <h4 className="font-medium group-hover:text-primary transition-colors">
+                          <h4 className="font-medium text-white group-hover:text-pink-400 transition-colors">
                             Custom Themes
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             Brand your chat interface
                           </p>
                         </div>
@@ -370,15 +370,15 @@ cp .env.example .env`}
                     </CardContent>
                   </Card>
 
-                  <Card className="group hover:shadow-md transition-shadow cursor-pointer">
+                  <Card className="group hover:shadow-md hover:shadow-red-900/20 transition-shadow cursor-pointer border-gray-800 bg-gray-950">
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        <Shield className="h-5 w-5 text-red-500 mt-0.5" />
+                        <Shield className="h-5 w-5 text-red-400 mt-0.5" />
                         <div className="space-y-1">
-                          <h4 className="font-medium group-hover:text-primary transition-colors">
+                          <h4 className="font-medium text-white group-hover:text-red-400 transition-colors">
                             Data Privacy
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             GDPR compliance and security
                           </p>
                         </div>
@@ -388,13 +388,13 @@ cp .env.example .env`}
                 </div>
               </section>
 
-              <Separator className="my-8" />
+              <Separator className="my-8 bg-gray-800" />
 
               {/* Need Help Section */}
               <section className="space-y-6">
                 <div className="text-center space-y-4">
-                  <h2 className="text-2xl font-bold tracking-tight">Need Help?</h2>
-                  <p className="text-muted-foreground max-w-2xl mx-auto">
+                  <h2 className="text-2xl font-bold tracking-tight text-white">Need Help?</h2>
+                  <p className="text-gray-400 max-w-2xl mx-auto">
                     Can't find what you're looking for? Our support team is here to help you get the most out of your chat system.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
