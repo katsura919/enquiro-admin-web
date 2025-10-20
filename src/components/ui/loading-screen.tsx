@@ -1,18 +1,17 @@
 "use client"
 
-interface LoadingScreenProps {
-  title?: string
-  subtitle?: string
-}
+import Lottie from "lottie-react"
+import loadingAnimation from "../../../public/animations/loading.json"
 
-export default function LoadingScreen({ 
-  subtitle = "Please wait while we prepare your experience." 
-}: LoadingScreenProps) {
+export default function LoadingScreen() {
   return (
     <div className="min-h-screen w-full bg-background flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-6"></div>
-        <p className="text-gray-400">{subtitle}</p>
+      <div className="w-100 h-100">
+        <Lottie 
+          animationData={loadingAnimation} 
+          loop={true}
+          autoplay={true}
+        />
       </div>
     </div>
   )
