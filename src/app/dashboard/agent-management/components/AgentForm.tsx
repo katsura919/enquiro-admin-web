@@ -159,7 +159,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
           {/* Form Fields */}
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
+              <Label htmlFor="name" className="text-sm font-medium mb-2">Full Name *</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -171,7 +171,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
             </div>
 
             <div>
-              <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
+              <Label htmlFor="email" className="text-sm font-medium mb-2">Email Address *</Label>
               <Input
                 id="email"
                 type="email"
@@ -184,7 +184,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
             </div>
 
             <div>
-              <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
+              <Label htmlFor="phone" className="text-sm font-medium mb-2">Phone Number</Label>
               <Input
                 id="phone"
                 type="tel"
@@ -198,9 +198,9 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="password" className="text-sm font-medium">
+                <Label htmlFor="password" className="text-sm font-medium mb-2">
                   Password {!agent && '*'}
-                  {agent && <span className="text-muted-foreground text-xs block">(leave blank to keep current)</span>}
+                 
                 </Label>
                 <div className="relative">
                   <Input
@@ -229,7 +229,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium mb-2">
                   Confirm Password {(!agent || formData.password) && '*'}
                 </Label>
                 <div className="relative">

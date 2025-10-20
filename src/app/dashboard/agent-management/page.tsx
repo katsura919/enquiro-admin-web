@@ -55,7 +55,7 @@ export default function AgentManagementPage() {
   const [initialLoading, setInitialLoading] = React.useState(true)
   // Pagination state
   const [currentPage, setCurrentPage] = React.useState(1)
-  const [itemsPerPage, setItemsPerPage] = React.useState(11)
+  const [itemsPerPage, setItemsPerPage] = React.useState(10)
   const [totalPages, setTotalPages] = React.useState(0)
   const [totalItems, setTotalItems] = React.useState(0)
   const [totalAgentsInBusiness, setTotalAgentsInBusiness] = React.useState(0)
@@ -401,11 +401,25 @@ export default function AgentManagementPage() {
 
       {/* Top Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div className="flex items-center gap-4">
+      <div className="space-y-1">
         <h1 className="text-2xl font-semibold">
           Agent Management
         </h1>
-      </div>        <div className="flex items-center gap-3">
+        <p className="text-sm text-muted-foreground">
+          Create and manage your support team. Agents can log in at{' '}
+          <a 
+            href="https://agent-enquiro.vercel.app" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:underline font-medium underline"
+          >
+            agent-enquiro.vercel.app
+          </a>
+          .
+        </p>
+      </div>        
+      
+      <div className="flex items-center gap-3">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
