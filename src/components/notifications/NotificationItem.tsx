@@ -90,11 +90,11 @@ export function NotificationItem({ notification }: NotificationItemProps) {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <p className="text-sm font-semibold">{getNotificationTitle()}</p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 ">
               {getNotificationMessage()}
             </p>
             {getNotificationDetails() && (
-              <p className="text-xs text-muted-foreground mt-1 italic">
+              <p className="text-xs text-muted-foreground mt-1 italic line-clamp-2">
                 {getNotificationDetails()}
               </p>
             )}
