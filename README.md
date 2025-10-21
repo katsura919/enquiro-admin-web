@@ -40,9 +40,13 @@ yarn dev
 pnpm dev
 # or
 bun dev
+
 ```
 
-## Project Structure
+
+## Projec Structure
+```bash
+Project Structure
 enquiro-admin-web/
 ├── app/                # Next.js app router pages
 ├── components/         # Reusable UI components
@@ -51,3 +55,5 @@ enquiro-admin-web/
 ├── styles/             # Global styles
 ├── package.json        # Dependencies and scripts
 └── README.md           # Project documentation
+```
+
