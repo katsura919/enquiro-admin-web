@@ -34,16 +34,6 @@ const navigation: NavItem[] = [
     icon: FileText,
   },
   {
-    title: "Installation",
-    href: "/docs/installation",
-    icon: Settings,
-  },
-  {
-    title: "Chat System",
-    href: "/docs/chat",
-    icon: MessageSquare,
-  },
-  {
     title: "Live Chat",
     href: "/docs/live-chat",
     icon: MessageSquare,
@@ -60,7 +50,7 @@ const navigation: NavItem[] = [
   },
   {
     title: "Escalations",
-    href: "/docs/agents/escalations",
+    href: "/docs/escalation",
     icon: Shield,
   },
   
