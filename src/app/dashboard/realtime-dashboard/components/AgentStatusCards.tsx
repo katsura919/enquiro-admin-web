@@ -45,7 +45,7 @@ export function AgentStatusCards({
   useEffect(() => {
     const newStatusData: StatusCardData[] = [
       {
-        title: 'Online Agents',
+        title: 'Agent Onboard',
         value: onlineAgents,
         icon: <UserCheck className="h-4 w-4" />,
         color: 'green'

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useAuth } from "@/lib/auth"
 import api from "@/utils/api"
@@ -75,6 +76,7 @@ const calculateStats = (ratings: Rating[]) => {
 
 export default function RatingsPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterRating, setFilterRating] = useState<string>("all")
   const [currentPage, setCurrentPage] = useState(1)
@@ -83,7 +85,7 @@ export default function RatingsPage() {
   const [loading, setLoading] = useState(true)
   const [distributionLoading, setDistributionLoading] = useState(true)
   const itemsPerPage = 10
-
+  console.log(ratings)
   // Fetch ratings from API
   useEffect(() => {
     const fetchRatings = async () => {
@@ -204,52 +206,6 @@ export default function RatingsPage() {
 
   return (
     <div className="w-full mx-auto p-6 space-y-6">
-
-
-      {/* Rating Distribution */}
-      {distributionLoading ? (
-        <RatingDistributionLoader />
-      ) : (
-      <Card className="bg-card border-muted-gray shadow-none">
-        <CardHeader>
-          <CardTitle className="text-secondary-foreground">Rating Distribution</CardTitle>
-          <CardDescription>Breakdown of ratings by star count</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[5, 4, 3, 2, 1].map((stars) => {
-              const distItem = ratingDistribution.find(d => d.rating === stars)
-              const count = distItem?.count || 0
-              const totalCount = ratingDistribution.reduce((sum, d) => sum + d.count, 0) || 1
-              const percentage = (count / totalCount) * 100
-              
-              return (
-                <div key={stars} className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 w-24">
-                    <span className="text-sm font-medium">{stars}</span>
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="h-8 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all"
-                        style={{
-                          width: `${percentage}%`
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="text-sm font-medium w-16 text-right">
-                    {count} ({percentage.toFixed(0)}%)
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
-      )}
-
       {/* Filters and Search */}
       {loading ? (
         <Card className="border-0 shadow-sm">
@@ -323,7 +279,11 @@ export default function RatingsPage() {
                   </TableRow>
                 ) : (
                   paginatedRatings.map((rating) => (
-                    <TableRow key={rating._id}>
+                    <TableRow 
+                      key={rating._id}
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => router.push(`/dashboard/ratings/${rating._id}`)}
+                    >
                       <TableCell className="font-medium">
                         <div className="flex flex-col">
                           <span className="text-sm">{rating.caseNumber}</span>
@@ -344,7 +304,7 @@ export default function RatingsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="max-w-md">
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 truncate">
                           {rating.feedback || "No feedback provided"}
                         </p>
                       </TableCell>
@@ -407,6 +367,52 @@ export default function RatingsPage() {
         </CardContent>
       </Card>
       )}
+
+      {/* Rating Distribution */}
+      {distributionLoading ? (
+        <RatingDistributionLoader />
+      ) : (
+      <Card className="bg-card border-muted-gray shadow-none">
+        <CardHeader>
+          <CardTitle className="text-secondary-foreground">Rating Distribution</CardTitle>
+          <CardDescription>Breakdown of ratings by star count</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[5, 4, 3, 2, 1].map((stars) => {
+              const distItem = ratingDistribution.find(d => d.rating === stars)
+              const count = distItem?.count || 0
+              const totalCount = ratingDistribution.reduce((sum, d) => sum + d.count, 0) || 1
+              const percentage = (count / totalCount) * 100
+              
+              return (
+                <div key={stars} className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 w-24">
+                    <span className="text-sm font-medium">{stars}</span>
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="h-8 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all"
+                        style={{
+                          width: `${percentage}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium w-16 text-right">
+                    {count} ({percentage.toFixed(0)}%)
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+      )}
+
+      
     </div>
   )
 }
