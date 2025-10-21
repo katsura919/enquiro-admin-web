@@ -72,7 +72,7 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
     }
 
     return (
-      <Card className="flex-1 flex flex-col border-0 shadow-none bg-transparent min-h-0">
+      <Card className="flex-1 flex flex-col border-0 shadow-none  min-h-0 bg-card">
         
         {/* Live Chat Mode Indicator */}
         {isLiveChatMode && (
@@ -198,12 +198,15 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
               </div>
             )}
 
-            {loading && (
-              <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 pl-14 mb-6">
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+            {loading && !isLiveChatMode && (
+              <div className="flex items-center gap-3 pl-14 mb-6">
+                <div className="bg-slate-200 dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-slate-500 dark:bg-slate-500 rounded-full animate-bounce" />
+                    <div className="w-2 h-2 bg-slate-500 dark:bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                    <div className="w-2 h-2 bg-slate-500 dark:bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                  </div>
                 </div>
-                <span className="text-sm">AI is thinking...</span>
               </div>
             )}
             <div ref={chatEndRef} />

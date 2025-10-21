@@ -45,7 +45,7 @@ const navigation: NavItem[] = [
   },
   {
     title: "Live Chat",
-    href: "/docs/chat/live-chat",
+    href: "/docs/live-chat",
     icon: MessageSquare,
   },
   {
