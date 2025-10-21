@@ -76,43 +76,43 @@ export function AgentEscalationsTable({ escalations, loading, currentPage, total
 
   return (
     <Card className="bg-card shadow-none border-muted-gray">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-secondary-foreground">
-          <MessageSquare className="h-5 w-5" />
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base text-secondary-foreground">
+          <MessageSquare className="h-4 w-4" />
           Recent Escalations
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="bg-card border rounded-lg">
+      <CardContent className="px-4 pb-4">
+        <div className="bg-card border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Case #</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Concern</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="h-9 text-xs">Case #</TableHead>
+                <TableHead className="h-9 text-xs">Customer</TableHead>
+                <TableHead className="h-9 text-xs">Concern</TableHead>
+                <TableHead className="h-9 text-xs">Status</TableHead>
+                <TableHead className="h-9 text-xs">Created</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-[500px]">
+                  <TableCell colSpan={5} className="h-[300px]">
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
-                        <span className="mt-2 text-muted-foreground block">Loading escalations...</span>
+                        <span className="mt-2 text-xs text-muted-foreground block">Loading...</span>
                       </div>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : escalations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-[500px]">
+                  <TableCell colSpan={5} className="h-[300px]">
                     <div className="flex items-center justify-center h-full">
                       <div className="text-center">
-                        <Mail className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                        <span className="text-muted-foreground">No escalations assigned to this agent</span>
+                        <Mail className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
+                        <span className="text-sm text-muted-foreground">No escalations assigned</span>
                       </div>
                     </div>
                   </TableCell>
@@ -123,32 +123,32 @@ export function AgentEscalationsTable({ escalations, loading, currentPage, total
                   return (
                     <TableRow 
                       key={escalation._id}
-                      className="cursor-pointer hover:bg-muted/50"
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={() => router.push(`/dashboard/escalations/${escalation._id}`)}
                     >
-                      <TableCell className="font-mono text-sm font-medium">
-                        {escalation.caseNumber}
+                      <TableCell className="font-mono text-xs font-medium py-3">
+                        #{escalation.caseNumber}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">{escalation.customerName}</span>
+                      <TableCell className="py-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <User className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <span className="font-medium text-sm truncate">{escalation.customerName}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="max-w-[300px] truncate">
-                          <span className="font-medium">{escalation.concern || 'No concern provided'}</span>
+                      <TableCell className="py-3">
+                        <div className="max-w-[250px] truncate">
+                          <span className="text-sm">{escalation.concern || 'No concern'}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusInfo.className}`}>
+                      <TableCell className="py-3">
+                        <div className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusInfo.className}`}>
                           {statusInfo.text}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{formatDate(escalation.createdAt)}</span>
+                      <TableCell className="py-3">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                          <span className="text-xs text-muted-foreground">{formatDate(escalation.createdAt)}</span>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -159,18 +159,19 @@ export function AgentEscalationsTable({ escalations, loading, currentPage, total
           </Table>
         </div>
         
-        {/* Pagination Controls */}
+        {/* Compact Pagination */}
         {escalations.length > 0 && totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 px-2">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex items-center justify-between mt-3 px-1">
+            <div className="text-xs text-muted-foreground">
               Page {currentPage} of {totalPages}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Button 
                 variant="outline" 
                 size="sm"
                 disabled={currentPage <= 1}
                 onClick={() => onPageChange(currentPage - 1)}
+                className="h-7 px-2 text-xs"
               >
                 Previous
               </Button>
@@ -179,6 +180,7 @@ export function AgentEscalationsTable({ escalations, loading, currentPage, total
                 size="sm"
                 disabled={currentPage >= totalPages}
                 onClick={() => onPageChange(currentPage + 1)}
+                className="h-7 px-2 text-xs"
               >
                 Next
               </Button>

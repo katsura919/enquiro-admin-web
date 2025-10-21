@@ -63,96 +63,95 @@ export function AgentProfileCard({
 
   return (
     <>
-      <Card className="overflow-hidden bg-card border-muted-gray shadow-none">
+      <Card className="overflow-hidden bg-card border-muted-gray shadow-none sticky top-4">
         <CardContent className="p-0">
-          {/* Profile Header */}
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 px-6 py-8">
+          {/* Compact Profile Header */}
+          <div className="bg-gradient-to-br from-blue-500 to-purple-600 px-4 py-6">
             <div className="flex flex-col items-center text-center">
-              <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
+              <Avatar className="h-24 w-24 border-4 border-white/20 shadow-xl ring-2 ring-white/10">
                 <AvatarImage src={agent.profilePic} alt={agent.name || 'Agent'} />
-                <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                <AvatarFallback className="text-xl font-bold bg-white/20 text-white backdrop-blur-sm">
                   {getInitials(agent.name || '')}
                 </AvatarFallback>
               </Avatar>
               
-              <div className="mt-4">
+              <div className="mt-3">
                 {isEditing ? (
                   <Input
                     value={editForm.name}
                     onChange={(e) => onFormChange('name', e.target.value)}
-                    className="text-center text-lg font-semibold bg-white dark:bg-gray-800"
+                    className="text-center text-base font-semibold bg-white/10 border-white/20 text-white placeholder:text-white/60 h-8"
                     placeholder="Agent name"
                   />
                 ) : (
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  <h2 className="text-lg font-bold text-white">
                     {agent.name || 'Unknown Agent'}
                   </h2>
                 )}
-                <p className="text-sm text-gray-600 dark:text-gray-300 capitalize mt-1">
-                  {agent.role || 'Product Designer'}
+                <p className="text-xs text-white/80 capitalize mt-1">
+                  {agent.role || 'Support Agent'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Contact Information */}
-          <div className="px-6 py-4">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
-              Contact Information
+          {/* Compact Contact Information */}
+          <div className="px-4 py-4">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Contact
             </h3>
             
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-gray-400" />
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Phone:</p>
+              <div className="flex items-start gap-2">
+                <Phone className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">Phone</p>
                   {isEditing ? (
                     <Input
                       type="tel"
                       value={editForm.phone}
                       onChange={(e) => onFormChange('phone', e.target.value)}
-                      className="text-sm mt-1 bg-card shadow-none"
+                      className="text-sm mt-1 bg-card shadow-none h-8"
                       placeholder="+1 555 666 7890"
                     />
                   ) : (
-                    <p className="text-sm text-gray-900 dark:text-white">
+                    <p className="text-sm text-foreground font-medium truncate">
                       {agent.phone || '+1 555 666 7890'}
                     </p>
                   )}
                 </div>
               </div>
 
-
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-gray-400" />
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">E-mail:</p>
+              <div className="flex items-start gap-2">
+                <Mail className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground">Email</p>
                   {isEditing ? (
                     <Input
                       type="email"
                       value={editForm.email}
                       onChange={(e) => onFormChange('email', e.target.value)}
-                      className="text-sm mt-1 bg-card shadow-none"
-                      placeholder="hello@jeremyrose.com"
+                      className="text-sm mt-1 bg-card shadow-none h-8"
+                      placeholder="email@example.com"
                     />
                   ) : (
-                    <p className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer">
-                      {agent.email || 'hello@jeremyrose.com'}
+                    <p className="text-sm text-primary hover:underline cursor-pointer font-medium truncate">
+                      {agent.email || 'email@example.com'}
                     </p>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Edit Profile Button */}
+            {/* Compact Edit Profile Button */}
             {!isEditing && (
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={onEdit}
-                className="w-full mt-4 bg-card shadow-none"
+                className="w-full mt-4 bg-card shadow-none h-8 text-xs"
               >
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="h-3.5 w-3.5 mr-1.5" />
                 Edit Profile
               </Button>
             )}
@@ -160,13 +159,13 @@ export function AgentProfileCard({
         </CardContent>
       </Card>
       
-      {/* Edit Profile Buttons - Below Card */}
+      {/* Compact Edit Buttons */}
       {isEditing && (
-        <div className="flex gap-2 mt-4">
-          <Button size="sm" onClick={onSave} className="flex-1 cursor-pointer text-primary-foreground">
-            Save Changes
+        <div className="flex gap-2 mt-2">
+          <Button size="sm" onClick={onSave} className="flex-1 cursor-pointer text-primary-foreground h-8">
+            Save
           </Button>
-          <Button size="sm" variant="outline" onClick={onCancel} className="flex-1 bg-card shadow-none cursor-pointer">
+          <Button size="sm" variant="outline" onClick={onCancel} className="flex-1 bg-card shadow-none cursor-pointer h-8">
             Cancel
           </Button>
         </div>

@@ -309,23 +309,26 @@ export default function AgentDetailsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ChevronLeft className="h-20 w-20   " />
-          </Button>
-          <div>
-            <h2 className="text-xl font-semibold">Agent Profile</h2>
-          </div>
+    <div className="p-4 md:p-6 space-y-4">
+      {/* Compact Header with Back Button */}
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.back()}
+          className="h-8 w-8 cursor-pointer"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Agent Profile</h1>
         </div>
-
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Agent Profile Card */}
-        <div className="lg:col-span-4">
+      {/* Two Column Layout - 1/3 and 2/3 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left Sidebar - Agent Profile Card (1/3 width) */}
+        <div className="lg:col-span-1">
           <AgentProfileCard
             agent={agent}
             isEditing={isEditing}
@@ -337,8 +340,8 @@ export default function AgentDetailsPage() {
           />
         </div>
 
-        {/* Right Column - Performance & Details */}
-        <div className="lg:col-span-8 space-y-6">
+        {/* Right Column - Stats & Escalations (2/3 width) */}
+        <div className="lg:col-span-2 space-y-4">
           {/* Performance Stats */}
           <AgentStatsCards stats={stats} counts={counts} ratingStats={ratingStats} />
 
