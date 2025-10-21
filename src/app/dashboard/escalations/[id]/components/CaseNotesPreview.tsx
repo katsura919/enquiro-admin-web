@@ -85,72 +85,71 @@ export function CaseNotesPreview({
   const hasMoreNotes = notes.length > maxDisplay;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <FileText className="h-5 w-5 text-indigo-500" />
-          <h2 className="text-lg font-semibold">Case Notes</h2>
+          <FileText className="h-4 w-4 text-indigo-500" />
+          <h2 className="text-base font-semibold">Case Notes</h2>
+          <Badge variant="outline" className="text-xs">{notes.length}</Badge>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className=" text-xs">{notes.length}</Badge>
-          {hasMoreNotes && (
-            <Button 
-              size="sm"
-              onClick={handleViewAllNotes}
-              className="flex items-center gap-1 bg-primary cursor-pointer"
-            >
-              View All Notes
-            </Button>
-          )}
-        </div>
+        {hasMoreNotes && (
+          <Button 
+            size="sm"
+            onClick={handleViewAllNotes}
+            variant="ghost"
+            className="flex items-center gap-1 h-7 text-xs cursor-pointer"
+          >
+            <Eye className="h-3 w-3" />
+            View All
+          </Button>
+        )}
       </div>
       
-      {/* Add Note Form */}
-      <Card className="p-4 overflow-hidden bg-card shadow-sm border-border/40 relative">
-        <div className="space-y-3">
+      {/* Compact Add Note Form */}
+      <Card className="p-3 overflow-hidden bg-card shadow-none border-muted">
+        <div className="space-y-2">
           <Textarea
-            placeholder="Type your note here..."
+            placeholder="Add a note..."
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
-            className="min-h-[120px] resize-none"
+            className="min-h-[80px] resize-none text-sm"
           />
           <div className="flex justify-end">
             <Button 
               onClick={handleAddNote}
               disabled={!noteText.trim()}
               size="sm"
+              className="h-7 text-xs cursor-pointer"
             >
-              <Send className="h-4 w-4 mr-2" />
+              <Send className="h-3 w-3 mr-1.5" />
               Add Note
             </Button>
           </div>
         </div>
       </Card>
       
-      {/* Notes List - Limited Display */}
-      <div className="space-y-3 mt-2">
+      {/* Compact Notes List */}
+      <div className="space-y-2">
         {displayedNotes.length === 0 ? (
-          <div className="bg-card p-8 text-center rounded-lg">
-            <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">No case notes yet</p>
+          <div className="bg-muted/30 p-6 text-center rounded-lg">
+            <FileText className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">No case notes yet</p>
           </div>
         ) : (
           <>
             {displayedNotes.map((note) => (
-              <Card key={note.id} className="bg-card p-4 overflow-hidden shadow-sm border-border/40">
+              <Card key={note.id} className="bg-card p-3 overflow-hidden shadow-none border-muted">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center">
+                      <div className="h-5 w-5 rounded-full bg-indigo-100 dark:bg-indigo-900/20 flex items-center justify-center">
                         <User className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
                       </div>
-                      <span className="text-sm font-medium">{note.author}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
+                      <span className="text-xs font-medium">{note.author}</span>
                     </div>
                   </div>
-                  <div className="py-1">
-                    <div className="text-sm leading-relaxed space-y-1">
+                  <div className="py-0.5">
+                    <div className="text-xs leading-relaxed space-y-1">
                       {renderNoteContent(note.content)}
                     </div>
                   </div>

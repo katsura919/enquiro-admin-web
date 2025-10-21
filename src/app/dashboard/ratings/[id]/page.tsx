@@ -419,7 +419,7 @@ export default function RatingDetailPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   onClick={() => router.push(`/dashboard/escalations/${escalation._id}`)}
                 >
                   <ExternalLink className="h-3.5 w-3.5 mr-2" />

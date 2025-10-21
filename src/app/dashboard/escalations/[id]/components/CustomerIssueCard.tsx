@@ -103,18 +103,18 @@ export function CustomerIssueCard({
 
   return (
     <Card className="bg-card overflow-hidden border-muted-gray shadow-none">
-      <div className="p-6">
-        {/* Header with Edit Button */}
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold">Customer Issue Details</h3>
+      <div className="p-4">
+        {/* Compact Header with Edit Button */}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-base font-semibold">Customer Issue</h3>
           {!isEditing ? (
             <Button
               variant="outline"
               size="sm"
               onClick={handleEdit}
-              className="gap-2 cursor-pointer"
+              className="gap-1.5 cursor-pointer h-8 bg-card"
             >
-              <Edit2 className="h-4 w-4" />
+              <Edit2 className="h-3.5 w-3.5" />
               Edit
             </Button>
           ) : (
@@ -124,83 +124,83 @@ export function CustomerIssueCard({
                 size="sm"
                 onClick={handleCancel}
                 disabled={isLoading}
-                className="gap-2 bg-card cursor-pointer"
+                className="gap-1.5 bg-card cursor-pointer h-8"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
                 Cancel
               </Button>
               <Button
                 size="sm"
                 onClick={handleSave}
                 disabled={isLoading}
-                className="gap-2 cursor-pointer"
+                className="gap-1.5 cursor-pointer h-8"
               >
-                <Check className="h-4 w-4" />
+                <Check className="h-3.5 w-3.5" />
                 Save
               </Button>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Customer Information */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-card flex items-center justify-center">
-                  <UserCircle className="h-5 w-5 text-primary" />
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <UserCircle className="h-4 w-4 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Name</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground mb-1">Name</p>
                   {isEditing ? (
                     <Input
                       value={editData.customerName}
                       onChange={(e) => handleInputChange('customerName', e.target.value)}
-                      className="bg-card"
+                      className="bg-card h-8"
                       placeholder="Enter customer name"
                     />
                   ) : (
-                    <p className="font-medium">{customerName}</p>
+                    <p className="text-sm font-medium truncate">{customerName}</p>
                   )}
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-card flex items-center justify-center">
-                  <Mail className="h-5 w-5 text-primary" />
+              <div className="flex items-start gap-2">
+                <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Mail className="h-4 w-4 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Email</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground mb-1">Email</p>
                   {isEditing ? (
                     <Input
                       type="email"
                       value={editData.customerEmail}
                       onChange={(e) => handleInputChange('customerEmail', e.target.value)}
-                      className="mt-1 bg-card"
+                      className="bg-card h-8"
                       placeholder="Enter customer email"
                     />
                   ) : (
-                    <p className="font-medium break-all">{customerEmail}</p>
+                    <p className="text-sm font-medium break-all">{customerEmail}</p>
                   )}
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-card flex items-center justify-center">
-                  <Phone className="h-5 w-5 text-primary" />
+              <div className="flex items-start gap-2">
+                <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Phone className="h-4 w-4 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Phone</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-muted-foreground mb-1">Phone</p>
                   {isEditing ? (
                     <Input
                       value={editData.customerPhone}
                       onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-                      className="mt-1 bg-card"
+                      className="bg-card h-8"
                       placeholder="Enter customer phone"
                     />
                   ) : (
-                    <p className="font-medium">{customerPhone || 'Not provided'}</p>
+                    <p className="text-sm font-medium">{customerPhone || 'Not provided'}</p>
                   )}
                 </div>
               </div>
@@ -208,40 +208,41 @@ export function CustomerIssueCard({
           </div>
           
           {/* Issue Details */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Concern</p>
+                <p className="text-xs text-muted-foreground mb-1.5">Concern</p>
                 {isEditing ? (
                   <Input
                     value={editData.concern}
                     onChange={(e) => handleInputChange('concern', e.target.value)}
                     placeholder="Enter concern"
-                    className="bg-card"
+                    className="bg-card h-8"
                   />
                 ) : (
-                  <p className="leading-relaxed ">{concern}</p>
+                  <p className="text-sm leading-relaxed">{concern}</p>
                 )}
               </div>
               
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Additional Description</p>
+                <p className="text-xs text-muted-foreground mb-1.5">Description</p>
                 {isEditing ? (
                   <div className="space-y-1">
                     <Textarea
                       value={editData.description}
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       placeholder="Enter additional description"
-                      rows={4}
+                      rows={3}
                       maxLength={80}
+                      className="text-sm resize-none"
                     />
                     <p className="text-xs text-muted-foreground text-right">
                       {editData.description.length}/80 characters
                     </p>
                   </div>
                 ) : (
-                  <p className="leading-relaxed whitespace-pre-wrap">{description || 'No additional description'}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{description || 'No additional description'}</p>
                 )}
               </div>
             </div>

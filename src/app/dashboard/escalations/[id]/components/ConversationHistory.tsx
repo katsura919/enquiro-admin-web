@@ -189,7 +189,7 @@ export function ConversationHistory({
           size="sm"
           onClick={handleRefreshChats}
           disabled={refreshing}
-          className="gap-2 bg-card border-muted-gray shadow-none"
+          className="gap-2 bg-card border-muted-gray shadow-none cursor-pointer"
         >
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")}/>
           Refresh

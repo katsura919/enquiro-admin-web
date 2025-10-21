@@ -533,10 +533,10 @@ return (
         currentOwnerName={escalation.caseOwner?.name}
       />
     )}
-    {/* Main Content */}
+    {/* Main Content - Compact Layout */}
     <div className="flex-1 overflow-y-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-4 md:p-6">        
-        {/* Left Column */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 md:p-6">        
+        {/* Left Column - Main Content (2/3 width) */}
         <div className="lg:col-span-2 space-y-4">
           <CustomerIssueCard
             customerName={escalation?.customerName || ''}
@@ -573,9 +573,9 @@ return (
           />
         </div>
 
-        {/* Right Column */}
-        <div className="lg:border-l lg:border-border-muted-gray">
-          <div className="p-0 lg:p-4 space-y-6 md:space-y-8">
+        {/* Right Column - Sidebar (1/3 width) */}
+        <div className="lg:col-span-1">
+          <div className="space-y-4 lg:sticky lg:top-4">
             <CaseNotesPreview 
               notes={caseNotes}
               onAddNote={addCaseNote}

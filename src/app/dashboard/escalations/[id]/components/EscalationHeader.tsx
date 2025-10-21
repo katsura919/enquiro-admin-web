@@ -47,20 +47,17 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
   businessId,
   currentOwnerName,
 }) => (
-  <div className="border-b border-border bg-background w-full">
-    <div className="px-4 py-3 md:px-6 md:py-4">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+  <div className="border-b border-border bg-card w-full">
+    <div className="px-4 py-3 md:px-6 md:py-3">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg md:text-2xl font-bold text-foreground tracking-tight">
-                Case
-              </h1>
-              <h2 className="text-lg md:text-2xl font-bold text-foreground tracking-tight">
-                #{escalation.caseNumber}
+              <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
+                Case: {escalation.caseNumber}
                 <button
                   type="button"
-                  className="ml-1 p-0.5 rounded hover:bg-accent"
+                  className="ml-2 p-1 rounded-md hover:bg-accent transition-colors"
                   title="Copy Case Number"
                   onClick={() => {
                     navigator.clipboard.writeText(escalation.caseNumber);
@@ -75,15 +72,15 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
                     <Copy className="h-3.5 w-3.5 text-muted-foreground" />
                   )}
                 </button>
-              </h2>
+              </h1>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-muted-foreground text-xs md:text-sm break-all">
-                Session ID: {escalation.sessionId}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">
+                Session: {escalation.sessionId}
               </span>
               <button
                 type="button"
-                className="ml-1 p-0.5 rounded hover:bg-accent"
+                className="p-1 rounded-md hover:bg-accent transition-colors"
                 title="Copy Session ID"
                 onClick={() => {
                   navigator.clipboard.writeText(escalation.sessionId);
@@ -93,23 +90,23 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
               >
                 <span className="sr-only">Copy Session ID</span>
                 {copiedSessionId ? (
-                  <Check className="h-3.5 w-3.5 text-green-500" />
+                  <Check className="h-3 w-3 text-green-500" />
                 ) : (
-                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Copy className="h-3 w-3 text-muted-foreground" />
                 )}
               </button>
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           {/* Status Section */}
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-muted-foreground tracking-wide">Status</span>
+            <span className="text-xs font-medium text-muted-foreground">Status</span>
             <Select
               value={escalation.status}
               onValueChange={handleStatusChange}
             >
-              <SelectTrigger className="w-[200px] bg-card">
+              <SelectTrigger className="w-full sm:w-[160px] h-9 bg-card text-sm cursor-pointer">
                 <SelectValue>
                   <span className="capitalize">{escalation.status}</span>
                 </SelectValue>
@@ -130,14 +127,14 @@ export const EscalationHeader: React.FC<EscalationHeaderProps> = ({
 
           {/* Case Owner Section */}
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium text-muted-foreground  tracking-wide">Case Owner</span>
+            <span className="text-xs font-medium text-muted-foreground">Case Owner</span>
             <CaseOwnerCombobox
               value={escalation.caseOwner?._id || ""}
               onValueChange={handleCaseOwnerChange || (() => {})}
               businessId={businessId}
               placeholder="Assign agent..."
               currentAgentName={currentOwnerName}
-              className="w-[200px]"
+              className="w-full sm:w-[180px] h-9 text-sm cursor-pointer"
             />
           </div>
         </div>

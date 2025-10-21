@@ -346,7 +346,7 @@ export function EmailThread({
           size="sm"
           onClick={onRefresh}
           disabled={refreshing}
-          className="gap-2 self-start sm:self-auto"
+          className="gap-2 self-start sm:self-auto cursor-pointer bg-card"
         >
           <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} />
           Refresh
