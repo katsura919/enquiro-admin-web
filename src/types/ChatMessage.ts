@@ -13,7 +13,11 @@ export interface ChatMessage {
     uploadedAt: string;
   }>;
   senderType: 'customer' | 'ai' | 'agent' | 'system';
-  agentId?: string | null;
+  agentId?: string | {
+    _id: string;
+    name: string;
+    profilePic?: string;
+  } | null;
   isGoodResponse?: boolean | null;
   systemMessageType?: 
     | 'agent_joined' 

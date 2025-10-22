@@ -165,7 +165,7 @@ export function ConversationHistory({
     return (
       <div key={message._id} className="flex justify-center my-4">
         <div className="flex items-center gap-2 px-3 py-1 bg-muted/50 rounded-full border border-border/40">
-          <Info className="h-3 w-3 text-muted-foreground" />
+
           <span className="text-xs text-muted-foreground">
             {getSystemMessageText(message.systemMessageType || '')}
           </span>
@@ -331,9 +331,13 @@ export function ConversationHistory({
 
                 // Agent messages (right side)
                 if (message.senderType === 'agent') {
+                  const agentInfo = typeof message.agentId === 'object' && message.agentId ? message.agentId : null;
+                  const agentName = agentInfo?.name || 'Agent';
+                  const agentProfilePic = agentInfo?.profilePic;
+                  
                   return (
                     <div key={message._id} className="flex flex-col items-end space-y-1">
-                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Agent</span>
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">{agentName}</span>
                       <div className="flex gap-3 max-w-[85%] justify-end">
                         <div className="flex-1 flex flex-col items-end">
                           <div className="bg-blue-500 text-white rounded-lg rounded-tr-none p-3 max-w-full">
@@ -354,9 +358,17 @@ export function ConversationHistory({
                             {formatTime(message.updatedAt || message.createdAt)}
                           </span>
                         </div>
-                        <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
-                          <UserCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        </div>
+                        {agentProfilePic ? (
+                          <img 
+                            src={agentProfilePic} 
+                            alt={agentName}
+                            className="h-8 w-8 rounded-full object-cover flex-shrink-0 border-2 border-blue-200 dark:border-blue-800"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+                            <UserCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

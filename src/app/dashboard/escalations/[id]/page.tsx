@@ -498,7 +498,10 @@ export default function EscalationDetailsPage() {
   }
 
   const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], { 
+    return new Date(dateString).toLocaleString([], { 
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
       hour: '2-digit', 
       minute: '2-digit' 
     })
