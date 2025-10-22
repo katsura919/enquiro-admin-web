@@ -199,7 +199,20 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
             )}
 
             {loading && !isLiveChatMode && (
-              <div className="flex items-center gap-3 pl-14 mb-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                    {chatbotIcon ? (
+                      <img 
+                        src={chatbotIcon} 
+                        alt={chatbotName}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <Bot className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+                    )}
+                  </div>
+                </div>
                 <div className="bg-slate-200 dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3">
                   <div className="flex gap-1">
                     <div className="w-2 h-2 bg-slate-500 dark:bg-slate-500 rounded-full animate-bounce" />

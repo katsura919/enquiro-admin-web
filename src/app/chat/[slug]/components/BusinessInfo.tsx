@@ -30,7 +30,7 @@ interface BusinessInfoProps {
 export default function BusinessInfo({ businessData, businessLoading, chatbotSettings, chatbotSettingsLoading }: BusinessInfoProps) {
   const isLoading = businessLoading || chatbotSettingsLoading
   const chatbotName = chatbotSettings?.chatbotName || "AI Assistant"
-  const chatbotIcon = chatbotSettings?.chatbotIcon || businessData?.logo
+  const chatbotIcon = chatbotSettings?.chatbotIcon 
   
   return (
     <div className="w-full mb-8 p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm">
