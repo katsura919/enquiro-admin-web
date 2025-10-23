@@ -3,7 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Bot } from "lucide-react"
+import Image from "next/image"
+import { Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/lib/auth"
@@ -43,7 +44,7 @@ export default function LoginPage() {
         <div className="bg-black flex-1 flex flex-col items-center justify-center p-8 relative">
         {/* Logo/Brand top left */}
         <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 group">
-          <Bot className="h-8 w-8 text-blue-400 group-hover:text-blue-500 transition-colors" />
+          <Image src="/logo.png" alt="Enquiro Logo" width={32} height={32} className="group-hover:opacity-80 transition-opacity" />
           <span className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">Enquiro</span>
         </Link>
 
@@ -120,7 +121,7 @@ export default function LoginPage() {
                 <span>Remember Me</span>
               </label>
               <Link 
-                href="#" 
+                href="/auth/forgot-password" 
                 className="text-sm text-blue-300 hover:text-blue-200 transition-colors"
               >
                 Forgot Your Password?
