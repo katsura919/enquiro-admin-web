@@ -373,7 +373,7 @@ export default function AccountSettingsPage() {
     <div className="w-full">
       <div className="w-full max-w-4xl space-y-6">
         {/* Personal Information Card */}
-        <Card className="border-muted-gray bg-card shadow-none">
+        <Card className="border-none bg-background shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground">Personal Information</CardTitle>
             <p className="text-sm text-muted-foreground">Your account details and profile information</p>
@@ -474,7 +474,7 @@ export default function AccountSettingsPage() {
         </Card>
 
         {/* Security Overview Card */}
-        <Card className="border-muted-gray bg-card shadow-none">
+        <Card className="border-none bg-background shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground flex items-center gap-2">
               <Shield className="h-5 w-5" />
@@ -516,7 +516,7 @@ export default function AccountSettingsPage() {
         </Card>
 
         {/* Password Management Card */}
-        <Card className="border-muted-gray bg-card shadow-none">
+        <Card className="border-none bg-background shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground flex items-center gap-2">
               <Lock className="h-5 w-5" />

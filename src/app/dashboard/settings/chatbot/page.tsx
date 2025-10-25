@@ -540,7 +540,7 @@ export default function ChatbotSettingsPage() {
  
         <div className="w-full max-w-4xl">
           {/* Chatbot Settings Card */}
-          <Card className="border-muted-gray bg-card shadow-none ">
+          <Card className="border-none bg-background shadow-none ">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-foreground">Chatbot & QR Settings</CardTitle>
               <p className="text-sm text-muted-foreground">Customize your AI assistant's name, appearance, and features</p>

@@ -241,7 +241,7 @@ export default function BusinessSettingsPage() {
     <div className="w-full">
       <div className="w-full max-w-4xl">
         {/* Business Settings Card */}
-        <Card className="border-muted-gray bg-card shadow-none">
+        <Card className="border-none bg-background shadow-none">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl text-foreground">Business Settings</CardTitle>
             <p className="text-sm text-muted-foreground">Manage your business details, branding, and contact information</p>
