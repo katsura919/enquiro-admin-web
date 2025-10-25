@@ -59,7 +59,7 @@ export default function PolicyFilters({
             Type
           </Label>
           <Select value={selectedType} onValueChange={onTypeChange}>
-            <SelectTrigger className="w-full bg-background">
+            <SelectTrigger className="w-full bg-background cursor-pointer">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>

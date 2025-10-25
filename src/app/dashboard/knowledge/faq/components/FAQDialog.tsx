@@ -6,6 +6,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -92,17 +99,16 @@ export default function FAQDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <select 
-                id="category"
-                className="w-full p-2 border border-input rounded-md bg-background"
-                value={formData.category}
-                onChange={(e) => onFormChange('category', e.target.value)}
-              >
-                <option value="">Select category...</option>
-                {categoryList.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
+              <Select value={formData.category} onValueChange={(value) => onFormChange('category', value)}>
+                <SelectTrigger className="w-full cursor-pointer">
+                  <SelectValue placeholder="Select category..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categoryList.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-2">
@@ -129,13 +135,14 @@ export default function FAQDialog({
             <Button 
               onClick={onSubmit}
               disabled={!isFormValid}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
             >
               {editingFAQ ? 'Update FAQ' : 'Create FAQ'}
             </Button>
             <Button 
               variant="outline" 
               onClick={onClose}
+              className="cursor-pointer"
             >
               Cancel
             </Button>

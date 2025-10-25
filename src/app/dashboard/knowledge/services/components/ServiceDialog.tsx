@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Service, ServiceFormData, categories, currencies, pricingTypes } from "./types"
 
 interface ServiceDialogProps {
@@ -61,17 +68,16 @@ export default function ServiceDialog({
           
           <div className="space-y-2">
             <Label htmlFor="category">Category *</Label>
-            <select 
-              id="category"
-              className="w-full p-2 border border-input rounded-md bg-background"
-              value={formData.category}
-              onChange={(e) => onFormChange('category', e.target.value)}
-            >
-              <option value="">Select category...</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+            <Select value={formData.category} onValueChange={(value) => onFormChange('category', value)}>
+              <SelectTrigger className="w-full cursor-pointer">
+                <SelectValue placeholder="Select category..." />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
@@ -89,17 +95,16 @@ export default function ServiceDialog({
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="pricingType">Pricing Type *</Label>
-            <select 
-              id="pricingType"
-              className="w-full p-2 border border-input rounded-md bg-background"
-              value={formData.pricingType}
-              onChange={(e) => onFormChange('pricingType', e.target.value as any)}
-            >
-              <option value="">Select pricing...</option>
-              {pricingTypes.map(type => (
-                <option key={type.value} value={type.value}>{type.label}</option>
-              ))}
-            </select>
+            <Select value={formData.pricingType} onValueChange={(value) => onFormChange('pricingType', value as any)}>
+              <SelectTrigger className="w-full cursor-pointer">
+                <SelectValue placeholder="Select pricing..." />
+              </SelectTrigger>
+              <SelectContent>
+                {pricingTypes.map(type => (
+                  <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           {formData.pricingType !== 'quote' && (
@@ -121,16 +126,16 @@ export default function ServiceDialog({
               
               <div className="space-y-2">
                 <Label htmlFor="currency">Currency</Label>
-                <select 
-                  id="currency"
-                  className="w-full p-2 border border-input rounded-md bg-background"
-                  value={formData.currency}
-                  onChange={(e) => onFormChange('currency', e.target.value)}
-                >
-                  {currencies.map(curr => (
-                    <option key={curr} value={curr}>{curr}</option>
-                  ))}
-                </select>
+                <Select value={formData.currency} onValueChange={(value) => onFormChange('currency', value)}>
+                  <SelectTrigger className="w-full cursor-pointer">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map(curr => (
+                      <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </>
           )}
@@ -168,13 +173,14 @@ export default function ServiceDialog({
           <Button 
             onClick={onSubmit}
             disabled={!isFormValid}
-            className="flex-1"
+            className="flex-1 cursor-pointer"
           >
             {editingService ? 'Update Service' : 'Add Service'}
           </Button>
           <Button 
             variant="outline" 
             onClick={onClose}
+            className="cursor-pointer"
           >
             Cancel
           </Button>

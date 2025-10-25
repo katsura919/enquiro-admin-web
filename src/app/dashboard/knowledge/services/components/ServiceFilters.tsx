@@ -54,7 +54,7 @@ export default function ServiceFilters({
       <div className="space-y-2">
         <Label className="text-sm font-medium">Category</Label>
         <Select value={selectedCategory} onValueChange={onCategoryChange}>
-          <SelectTrigger className="w-full bg-background">
+          <SelectTrigger className="w-full bg-background cursor-pointer">
             <SelectValue placeholder="" />
           </SelectTrigger>
           <SelectContent>
@@ -69,7 +69,7 @@ export default function ServiceFilters({
       <div className="space-y-2">
         <Label className="text-sm font-medium">Pricing Type</Label>
         <Select value={selectedPricingType} onValueChange={onPricingTypeChange}>
-          <SelectTrigger className="w-full bg-background">
+          <SelectTrigger className="w-full bg-background cursor-pointer">
             <SelectValue placeholder="All Pricing" />
           </SelectTrigger>
           <SelectContent>

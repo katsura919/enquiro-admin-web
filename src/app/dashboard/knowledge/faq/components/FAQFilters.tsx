@@ -59,7 +59,7 @@ export default function FAQFilters({
             Category
           </Label>
           <Select value={selectedCategory} onValueChange={onCategoryChange}>
-            <SelectTrigger className="w-full bg-background">
+            <SelectTrigger className="w-full bg-background cursor-pointer">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>

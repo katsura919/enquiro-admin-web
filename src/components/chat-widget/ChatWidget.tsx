@@ -276,7 +276,7 @@ export default function ChatWidget({
       
       const response = await api.post(apiEndpoint, body)
       const aiMessage: ChatMessage = {
-        _id: `${Date.now()}-response`,
+        _id: response.data.aiChatId || `${Date.now()}-response`, // Use backend ID or fallback
         businessId: businessData?._id || '',
         sessionId: sessionId || response.data.sessionId || '',
         message: response.data.answer,

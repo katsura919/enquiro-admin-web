@@ -11,6 +11,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Policy, PolicyFormData, policyTypes } from "./types"
 
 interface PolicyDialogProps {
@@ -60,17 +68,16 @@ export default function PolicyDialog({
           
           <div className="space-y-2">
             <Label htmlFor="type">Policy Type *</Label>
-            <select 
-              id="type"
-              className="w-full p-2 border border-input rounded-md bg-background"
-              value={formData.type}
-              onChange={(e) => onFormChange('type', e.target.value as any)}
-            >
-              <option value="">Select policy type...</option>
-              {policyTypes.map(type => (
-                <option key={type.value} value={type.value}>{type.label}</option>
-              ))}
-            </select>
+            <Select value={formData.type} onValueChange={(value) => onFormChange('type', value as any)}>
+              <SelectTrigger className="w-full cursor-pointer">
+                <SelectValue placeholder="Select policy type..." />
+              </SelectTrigger>
+              <SelectContent>
+                {policyTypes.map(type => (
+                  <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
@@ -115,13 +122,14 @@ export default function PolicyDialog({
           <Button 
             onClick={onSubmit}
             disabled={!isFormValid}
-            className="flex-1"
+            className="flex-1 cursor-pointer"
           >
             {editingPolicy ? 'Update Policy' : 'Create Policy'}
           </Button>
           <Button 
             variant="outline" 
             onClick={onClose}
+            className="cursor-pointer"
           >
             Cancel
           </Button>

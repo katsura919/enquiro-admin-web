@@ -223,7 +223,7 @@ export default function FAQPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">FAQ Manager</h2>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
+                  <Button size="sm" className="gap-2 cursor-pointer" onClick={() => setIsCreateDialogOpen(true)}>
                     <Plus className="h-4 w-4" />
                     New FAQ
                   </Button>

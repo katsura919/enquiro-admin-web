@@ -39,7 +39,7 @@ export default function ProductsPage() {
     description: "",
     category: "",
     priceAmount: "",
-    currency: "USD",
+    currency: "PHP",
     quantity: "0",
     isActive: true
   })
@@ -227,7 +227,7 @@ export default function ProductsPage() {
       description: "",
       category: "",
       priceAmount: "",
-      currency: "USD",
+      currency: "PHP",
       quantity: "0",
       isActive: true
     })
@@ -260,7 +260,7 @@ export default function ProductsPage() {
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Product Manager</h2>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
+                  <Button size="sm" className="gap-2 cursor-pointer" onClick={() => setIsCreateDialogOpen(true)}>
                     <Plus className="h-4 w-4" />
                     New Product
                   </Button>

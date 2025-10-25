@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Product, ProductFormData, categories, currencies } from "./types"
 
 interface ProductDialogProps {
@@ -86,17 +93,16 @@ export default function ProductDialog({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="category">Category *</Label>
-            <select 
-              id="category"
-              className="w-full p-2 border border-input rounded-md bg-background"
-              value={formData.category}
-              onChange={(e) => onFormChange('category', e.target.value)}
-            >
-              <option value="">Select category...</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+            <Select value={formData.category} onValueChange={(value) => onFormChange('category', value)}>
+              <SelectTrigger className="w-full cursor-pointer">
+                <SelectValue placeholder="Select category..." />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="space-y-2">
@@ -128,16 +134,16 @@ export default function ProductDialog({
           
           <div className="space-y-2">
             <Label htmlFor="currency">Currency</Label>
-            <select 
-              id="currency"
-              className="w-full p-2 border border-input rounded-md bg-background"
-              value={formData.currency}
-              onChange={(e) => onFormChange('currency', e.target.value)}
-            >
-              {currencies.map(curr => (
-                <option key={curr} value={curr}>{curr}</option>
-              ))}
-            </select>
+            <Select value={formData.currency} onValueChange={(value) => onFormChange('currency', value)}>
+              <SelectTrigger className="w-full cursor-pointer">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {currencies.map(curr => (
+                  <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
@@ -146,6 +152,7 @@ export default function ProductDialog({
             id="isActive"
             checked={formData.isActive}
             onCheckedChange={(checked) => onFormChange('isActive', checked)}
+            className="cursor-pointer"
           />
           <Label htmlFor="isActive">Active (available for sale)</Label>
         </div>
@@ -154,13 +161,14 @@ export default function ProductDialog({
           <Button 
             onClick={onSubmit}
             disabled={!isFormValid}
-            className="flex-1"
+            className="flex-1 cursor-pointer"
           >
             {editingProduct ? 'Update Product' : 'Add Product'}
           </Button>
           <Button 
             variant="outline" 
             onClick={onClose}
+            className="cursor-pointer"
           >
             Cancel
           </Button>
