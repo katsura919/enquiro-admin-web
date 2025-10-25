@@ -156,13 +156,6 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
 
       {/* Right section */}
       <div className="flex items-center gap-2 md:gap-4">        {/* Search button - hidden on mobile to save space */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden md:flex h-9 w-9 p-0 items-center justify-center rounded-lg transition-all duration-300 hover:bg-accent"
-        >
-          <Search className="h-4 w-4 text-foreground" />
-        </Button>
 
         {/* Notifications */}
         <NotificationBell />
