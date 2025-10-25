@@ -118,6 +118,7 @@ export const categories = [
 
 // Currency options
 export const currencies = [
+  "PHP",
   "USD",
   "EUR", 
   "GBP",

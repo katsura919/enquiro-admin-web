@@ -4,10 +4,11 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
-import { User, Bot, CheckCircle2, Download, FileText, Image as ImageIcon, ExternalLink, Loader2, ZoomIn, X, ChevronRight } from "lucide-react"
+import { User, Bot, CheckCircle2, Download, FileText, Image as ImageIcon, ExternalLink, Loader2, ZoomIn, ChevronRight, ThumbsUp, ThumbsDown } from "lucide-react"
 import { format } from "date-fns"
 import Markdown from "markdown-to-jsx"
 import Image from "next/image"
+import api from "@/utils/api"
 import type { ChatMessage } from "@/types/ChatMessage"
 
 interface MessageProps {
@@ -16,9 +17,10 @@ interface MessageProps {
   onEscalationClick: (escalationData?: { type: 'new' | 'continue' | 'form', caseId?: string, sessionId?: string }) => void
   escalationInProgress?: boolean // Add this to prevent auto-trigger when escalation is already submitted
   chatbotIcon?: string
+  onUpdateMessage?: (updatedMessage: ChatMessage) => void
 }
 
-export default function Message({ message, index, onEscalationClick, escalationInProgress = false, chatbotIcon }: MessageProps) {
+export default function Message({ message, index, onEscalationClick, escalationInProgress = false, chatbotIcon, onUpdateMessage }: MessageProps) {
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<{
     url: string
@@ -28,6 +30,7 @@ export default function Message({ message, index, onEscalationClick, escalationI
   const [imageLoading, setImageLoading] = useState<{ [key: string]: boolean }>({})
   const [imageDimensions, setImageDimensions] = useState<{ [key: string]: { width: number; height: number } }>({})
   const [escalationTriggered, setEscalationTriggered] = useState(false)
+  const [isUpdatingRating, setIsUpdatingRating] = useState(false)
 
   const getSkeletonDimensions = (fileName: string) => {
     // Try to infer dimensions from common image types/names
@@ -118,6 +121,51 @@ export default function Message({ message, index, onEscalationClick, escalationI
     setImageLoading(prev => ({ ...prev, [imageUrl]: true }))
   }
 
+  const handleRatingUpdate = async (action: 'like' | 'dislike') => {
+    if (isUpdatingRating) return
+    
+    setIsUpdatingRating(true)
+    try {
+      // Toggle logic: if clicking the same rating, remove it (set to 'none')
+      const currentRating = message.isGoodResponse
+      let finalAction: 'like' | 'dislike' | 'none'
+      
+      if (action === 'like') {
+        finalAction = currentRating === true ? 'none' : 'like'
+      } else { // action === 'dislike'
+        finalAction = currentRating === false ? 'none' : 'dislike'
+      }
+      
+      const response = await api.put(`/chat/update-chat-status/${message._id}`, {
+        action: finalAction
+      })
+      
+      if (response.data.success !== false) {
+        // Update the message with new rating
+        const updatedMessage = {
+          ...message,
+          isGoodResponse: finalAction === 'like' ? true : finalAction === 'dislike' ? false : null
+        }
+        
+        // Call the callback to update the message in the parent component
+        if (onUpdateMessage) {
+          onUpdateMessage(updatedMessage)
+        }
+      }
+    } catch (error: any) {
+      console.error('Failed to update chat rating:', error)
+      
+      // Show user-friendly error message
+      if (error.response?.status === 400 && error.response?.data?.error?.includes('Invalid chat ID')) {
+        console.warn('Cannot rate this message: Invalid message ID')
+      } else {
+        console.error('Failed to update rating. Please try again.')
+      }
+    } finally {
+      setIsUpdatingRating(false)
+    }
+  }
+
   const renderContentWithEscalationLink = (content: string) => {
     // Remove all escalation links from the content and just return clean markdown
     const cleanContent = content
@@ -186,39 +234,19 @@ export default function Message({ message, index, onEscalationClick, escalationI
     return null
   }
 
-  // Auto-trigger escalation dialog when escalation link is detected (only once per message)
-  // BUT NOT for 'continue' type - those should be manual clicks only
+  // Note: Auto-trigger has been disabled. Users must manually click escalation cards.
+  // The escalationTriggered state is kept for potential future use but no longer used for auto-triggering.
   useEffect(() => {
+    // Mark escalation links as seen but don't auto-trigger any dialogs
     if (
       message.senderType === "ai" && 
       message.message && 
       hasEscalationLink(message.message) && 
-      !escalationTriggered && 
-      !escalationInProgress // Don't auto-trigger if escalation is already in progress
+      !escalationTriggered
     ) {
-      const escalationData = message.message ? getEscalationData(message.message) : null
-      
-      // Don't auto-trigger for 'continue' type - user must manually click
-      if (escalationData?.type === 'continue') {
-        setEscalationTriggered(true) // Mark as seen but don't trigger
-        return
-      }
-      
-      // Auto-trigger for 'new' and 'form' types only
-      const timer = setTimeout(() => {
-        if (escalationData) {
-          onEscalationClick({
-            type: escalationData.type as 'new' | 'continue' | 'form'
-          })
-        } else {
-          onEscalationClick()
-        }
-        setEscalationTriggered(true) // Mark as triggered to prevent reopening
-      }, 500)
-      
-      return () => clearTimeout(timer)
+      setEscalationTriggered(true) // Mark as seen for tracking purposes
     }
-  }, [message.message, message.senderType, onEscalationClick, escalationTriggered, escalationInProgress])
+  }, [message.message, message.senderType, escalationTriggered])
 
   // System messages - centered like Facebook Messenger
   if (message.senderType === "system") {
@@ -401,6 +429,45 @@ export default function Message({ message, index, onEscalationClick, escalationI
                 : message.message}
             </div>
           )}
+
+          {/* Rating buttons for AI messages */}
+          {message.senderType === "ai" && (
+            <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRatingUpdate('like')}
+                  disabled={isUpdatingRating}
+                  className={`h-7 px-2 text-xs gap-1 transition-colors ${
+                    message.isGoodResponse === true 
+                      ? 'text-green-600 bg-green-50 hover:bg-green-100 dark:text-green-400 dark:bg-green-900/20 dark:hover:bg-green-900/30' 
+                      : 'text-slate-500 hover:text-green-600 hover:bg-green-50 dark:text-slate-400 dark:hover:text-green-400 dark:hover:bg-green-900/20'
+                  }`}
+                >
+                  <ThumbsUp className="h-3 w-3" />
+                  {message.isGoodResponse === true && <span>Helpful</span>}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRatingUpdate('dislike')}
+                  disabled={isUpdatingRating}
+                  className={`h-7 px-2 text-xs gap-1 transition-colors ${
+                    message.isGoodResponse === false 
+                      ? 'text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/30' 
+                      : 'text-slate-500 hover:text-red-600 hover:bg-red-50 dark:text-slate-400 dark:hover:text-red-400 dark:hover:bg-red-900/20'
+                  }`}
+                >
+                  <ThumbsDown className="h-3 w-3" />
+                  {message.isGoodResponse === false && <span>Not helpful</span>}
+                </Button>
+              </div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                {format(new Date(message.createdAt), "HH:mm")}
+              </div>
+            </div>
+          )}
           
           {message.senderType !== "ai" && (
             <div className="flex items-center justify-end gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
@@ -426,13 +493,13 @@ export default function Message({ message, index, onEscalationClick, escalationI
                   }`}
                   onClick={() => {
                     const escalationData = message.message ? getEscalationData(message.message) : null
-                    if (escalationData && escalationData.type === 'continue') {
-                      // For returning customers, show case follow-up dialog
+                    if (escalationData) {
+                      // Handle all escalation types based on detected type
                       onEscalationClick({
-                        type: 'continue'
+                        type: escalationData.type as 'new' | 'continue' | 'form'
                       })
                     } else {
-                      // For new customers, show the regular escalation dialog
+                      // Fallback to new escalation if no specific type detected
                       onEscalationClick({ type: 'new' })
                     }
                   }}
@@ -456,11 +523,23 @@ export default function Message({ message, index, onEscalationClick, escalationI
                             ? 'text-emerald-700 dark:text-emerald-200'
                             : 'text-slate-700 dark:text-slate-200'
                         }`}>
-                          {isReturningCustomer ? 'Continue your case' : 'Fill up details'}
+                          {isReturningCustomer 
+                            ? 'Continue your case' 
+                            : escalationData?.type === 'form' 
+                              ? 'Submit request' 
+                              : 'Connect with agent'}
                         </span>
-                        {isReturningCustomer && escalationData && (
+                        {isReturningCustomer ? (
                           <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
                             Resume conversation
+                          </p>
+                        ) : escalationData?.type === 'form' ? (
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                            Fill out support form
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                            Speak with live agent
                           </p>
                         )}
                       </div>

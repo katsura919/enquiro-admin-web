@@ -329,7 +329,7 @@ export default function DashboardPage() {
     <div className="w-full mx-auto p-6 space-y-8">
 
       {/* Performance Metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Link href="/dashboard/escalations">
           <Card className="border-muted-gray shadow-none bg-card cursor-pointer ">
             <CardHeader className="pb-3 px-6 pt-6">
@@ -407,7 +407,7 @@ export default function DashboardPage() {
 
       {/* Grid Layout: Escalations Chart & Other Cards (left) + Latest Escalations (right, spanning 2 rows) */}
       {businessData._id && (
-        <div className="grid gap-6 lg:grid-cols-12 mb-8">
+        <div className="grid gap-4 lg:grid-cols-12 mb-8">
           {/* Escalations Chart - Top left, full width */}
           <div className="lg:col-span-9">
             <ChartAreaInteractive businessId={businessData._id} />

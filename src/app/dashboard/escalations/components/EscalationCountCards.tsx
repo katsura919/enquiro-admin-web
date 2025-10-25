@@ -102,7 +102,7 @@ export function EscalationCountCards({
 
   if (loading) {
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {Array.from({ length: 4 }).map((_, index) => (
           <Card key={index} className="border-0 shadow-sm">
             <CardHeader className="pb-3 px-6 pt-6">
@@ -124,7 +124,7 @@ export function EscalationCountCards({
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
       {cards.map((card) => (
         <Card
           key={card.status}

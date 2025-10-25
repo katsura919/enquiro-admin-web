@@ -35,6 +35,7 @@ interface ChatAreaProps {
   uploadLoading?: boolean
   chatbotName?: string
   chatbotIcon?: string
+  onUpdateMessage?: (updatedMessage: ChatMessage) => void
 }
 
 const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
@@ -57,7 +58,8 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
     onFileClear,
     uploadLoading = false,
     chatbotName = "AI Assistant",
-    chatbotIcon
+    chatbotIcon,
+    onUpdateMessage
   }, chatEndRef) => {
     const [copiedToClipboard, setCopiedToClipboard] = useState(false)
 
@@ -72,7 +74,7 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
     }
 
     return (
-      <Card className="flex-1 flex flex-col border-0 shadow-none  min-h-0 bg-card">
+      <Card className="flex-1 flex flex-col border-0 shadow-none  min-h-0 bg-card rounded-b-xl rounded-t-none">
         
         {/* Live Chat Mode Indicator */}
         {isLiveChatMode && (
@@ -192,6 +194,7 @@ const ChatArea = forwardRef<HTMLDivElement, ChatAreaProps>(
                       onEscalationClick={onEscalationClick}
                       escalationInProgress={!!escalationResponse || waitingForAgent || isLiveChatMode}
                       chatbotIcon={chatbotIcon}
+                      onUpdateMessage={onUpdateMessage}
                     />
                   ))
                 )}

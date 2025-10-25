@@ -84,7 +84,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const { logout, user } = useAuth()
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [animationData, setAnimationData] = useState(null)
@@ -104,7 +104,7 @@ export default function DashboardLayout({
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024)
-      setIsSidebarOpen(window.innerWidth >= 1024)
+      // Keep sidebar closed by default - user can manually open it
     }
     
     handleResize()
@@ -193,14 +193,7 @@ export default function DashboardLayout({
                 Enquiro
               </span>
             </Link>              
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              className="lg:hidden h-9 w-9 p-0 rounded-lg transition-all duration-300 hover:bg-white/10"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-              <Menu className="h-5 w-5 text-white" />
-            </Button>
+
           </div>
           
           {/* Navigation with ScrollArea */}

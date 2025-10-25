@@ -71,7 +71,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  
+  console.log(sessionId)
   // File upload state
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
@@ -548,7 +548,7 @@ export default function ChatPage() {
       
       const response = await api.post(apiEndpoint, body)
       const aiMessage: ChatMessage = {
-        _id: `${Date.now()}-response`,
+        _id: response.data.aiChatId || `${Date.now()}-response`, // Use backend ID or fallback
         businessId: businessData?._id || '',
         sessionId: sessionId || response.data.sessionId || '',
         message: response.data.answer,
@@ -597,6 +597,15 @@ export default function ChatPage() {
       }
     }
   }
+
+  // Handle message updates (like rating changes)
+  const handleUpdateMessage = useCallback((updatedMessage: ChatMessage) => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg._id === updatedMessage._id ? updatedMessage : msg
+      )
+    )
+  }, [])
 
   // Handle case number submission for follow-up
   const handleCaseNumberSubmit = async (caseNumber: string) => {
@@ -902,6 +911,7 @@ export default function ChatPage() {
             uploadLoading={uploadLoading}
             chatbotName={chatbotSettings?.chatbotName || "AI Assistant"}
             chatbotIcon={chatbotSettings?.chatbotIcon || businessData?.logo}
+            onUpdateMessage={handleUpdateMessage}
           />
         </div>
 
