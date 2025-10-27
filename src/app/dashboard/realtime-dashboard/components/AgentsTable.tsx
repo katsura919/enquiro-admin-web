@@ -130,10 +130,10 @@ export function AgentsTable({ filterOnline = false, agents: propAgents }: Agents
     );
 
   return (
-    <Card className="w-full border-none bg-background">
+    <Card className="w-full border-none bg-background shadow-none">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
+          <CardTitle className="text-lg text-secondary-foreground">
             {filterOnline ? 'Online Agents' : 'All Agents'}
           </CardTitle>
           <div className="flex items-center space-x-2">
@@ -143,7 +143,7 @@ export function AgentsTable({ filterOnline = false, agents: propAgents }: Agents
                 placeholder="Search agents..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 w-64"
+                className="pl-8 w-64 bg-card shadow-none border-muted-gray"
               />
             </div>
           </div>

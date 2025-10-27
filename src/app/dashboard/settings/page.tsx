@@ -484,7 +484,7 @@ export default function AccountSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+              <div className="p-4 rounded-lg border border-border/50 bg-card">
                 <div className="flex items-center gap-3 mb-2">
                   <Shield className="h-5 w-5 text-green-500" />
                   <span className="font-medium">Two-Factor Auth</span>
@@ -494,7 +494,7 @@ export default function AccountSettingsPage() {
                 </Badge>
               </div>
 
-              <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+              <div className="p-4 bg-card rounded-lg border border-border/50">
                 <div className="flex items-center gap-3 mb-2">
                   <Clock className="h-5 w-5 text-blue-500" />
                   <span className="font-medium">Last Password Change</span>
@@ -504,7 +504,7 @@ export default function AccountSettingsPage() {
                 </p>
               </div>
 
-              <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+              <div className="p-4 bg-card rounded-lg border border-border/50">
                 <div className="flex items-center gap-3 mb-2">
                   <Globe className="h-5 w-5 text-orange-500" />
                   <span className="font-medium">Active Sessions</span>
@@ -526,7 +526,7 @@ export default function AccountSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {activeSection !== 'password' ? (
-              <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/50">
+              <div className="flex items-center justify-between p-4 bg-card rounded-lg border border-border/50">
                 <div>
                   <p className="font-medium">Password</p>
                   <p className="text-sm text-muted-foreground">Last changed on {new Date(securitySettings.lastPasswordChange).toLocaleDateString()}</p>
@@ -534,7 +534,7 @@ export default function AccountSettingsPage() {
                 <Button 
                   variant="outline" 
                   onClick={() => setActiveSection('password')}
-                  className="bg-background"
+                  className="bg-card cursor-pointer"
                 >
                   Change Password
                 </Button>
