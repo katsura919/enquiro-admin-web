@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Check, X } from "lucide-react"
 
 interface CreatePasswordStepProps {
   password: string
@@ -24,6 +24,16 @@ export default function CreatePasswordStep({
   setShowConfirmPassword,
   errors
 }: CreatePasswordStepProps) {
+  // Check password requirements for visual indicators
+  const getPasswordRequirements = () => {
+    return {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-3">
@@ -58,6 +68,60 @@ export default function CreatePasswordStep({
           </div>
           {errors.password && (
             <p className="text-sm text-red-400 mt-1">{errors.password}</p>
+          )}
+          
+          {/* Password Requirements Display */}
+          {password && (
+            <div className="mt-3 space-y-2">
+              <p className="text-xs text-gray-400 mb-2">Password requirements:</p>
+              {(() => {
+                const requirements = getPasswordRequirements()
+                return (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      {requirements.minLength ? (
+                        <Check className="h-3 w-3 text-green-400" />
+                      ) : (
+                        <X className="h-3 w-3 text-gray-500" />
+                      )}
+                      <span className={requirements.minLength ? "text-green-400" : "text-gray-500"}>
+                        At least 8 characters
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {requirements.hasUppercase ? (
+                        <Check className="h-3 w-3 text-green-400" />
+                      ) : (
+                        <X className="h-3 w-3 text-gray-500" />
+                      )}
+                      <span className={requirements.hasUppercase ? "text-green-400" : "text-gray-500"}>
+                        One uppercase letter
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {requirements.hasLowercase ? (
+                        <Check className="h-3 w-3 text-green-400" />
+                      ) : (
+                        <X className="h-3 w-3 text-gray-500" />
+                      )}
+                      <span className={requirements.hasLowercase ? "text-green-400" : "text-gray-500"}>
+                        One lowercase letter
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {requirements.hasNumber ? (
+                        <Check className="h-3 w-3 text-green-400" />
+                      ) : (
+                        <X className="h-3 w-3 text-gray-500" />
+                      )}
+                      <span className={requirements.hasNumber ? "text-green-400" : "text-gray-500"}>
+                        One number
+                      </span>
+                    </div>
+                  </div>
+                )
+              })()}
+            </div>
           )}
         </div>
         <div className="space-y-2">
