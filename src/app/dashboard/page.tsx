@@ -329,7 +329,7 @@ export default function DashboardPage() {
     <div className="w-full mx-auto p-6 space-y-8">
 
       {/* Performance Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-4 mb-8">
         <Link href="/dashboard/escalations">
           <Card className="border-muted-gray shadow-none bg-card cursor-pointer ">
             <CardHeader className="pb-3 px-6 pt-6">

@@ -208,7 +208,7 @@ export default function RatingsPage() {
     <div className="w-full mx-auto p-6 space-y-6">
       {/* Filters and Search */}
       {loading ? (
-        <Card className="border-0 shadow-sm">
+        <Card className="border-muted-gray shadow-none">
           <CardHeader>
             <CardTitle>All Ratings</CardTitle>
             <CardDescription>View and filter customer feedback</CardDescription>
