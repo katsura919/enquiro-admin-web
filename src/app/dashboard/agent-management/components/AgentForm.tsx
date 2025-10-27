@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Check, X } from "lucide-react"
 import { Agent } from "./AgentTable"
 
 interface AgentFormData {
@@ -80,16 +80,18 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
     }
 
     // Phone validation (optional but must be valid if provided)
-    if (formData.phone && !/^[\+]?[\d]{7,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
-      newErrors.phone = "Please enter a valid phone number"
+    if (formData.phone && !/^\+?[\d\s\-\(\)]{7,15}$/.test(formData.phone)) {
+      newErrors.phone = "Please enter a valid phone number (7-15 digits)"
     }
 
     // Password validation only for new agents or when password is provided
     if (!agent || formData.password) {
       if (!formData.password) {
         newErrors.password = "Password is required"
-      } else if (formData.password.length < 6) {
-        newErrors.password = "Password must be at least 6 characters"
+      } else if (formData.password.length < 8) {
+        newErrors.password = "Password must be at least 8 characters"
+      } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(formData.password)) {
+        newErrors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       }
 
       if (formData.password !== formData.confirmPassword) {
@@ -99,6 +101,40 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
+  }
+
+  // Check password requirements for visual indicators
+  const getPasswordRequirements = () => {
+    const password = formData.password
+    return {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password)
+    }
+  }
+
+  // Check if form is valid for submit button
+  const isFormValid = () => {
+    const basicValidation = formData.name.trim() && 
+                           formData.email.trim() && 
+                           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+    
+    // For editing, don't require password if not provided
+    if (agent && !formData.password) {
+      return basicValidation
+    }
+    
+    // For creating new agent or when password is provided
+    const passwordRequirements = getPasswordRequirements()
+    const passwordValid = formData.password && 
+                         passwordRequirements.minLength &&
+                         passwordRequirements.hasUppercase &&
+                         passwordRequirements.hasLowercase &&
+                         passwordRequirements.hasNumber &&
+                         formData.password === formData.confirmPassword
+    
+    return basicValidation && passwordValid
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,6 +161,11 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
   }
 
   const handleInputChange = (field: keyof AgentFormData, value: string) => {
+    // For phone field, only allow digits, spaces, hyphens, parentheses, and plus sign
+    if (field === 'phone') {
+      value = value.replace(/[^\d\s\-\(\)\+]/g, '')
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (errors[field]) {
@@ -204,6 +245,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="Enter phone number (optional)"
                 className={errors.phone ? "border-destructive focus:border-destructive" : ""}
+                maxLength={20}
               />
               {errors.phone && <p className="text-sm text-destructive mt-1">{errors.phone}</p>}
             </div>
@@ -238,6 +280,60 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                   </Button>
                 </div>
                 {errors.password && <p className="text-sm text-destructive mt-1">{errors.password}</p>}
+                
+                {/* Password Requirements - show only when creating new agent or when password field has focus/content */}
+                {(!agent || formData.password) && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-muted-foreground mb-1">Password requirements:</p>
+                    {(() => {
+                      const requirements = getPasswordRequirements()
+                      return (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-xs">
+                            {requirements.minLength ? (
+                              <Check className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <X className="h-3 w-3 text-muted-foreground" />
+                            )}
+                            <span className={requirements.minLength ? "text-green-600" : "text-muted-foreground"}>
+                              At least 8 characters
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            {requirements.hasUppercase ? (
+                              <Check className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <X className="h-3 w-3 text-muted-foreground" />
+                            )}
+                            <span className={requirements.hasUppercase ? "text-green-600" : "text-muted-foreground"}>
+                              One uppercase letter
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            {requirements.hasLowercase ? (
+                              <Check className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <X className="h-3 w-3 text-muted-foreground" />
+                            )}
+                            <span className={requirements.hasLowercase ? "text-green-600" : "text-muted-foreground"}>
+                              One lowercase letter
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            {requirements.hasNumber ? (
+                              <Check className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <X className="h-3 w-3 text-muted-foreground" />
+                            )}
+                            <span className={requirements.hasNumber ? "text-green-600" : "text-muted-foreground"}>
+                              One number
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -285,7 +381,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
             </Button>
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || !isFormValid()}
               className="min-w-[120px] cursor-pointer"
             >
               {loading ? (
@@ -294,7 +390,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                   Saving...
                 </>
               ) : (
-                agent ? 'Update Agent' : 'Create Agent'
+                agent ? 'Update Agent' : 'Create'
               )}
             </Button>
           </div>
