@@ -16,6 +16,10 @@ interface AgentFormData {
   confirmPassword: string
 }
 
+interface AgentFormErrors extends Partial<AgentFormData> {
+  server?: string
+}
+
 interface AgentFormProps {
   open: boolean
   onClose: () => void
@@ -32,7 +36,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
     password: "",
     confirmPassword: ""
   })
-  const [errors, setErrors] = React.useState<Partial<AgentFormData>>({})
+  const [errors, setErrors] = React.useState<AgentFormErrors>({})
   const [showPassword, setShowPassword] = React.useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
 
@@ -63,7 +67,7 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
   }, [open, agent])
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<AgentFormData> = {}
+    const newErrors: AgentFormErrors = {}
 
     if (!formData.name.trim()) {
       newErrors.name = "Name is required"
@@ -107,8 +111,16 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
     try {
       await onSubmit(formData)
       // Don't call onClose here - let the parent handle it after success
-    } catch (error) {
-      console.error('Form submission error:', error)
+    } catch (error: any) {
+      // Handle specific email validation error from server
+      if (error.response?.status === 409 && error.response?.data?.error?.includes('Email address is already taken')) {
+        setErrors(prev => ({ 
+          ...prev, 
+          email: error.response.data.error // Use the exact error message from backend
+        }))
+      } else {
+        console.error('Form submission error:', error)
+      }
     }
   }
 
