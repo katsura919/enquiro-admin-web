@@ -571,9 +571,6 @@ export default function RegisterPage() {
         }
       `}</style>
 
-      {/* Footer */}
-      <Footer />
-
       {/* Modals */}
       <TermsModal 
         isOpen={showTermsModal} 
