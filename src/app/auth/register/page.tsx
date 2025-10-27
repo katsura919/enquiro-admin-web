@@ -142,6 +142,8 @@ export default function RegisterPage() {
           passwordErrors.password = "Please enter a password"
         } else if (password.length < 8) {
           passwordErrors.password = "Password must be at least 8 characters long"
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password)) {
+          passwordErrors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one number"
         }
         if (!confirmPassword) {
           passwordErrors.confirmPassword = "Please confirm your password"
@@ -387,7 +389,7 @@ export default function RegisterPage() {
             </Link>
             <Link 
               href="/auth/login" 
-              className="text-sm text-blue-400 hover:text-blue-300 font-medium"
+              className="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors"
             >
               Sign In
             </Link>
@@ -402,106 +404,151 @@ export default function RegisterPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row">
         {/* Left Side - Illustration/Content Area */}
-        <div className="hidden lg:flex lg:w-2/5 xl:w-1/2 relative overflow-hidden bg-gradient-to-br">
-        <GridPattern />
-        
-        {/* Content Overlay */}
-        <div className="relative z-10 flex items-center justify-center px-8 lg:px-12 xl:px-16 h-full w-full">
-          {/* Main Content Container */}
-          <div className="max-w-lg w-full text-center">
-            
-            {/* Lottie Animation */}
-            <div className="flex justify-center mb-8 lg:mb-10">
-              <div className="w-64 h-64 md:w-72 md:h-72 lg:w-80 lg:h-80">
-                <Lottie 
-                  animationData={registrationAnimation}
-                  loop={true}
-                  className="w-full h-full"
-                />
+        <div className="hidden lg:flex lg:w-2/5 xl:w-1/2 relative overflow-hidden bg-black">
+          <GridPattern />
+          
+          {/* Content Overlay */}
+          <div className="relative z-10 flex items-center justify-center px-8 lg:px-12 xl:px-16 h-full w-full">
+            {/* Main Content Container */}
+            <div className="max-w-md w-full text-center">
+              
+              {/* Lottie Animation - More Compact */}
+              <div className="flex justify-center mb-6">
+                <div className="w-48 h-48 lg:w-56 lg:h-56">
+                  <Lottie 
+                    animationData={registrationAnimation}
+                    loop={true}
+                    className="w-full h-full"
+                  />
+                </div>
               </div>
-            </div>
-            
-            {/* Heading and Description */}
-            <div className="space-y-6 lg:space-y-8 mb-8 lg:mb-10">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight text-center">
-                Join <span className="font-bold">Enquiro</span> Now!
-              </h1>
-              <p className="text-base md:text-lg text-blue-100/90 leading-relaxed font-medium text-center px-4">
-                Transform your customer support with intelligent AI chatbots designed for modern businesses.
-              </p>
-            </div>
-            
-            
-            {/* Bottom accent */}
-            <div className="mt-8 pt-6 border-t border-white/10">
-              <p className="text-xs text-blue-200/70 font-medium">
-                Join thousands of businesses already using Enquiro
-              </p>
+              
+              {/* Heading and Description - More Compact */}
+              <div className="space-y-4 mb-6">
+                <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-white leading-tight tracking-tight">
+                  Join <span className="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent">Enquiro</span>
+                </h1>
+                <p className="text-sm lg:text-base text-blue-100/80 leading-relaxed">
+                  Transform your customer support with intelligent AI chatbots designed for modern businesses.
+                </p>
+              </div>
+              
+              {/* Steps Indicator */}
+              <div className="flex justify-center items-center space-x-2 mb-6">
+                {[1, 2, 3, 4, 5, 6].map((step) => (
+                  <div
+                    key={step}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      step === currentStep
+                        ? 'bg-white w-6'
+                        : step < currentStep
+                        ? 'bg-blue-200'
+                        : 'bg-white/30'
+                    }`}
+                  />
+                ))}
+              </div>
+              
+              {/* Bottom accent */}
+              <div className="pt-4 border-t border-white/10">
+                <p className="text-xs text-blue-200/60">
+                  Join thousands of businesses already using Enquiro
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Side - Form Area */}
-      <div className="w-full lg:w-3/5 xl:w-1/2 bg-black flex flex-col min-h-screen lg:min-h-auto">
-        {/* Form Content - Properly Structured Layout */}
-        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-          <div className="w-full max-w-md lg:max-w-lg">
-            
-            {/* Error Message for General Errors */}
-            {errors.general && (
-              <div className="mb-6 p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
-                {errors.general}
+        {/* Right Side - Form Area */}
+        <div className="w-full lg:w-3/5 xl:w-1/2 bg-black flex flex-col min-h-screen lg:min-h-auto">
+          
+          {/* Mobile Step Progress */}
+          <div className="lg:hidden bg-gray-900/50 px-4 py-3 border-b border-gray-800">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-400">
+                Step {currentStep} of 6
               </div>
-            )}
-            
-            {/* Form Content - Natural flow */}
-            <div className="mb-8">
-              {renderStepContent()}
+              <div className="flex space-x-1">
+                {[1, 2, 3, 4, 5, 6].map((step) => (
+                  <div
+                    key={step}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      step === currentStep
+                        ? 'bg-blue-500'
+                        : step < currentStep
+                        ? 'bg-blue-400'
+                        : 'bg-gray-600'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
+          </div>
 
-            {/* Footer Button - Right aligned for natural flow */}
-            {currentStep !== 7 && (
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
-                {/* Back Button */}
-                {currentStep > 1 ? (
-                  <Button
-                    onClick={handleBack}
-                    variant="ghost"
-                    className="w-full sm:w-auto text-gray-400 hover:text-white hover:bg-white/10 h-12 px-6 text-base font-medium transition-all duration-200 order-2 sm:order-1 cursor-pointer"
-                  >
-                    Back
-                  </Button>
-                ) : (
-                  <div className="hidden sm:block"></div>
-                )}
-
-                {/* Next Button */}
-                <Button
-                  onClick={handleNext}
-                  disabled={isLoading}
-                  className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white h-12 px-8 text-base font-medium transition-all duration-200 rounded-lg shadow-sm order-1 sm:order-2 cursor-pointer"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-3"></div>
-                      <span className="hidden sm:inline">Processing...</span>
-                      <span className="sm:hidden">Processing</span>
-                    </div>
-                  ) : currentStep === 4 ? (
-                    <span className="hidden sm:inline">Send Code</span>
-                  ) : currentStep === 5 ? (
-                    "Verify Email"
-                  ) : currentStep === 6 ? (
-                    <span className="hidden sm:inline">Complete Registration</span>
-                  ) : (
-                    "Next"
-                  )}
-                  {currentStep === 4 && <span className="sm:hidden">Send Code</span>}
-                  {currentStep === 6 && <span className="sm:hidden">Complete</span>}
-                </Button>
+          {/* Form Content Container */}
+          <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            <div className="w-full max-w-md">
+              
+              {/* Mobile Header */}
+              <div className="lg:hidden text-center mb-6">
+                <h2 className="text-xl font-bold text-white mb-1">
+                  Join Enquiro
+                </h2>
+                <p className="text-sm text-gray-400">
+                  {stepDescriptions[currentStep]}
+                </p>
               </div>
-            )}
+              
+              {/* Error Message */}
+              {errors.general && (
+                <div className="mb-4 p-3 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+                  {errors.general}
+                </div>
+              )}
+              
+              {/* Form Content */}
+              <div className="mb-6">
+                {renderStepContent()}
+              </div>
+
+              {/* Navigation Buttons */}
+              {currentStep !== 7 && (
+                <div className="space-y-3">
+                  {/* Primary Action Button */}
+                  <Button
+                    onClick={handleNext}
+                    disabled={isLoading}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white h-11 text-base font-medium transition-all duration-200 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : currentStep === 4 ? (
+                      "Send Verification Code"
+                    ) : currentStep === 5 ? (
+                      "Verify Email"
+                    ) : currentStep === 6 ? (
+                      "Complete Registration"
+                    ) : (
+                      "Continue"
+                    )}
+                  </Button>
+
+                  {/* Back Button */}
+                  {currentStep > 1 && (
+                    <Button
+                      onClick={handleBack}
+                      variant="ghost"
+                      className="w-full text-gray-400 hover:text-white hover:bg-white/10 h-11 text-base font-medium transition-all duration-200"
+                    >
+                      Back
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -523,7 +570,6 @@ export default function RegisterPage() {
           background: rgba(59, 130, 246, 0.7);
         }
       `}</style>
-      </div>
 
       {/* Footer */}
       <Footer />
@@ -537,7 +583,7 @@ export default function RegisterPage() {
         isOpen={showPrivacyModal} 
         onClose={() => setShowPrivacyModal(false)} 
       />
-    </div>
+      </div>
     </AuthRedirect>
   )
 }
