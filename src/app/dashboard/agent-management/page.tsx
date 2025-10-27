@@ -198,16 +198,21 @@ export default function AgentManagementPage() {
       }
       
       const response = await api.post('/agent', createData)
-      setAgents(prev => [response.data, ...prev])
       toast.success("Agent created successfully")
-    } catch (error: any) {
-      toast.error(getErrorMessage(error, "Failed to create agent"))
-    } finally {
-      setLoading(false)
-      // Close dialog after a small delay to ensure proper cleanup
+      // Close dialog on success
       setTimeout(() => {
         closeDialogs()
       }, 100)
+    } catch (error: any) {
+      // Check if it's a duplicate email error (409 status)
+      if (error.response?.status === 409 && error.response?.data?.error?.includes('Email address is already taken')) {
+        // Don't show toast for email validation errors - let the form handle it
+        throw error // Re-throw to let AgentForm handle it
+      } else {
+        toast.error(getErrorMessage(error, "Failed to create agent"))
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -225,20 +230,21 @@ export default function AgentManagementPage() {
       }
       
       const response = await api.put(`/agent/${editingAgent._id}`, updateData)
-      setAgents(prev =>
-        prev.map(agent =>
-          agent._id === editingAgent._id ? response.data : agent
-        )
-      )
       toast.success("Agent updated successfully")
-    } catch (error: any) {
-      toast.error(getErrorMessage(error, "Failed to update agent"))
-    } finally {
-      setLoading(false)
-      // Close dialog after a small delay to ensure proper cleanup
+      // Close dialog on success
       setTimeout(() => {
         closeDialogs()
       }, 100)
+    } catch (error: any) {
+      // Check if it's a duplicate email error (409 status)
+      if (error.response?.status === 409 && error.response?.data?.error?.includes('Email address is already taken')) {
+        // Don't show toast for email validation errors - let the form handle it
+        throw error // Re-throw to let AgentForm handle it
+      } else {
+        toast.error(getErrorMessage(error, "Failed to update agent"))
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -248,14 +254,6 @@ export default function AgentManagementPage() {
     setLoading(true)
     try {
       await api.delete(`/agent/${deletingAgent._id}`)
-      // Soft delete - update the deletedAt field
-      setAgents(prev =>
-        prev.map(agent =>
-          agent._id === deletingAgent._id
-            ? { ...agent, deletedAt: new Date().toISOString() }
-            : agent
-        )
-      )
       toast.success("Agent deleted successfully")
     } catch (error: any) {
       toast.error(getErrorMessage(error, "Failed to delete agent"))
@@ -276,14 +274,6 @@ export default function AgentManagementPage() {
       // Delete each selected agent
       await Promise.all(selectedIds.map(id => api.delete(`/agent/${id}`)))
       
-      // Update local state
-      setAgents(prev =>
-        prev.map(agent =>
-          selectedIds.includes(agent._id)
-            ? { ...agent, deletedAt: new Date().toISOString() }
-            : agent
-        )
-      )
       setSelectedIds([])
       toast.success(`${selectedIds.length} agent(s) deleted successfully`)
     } catch (error: any) {
@@ -298,14 +288,6 @@ export default function AgentManagementPage() {
     setLoading(true)
     try {
       const response = await api.patch(`/agent/${agentId}/restore`)
-      // Update local state to remove deletedAt
-      setAgents(prev =>
-        prev.map(agent =>
-          agent._id === agentId
-            ? { ...agent, deletedAt: null }
-            : agent
-        )
-      )
       toast.success("Agent restored successfully")
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to restore agent")
