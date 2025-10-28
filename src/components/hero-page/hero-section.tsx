@@ -53,7 +53,7 @@ export default function HeroSection() {
 
             <p className="mx-auto max-w-4xl text-gray-300 text-lg md:text-xl lg:text-2xl leading-relaxed font-light">
               All your{" "}
-              <Highlight className="text-white px-2 py-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-md">
+              <Highlight className="text-white px-2 py-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-none rounded-lg">
                 Live Chat, AI Chatbot, CRM and Workforce Management tools
               </Highlight>{" "}
               unified in one powerful, intelligent platform.
