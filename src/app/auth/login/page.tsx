@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Eye, EyeOff, ArrowRight, Shield, Sparkles } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Shield,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
@@ -18,20 +25,84 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Rate limiting state
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+  const [attemptsLeft, setAttemptsLeft] = useState(3);
+  const [rateLimitError, setRateLimitError] = useState("");
+
   // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Timer effect for countdown
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRateLimited && remainingTime > 0) {
+      interval = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 1) {
+            setIsRateLimited(false);
+            setRateLimitError("");
+            setAttemptsLeft(3); // Reset attempts when rate limit expires
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isRateLimited, remainingTime]);
+
+  // Format time display
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Don't submit if rate limited
+    if (isRateLimited) return;
+
     setError("");
+    setRateLimitError("");
     setIsLoading(true);
 
     try {
       await login(email, password);
+      // Reset rate limit state on successful login
+      setAttemptsLeft(3);
+      setIsRateLimited(false);
+      setRemainingTime(0);
       router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      if (err instanceof Error) {
+        // Check if it's a rate limit error (429 status)
+        if (
+          err.message.includes("Too many") ||
+          err.message.includes("rate limit")
+        ) {
+          setIsRateLimited(true);
+          setRemainingTime(60); // 1 minute as per backend config
+          setRateLimitError(err.message);
+          setAttemptsLeft(0);
+        } else {
+          // Regular login error - decrease attempts left
+          setAttemptsLeft((prev) => Math.max(0, prev - 1));
+          setError(err.message);
+
+          // Show warning when getting close to rate limit
+          if (attemptsLeft <= 2) {
+            setError(`${err.message} (${attemptsLeft - 1} attempts remaining)`);
+          }
+        }
+      } else {
+        setError("An error occurred");
+        setAttemptsLeft((prev) => Math.max(0, prev - 1));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +152,7 @@ export default function LoginPage() {
           <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
             {/* Logo/Brand top left */}
             <motion.div
-              initial={{ opacity: 0}}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
@@ -132,13 +203,55 @@ export default function LoginPage() {
 
               {/* Login Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
-                {error && (
+                {/* Rate Limit Error */}
+                {isRateLimited && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg backdrop-blur-sm"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm text-red-400 font-medium">
+                          Too many login attempts
+                        </p>
+                        <p className="text-xs text-red-300 mt-1">
+                          Please wait before trying again
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Regular Error */}
+                {error && !isRateLimited && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 backdrop-blur-sm"
                   >
-                    {error}
+                    <div className="flex items-center space-x-2">
+                      <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Attempts Warning */}
+                {!isRateLimited && attemptsLeft <= 2 && attemptsLeft > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg backdrop-blur-sm"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Shield className="w-4 h-4 text-amber-400" />
+                      <span className="text-sm text-amber-400">
+                        {attemptsLeft} attempt{attemptsLeft !== 1 ? "s" : ""}{" "}
+                        remaining before temporary lockout
+                      </span>
+                    </div>
                   </motion.div>
                 )}
 
@@ -215,11 +328,16 @@ export default function LoginPage() {
                 {/* Login Button */}
                 <Button
                   type="submit"
-                  className="group relative w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-base transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl overflow-hidden"
-                  disabled={isLoading}
+                  className="group relative w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-base transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:scale-100"
+                  disabled={isLoading || isRateLimited}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                  {isLoading ? (
+                  {isRateLimited ? (
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-5 h-5" />
+                      <span>Locked - {formatTime(remainingTime)}</span>
+                    </div>
+                  ) : isLoading ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
                       <span>Signing in...</span>

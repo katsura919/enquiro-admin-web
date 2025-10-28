@@ -19,14 +19,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <AuthProvider>
-           <ThemeProvider 
+          <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
             {children}
-            <Toaster />
+            <Toaster richColors />
           </ThemeProvider>
         </AuthProvider>
       </body>
