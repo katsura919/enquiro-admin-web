@@ -36,6 +36,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "enquiro-chat-widget": "^2.0.3",
+    "framer-motion": "^12.23.24",
     "geist": "^1.5.1",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.511.0",
