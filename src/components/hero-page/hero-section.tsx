@@ -106,7 +106,7 @@ export default function HeroSection() {
               <Button
                 variant="outline"
                 size="lg"
-                className="group border-2 border-blue-500/50 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 px-10 py-4 text-lg font-semibold transition-all duration-300 backdrop-blur-sm w-full sm:w-auto hover:shadow-lg"
+                className="group border-2 bg-black text-white px-10 py-4 text-lg font-semibold w-full sm:w-auto"
               >
                 <span className="flex items-center">
                   Watch Demo
@@ -117,12 +117,8 @@ export default function HeroSection() {
               </Button>
             </Link>
           </motion.div>
-
-
         </div>
       </div>
-
-
     </section>
   );
 }

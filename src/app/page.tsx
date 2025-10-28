@@ -76,47 +76,7 @@ export default function Home() {
             {/* Features Section */}
             <Features />
 
-            {/* Stats Section */}
-            <section className="w-full py-12 md:py-16 lg:py-20 ">
-              <div className="container px-4 md:px-6">
-                <div className="text-center mb-12">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                    Trusted by Growing Businesses
-                  </h2>
-                  <p className="text-gray-400 max-w-2xl mx-auto">
-                    Join thousands of companies that have transformed their
-                    customer support with Enquiro
-                  </p>
-                </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent mb-2">
-                      10k+
-                    </div>
-                    <p className="text-gray-400 text-sm">Active Users</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent mb-2">
-                      99.9%
-                    </div>
-                    <p className="text-gray-400 text-sm">Uptime SLA</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
-                      50M+
-                    </div>
-                    <p className="text-gray-400 text-sm">Messages Processed</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent mb-2">
-                      2min
-                    </div>
-                    <p className="text-gray-400 text-sm">Avg Response Time</p>
-                  </div>
-                </div>
-              </div>
-            </section>
 
             {/* Multi-tenant Section */}
             <section className="w-full py-16 md:py-20 lg:py-24 relative overflow-hidden">
