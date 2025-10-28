@@ -1,94 +1,96 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { AlertTriangle, Clock, User, Mail } from "lucide-react"
-import api from "@/utils/api"
-import Link from "next/link"
-import { formatDistanceToNow } from "date-fns"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AlertTriangle, Clock, User, Mail } from "lucide-react";
+import api from "@/utils/api";
+import Link from "next/link";
+import { formatDistanceToNow } from "date-fns";
 
 interface CaseOwner {
-  _id: string
-  firstName: string
-  lastName: string
-  email: string
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 interface Escalation {
-  _id: string
-  caseNumber: string
-  customerName: string
-  customerEmail: string
-  customerPhone?: string
-  concern?: string
-  description?: string
-  status: 'escalated' | 'resolved' | 'pending'
-  caseOwner?: CaseOwner
-  createdAt: string
-  updatedAt: string
+  _id: string;
+  caseNumber: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone?: string;
+  concern?: string;
+  description?: string;
+  status: "escalated" | "resolved" | "pending";
+  caseOwner?: CaseOwner;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface LatestEscalationsProps {
-  businessId: string
+  businessId: string;
 }
 
 export function LatestEscalations({ businessId }: LatestEscalationsProps) {
-  const [escalations, setEscalations] = useState<Escalation[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [escalations, setEscalations] = useState<Escalation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLatestEscalations = async () => {
-      if (!businessId) return
+      if (!businessId) return;
 
       try {
-        setLoading(true)
-        setError(null)
-        const response = await api.get(`/analytics/escalations/${businessId}/latest`)
-        
+        setLoading(true);
+        setError(null);
+        const response = await api.get(
+          `/analytics/escalations/${businessId}/latest`
+        );
+
         if (response.data.success) {
-          setEscalations(response.data.data.escalations)
+          setEscalations(response.data.data.escalations);
         }
       } catch (err) {
-        console.error("Error fetching latest escalations:", err)
-        setError("Failed to load escalations")
+        console.error("Error fetching latest escalations:", err);
+        setError("Failed to load escalations");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchLatestEscalations()
-  }, [businessId])
+    fetchLatestEscalations();
+  }, [businessId]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'escalated':
-        return 'bg-red-500/10 text-secondary-foreground border-red-500/20'
-      case 'pending':
-        return 'bg-yellow-500/10 text-secondary-foreground border-yellow-500/20'
-      case 'resolved':
-        return 'bg-green-500/10 text-secondary-foreground border-green-500/20'
+      case "escalated":
+        return "bg-red-500/10 text-secondary-foreground border-red-500/20";
+      case "pending":
+        return "bg-yellow-500/10 text-secondary-foreground border-yellow-500/20";
+      case "resolved":
+        return "bg-green-500/10 text-secondary-foreground border-green-500/20";
       default:
-        return 'bg-gray-500/10 text-secondary-foreground border-gray-500/20'
+        return "bg-gray-500/10 text-secondary-foreground border-gray-500/20";
     }
-  }
+  };
 
   const getStatusText = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1)
-  }
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
 
   if (loading) {
     return (
-      <Card className="border-muted-gray shadow-none">
-        <CardHeader>
+      <Card className="border-muted-gray shadow-none h-full flex flex-col">
+        <CardHeader className="shrink-0 pb-3 px-6 pt-6">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Latest Escalations
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 flex-1 px-6 pb-6">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="space-y-2">
               <div className="flex items-start justify-between">
@@ -102,74 +104,72 @@ export function LatestEscalations({ businessId }: LatestEscalationsProps) {
           ))}
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
     return (
-      <Card className="border-muted-gray shadow-none">
-        <CardHeader>
+      <Card className="border-muted-gray shadow-none h-full flex flex-col">
+        <CardHeader className="shrink-0 pb-3 px-6 pt-6">
           <CardTitle className="text-lg font-semibold flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Latest Escalations
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            {error}
-          </div>
+        <CardContent className="flex-1 flex items-center justify-center px-6 pb-6">
+          <div className="text-center py-8 text-muted-foreground">{error}</div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (!escalations || escalations.length === 0) {
     return (
-      <Card className="border-muted-gray shadow-none b-card">
-        <CardHeader>
+      <Card className="border-muted-gray shadow-none bg-card h-full flex flex-col">
+        <CardHeader className="shrink-0 pb-3 px-6 pt-6">
           <CardTitle className="text-lg font-semibold flex items-center gap-2 text-secondary-foreground">
             <AlertTriangle className="h-5 w-5" />
             Latest Escalations
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 flex items-center justify-center px-6 pb-6">
           <div className="text-center py-8 text-muted-foreground">
             No escalations found
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
-    <Card className="border-muted-gray shadow-none bg-card">
-      <CardHeader className="flex flex-row items-center justify-between">
+    <Card className="border-muted-gray shadow-none bg-card h-full flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between shrink-0 pb-3 px-6 pt-6">
         <CardTitle className="text-lg font-semibold flex items-center gap-2 text-secondary-foreground">
           <AlertTriangle className="h-5 w-5" />
           Latest Escalations
         </CardTitle>
-        <Link 
+        <Link
           href="/dashboard/escalations"
           className="text-sm text-secondary-foreground hover:underline"
         >
           View all
         </Link>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {escalations.map((escalation) => (
+      <CardContent className="space-y-3 flex-1 overflow-y-auto px-6 pb-6">
+        {escalations.slice(0, 5).map((escalation) => (
           <Link
             key={escalation._id}
             href={`/dashboard/escalations/${escalation._id}`}
             className="block"
           >
-            <div className="p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer space-y-2">
+            <div className="p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer space-y-2">
               {/* Header: Case Number and Status */}
               <div className="flex items-start justify-between gap-2">
                 <span className="font-semibold text-sm text-foreground">
                   {escalation.caseNumber}
                 </span>
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={`${getStatusColor(escalation.status)} text-xs`}
                 >
                   {getStatusText(escalation.status)}
@@ -195,19 +195,32 @@ export function LatestEscalations({ businessId }: LatestEscalationsProps) {
                 </p>
               )}
 
-              {/* Case Owner and Time */}
+              {/* Time */}
               <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   <span>
-                    {formatDistanceToNow(new Date(escalation.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(escalation.createdAt), {
+                      addSuffix: true,
+                    })}
                   </span>
                 </div>
               </div>
             </div>
           </Link>
         ))}
+
+        {escalations.length > 5 && (
+          <div className="text-center pt-2">
+            <Link
+              href="/dashboard/escalations"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              +{escalations.length - 5} more escalations
+            </Link>
+          </div>
+        )}
       </CardContent>
     </Card>
-  )
+  );
 }
