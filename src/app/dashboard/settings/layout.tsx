@@ -104,7 +104,7 @@ export default function SettingsLayout({
 
       {/* Settings Sidebar */}
       <div className={cn(
-        "border-r border-border bg-card backdrop-blur-xl flex-shrink-0 z-40 flex flex-col",
+        "border-r border-border bg-background backdrop-blur-xl flex-shrink-0 z-40 flex flex-col",
         "md:sticky md:top-16 md:translate-x-0 md:w-80 md:h-[calc(100vh-4rem)]",
         // Mobile styles
         "fixed top-0 left-0 h-full w-80 transition-transform duration-300 ease-in-out",

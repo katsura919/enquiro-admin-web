@@ -98,7 +98,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
   const NextLink = require("next/link").default;
 
   return (
-    <header className="sticky top-0 left-0 w-full z-30 h-16 bg-card backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 left-0 w-full z-30 h-16 bg-background backdrop-blur-lg border-b border-border flex items-center justify-between px-4 md:px-6">
       {/* Left section */}
       <div className="flex items-center gap-4">
         {/* Menu toggle button - always visible */}
