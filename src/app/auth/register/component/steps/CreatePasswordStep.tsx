@@ -1,16 +1,16 @@
-import { Input } from "@/components/ui/input"
-import { Eye, EyeOff, Check, X } from "lucide-react"
+import { Input } from "@/components/ui/input";
+import { Eye, EyeOff, Check, X } from "lucide-react";
 
 interface CreatePasswordStepProps {
-  password: string
-  setPassword: (value: string) => void
-  confirmPassword: string
-  setConfirmPassword: (value: string) => void
-  showPassword: boolean
-  setShowPassword: (value: boolean) => void
-  showConfirmPassword: boolean
-  setShowConfirmPassword: (value: boolean) => void
-  errors: Record<string, string>
+  password: string;
+  setPassword: (value: string) => void;
+  confirmPassword: string;
+  setConfirmPassword: (value: string) => void;
+  showPassword: boolean;
+  setShowPassword: (value: boolean) => void;
+  showConfirmPassword: boolean;
+  setShowConfirmPassword: (value: boolean) => void;
+  errors: Record<string, string>;
 }
 
 export default function CreatePasswordStep({
@@ -22,7 +22,7 @@ export default function CreatePasswordStep({
   setShowPassword,
   showConfirmPassword,
   setShowConfirmPassword,
-  errors
+  errors,
 }: CreatePasswordStepProps) {
   // Check password requirements for visual indicators
   const getPasswordRequirements = () => {
@@ -30,19 +30,27 @@ export default function CreatePasswordStep({
       minLength: password.length >= 8,
       hasUppercase: /[A-Z]/.test(password),
       hasLowercase: /[a-z]/.test(password),
-      hasNumber: /\d/.test(password)
-    }
-  }
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+  };
 
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <h2 className="text-2xl font-bold text-white tracking-tight">Create Password</h2>
-        <p className="text-base text-gray-400 leading-relaxed">Create a secure password</p>
+        <h2 className="text-2xl font-bold text-white tracking-tight">
+          Create Password
+        </h2>
+        <p className="text-base text-gray-400 leading-relaxed">
+          Create a secure password
+        </p>
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-300 block" htmlFor="password">
+          <label
+            className="text-sm font-medium text-gray-300 block"
+            htmlFor="password"
+          >
             Password
           </label>
           <div className="relative">
@@ -53,9 +61,9 @@ export default function CreatePasswordStep({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 pr-12 ${
-                errors.password 
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                  : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                errors.password
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : "border-gray-700 focus:border-blue-500 focus:ring-blue-500"
               }`}
             />
             <button
@@ -63,19 +71,23 @@ export default function CreatePasswordStep({
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
             >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
             </button>
           </div>
-          {errors.password && (
-            <p className="text-sm text-red-400 mt-1">{errors.password}</p>
-          )}
-          
+
+
           {/* Password Requirements Display */}
           {password && (
             <div className="mt-3 space-y-2">
-              <p className="text-xs text-gray-400 mb-2">Password requirements:</p>
+              <p className="text-xs text-gray-400 mb-2">
+                Password requirements:
+              </p>
               {(() => {
-                const requirements = getPasswordRequirements()
+                const requirements = getPasswordRequirements();
                 return (
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 text-xs">
@@ -84,7 +96,13 @@ export default function CreatePasswordStep({
                       ) : (
                         <X className="h-3 w-3 text-gray-500" />
                       )}
-                      <span className={requirements.minLength ? "text-green-400" : "text-gray-500"}>
+                      <span
+                        className={
+                          requirements.minLength
+                            ? "text-green-400"
+                            : "text-gray-500"
+                        }
+                      >
                         At least 8 characters
                       </span>
                     </div>
@@ -94,7 +112,13 @@ export default function CreatePasswordStep({
                       ) : (
                         <X className="h-3 w-3 text-gray-500" />
                       )}
-                      <span className={requirements.hasUppercase ? "text-green-400" : "text-gray-500"}>
+                      <span
+                        className={
+                          requirements.hasUppercase
+                            ? "text-green-400"
+                            : "text-gray-500"
+                        }
+                      >
                         One uppercase letter
                       </span>
                     </div>
@@ -104,7 +128,13 @@ export default function CreatePasswordStep({
                       ) : (
                         <X className="h-3 w-3 text-gray-500" />
                       )}
-                      <span className={requirements.hasLowercase ? "text-green-400" : "text-gray-500"}>
+                      <span
+                        className={
+                          requirements.hasLowercase
+                            ? "text-green-400"
+                            : "text-gray-500"
+                        }
+                      >
                         One lowercase letter
                       </span>
                     </div>
@@ -114,18 +144,43 @@ export default function CreatePasswordStep({
                       ) : (
                         <X className="h-3 w-3 text-gray-500" />
                       )}
-                      <span className={requirements.hasNumber ? "text-green-400" : "text-gray-500"}>
+                      <span
+                        className={
+                          requirements.hasNumber
+                            ? "text-green-400"
+                            : "text-gray-500"
+                        }
+                      >
                         One number
                       </span>
                     </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {requirements.hasSpecialChar ? (
+                        <Check className="h-3 w-3 text-green-400" />
+                      ) : (
+                        <X className="h-3 w-3 text-gray-500" />
+                      )}
+                      <span
+                        className={
+                          requirements.hasSpecialChar
+                            ? "text-green-400"
+                            : "text-gray-500"
+                        }
+                      >
+                        One special character (!@#$%^&*(),.?":{}|&lt;&gt;)
+                      </span>
+                    </div>
                   </div>
-                )
+                );
               })()}
             </div>
           )}
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-300 block" htmlFor="confirmPassword">
+          <label
+            className="text-sm font-medium text-gray-300 block"
+            htmlFor="confirmPassword"
+          >
             Confirm Password
           </label>
           <div className="relative">
@@ -136,9 +191,9 @@ export default function CreatePasswordStep({
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className={`h-12 text-base bg-white/5 text-white placeholder:text-gray-500 focus:ring-2 transition-all duration-200 pr-12 ${
-                errors.confirmPassword 
-                  ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                  : 'border-gray-700 focus:border-blue-500 focus:ring-blue-500'
+                errors.confirmPassword
+                  ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                  : "border-gray-700 focus:border-blue-500 focus:ring-blue-500"
               }`}
             />
             <button
@@ -146,14 +201,20 @@ export default function CreatePasswordStep({
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
             >
-              {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              {showConfirmPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
             </button>
           </div>
           {errors.confirmPassword && (
-            <p className="text-sm text-red-400 mt-1">{errors.confirmPassword}</p>
+            <p className="text-sm text-red-400 mt-1">
+              {errors.confirmPassword}
+            </p>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,44 +1,55 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, Check, X } from "lucide-react"
-import { Agent } from "./AgentTable"
+import * as React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Check, X } from "lucide-react";
+import { Agent } from "./AgentTable";
 
 interface AgentFormData {
-  name: string
-  email: string
-  phone: string
-  password: string
-  confirmPassword: string
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
 }
 
 interface AgentFormErrors extends Partial<AgentFormData> {
-  server?: string
+  server?: string;
 }
 
 interface AgentFormProps {
-  open: boolean
-  onClose: () => void
-  onSubmit: (data: AgentFormData) => Promise<void>
-  agent?: Agent | null
-  loading?: boolean
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: AgentFormData) => Promise<void>;
+  agent?: Agent | null;
+  loading?: boolean;
 }
 
-export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: AgentFormProps) {
+export function AgentForm({
+  open,
+  onClose,
+  onSubmit,
+  agent,
+  loading = false,
+}: AgentFormProps) {
   const [formData, setFormData] = React.useState<AgentFormData>({
     name: "",
     email: "",
     phone: "",
     password: "",
-    confirmPassword: ""
-  })
-  const [errors, setErrors] = React.useState<AgentFormErrors>({})
-  const [showPassword, setShowPassword] = React.useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false)
+    confirmPassword: "",
+  });
+  const [errors, setErrors] = React.useState<AgentFormErrors>({});
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
   // Reset form when dialog opens/closes or agent changes
   React.useEffect(() => {
@@ -50,8 +61,8 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
           email: agent.email,
           phone: agent.phone || "",
           password: "", // Don't populate password for editing
-          confirmPassword: ""
-        })
+          confirmPassword: "",
+        });
       } else {
         // Creating new agent
         setFormData({
@@ -59,152 +70,166 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
           email: "",
           phone: "",
           password: "",
-          confirmPassword: ""
-        })
+          confirmPassword: "",
+        });
       }
-      setErrors({})
+      setErrors({});
     }
-  }, [open, agent])
+  }, [open, agent]);
 
   const validateForm = (): boolean => {
-    const newErrors: AgentFormErrors = {}
+    const newErrors: AgentFormErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required"
+      newErrors.name = "Name is required";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format"
+      newErrors.email = "Invalid email format";
     }
 
     // Phone validation (optional but must be valid if provided)
     if (formData.phone && !/^\+?[\d\s\-\(\)]{7,15}$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number (7-15 digits)"
+      newErrors.phone = "Please enter a valid phone number (7-15 digits)";
     }
 
     // Password validation only for new agents or when password is provided
     if (!agent || formData.password) {
       if (!formData.password) {
-        newErrors.password = "Password is required"
+        newErrors.password = "Password is required";
       } else if (formData.password.length < 8) {
-        newErrors.password = "Password must be at least 8 characters"
-      } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(formData.password)) {
-        newErrors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        newErrors.password = "Password must be at least 8 characters";
+      } else if (
+        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/.test(
+          formData.password
+        )
+      ) {
+        newErrors.password =
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character";
       }
 
       if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match"
+        newErrors.confirmPassword = "Passwords do not match";
       }
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Check password requirements for visual indicators
   const getPasswordRequirements = () => {
-    const password = formData.password
+    const password = formData.password;
     return {
       minLength: password.length >= 8,
       hasUppercase: /[A-Z]/.test(password),
       hasLowercase: /[a-z]/.test(password),
-      hasNumber: /\d/.test(password)
-    }
-  }
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+  };
 
   // Check if form is valid for submit button
   const isFormValid = () => {
-    const basicValidation = formData.name.trim() && 
-                           formData.email.trim() && 
-                           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-    
+    const basicValidation =
+      formData.name.trim() &&
+      formData.email.trim() &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+
     // For editing, don't require password if not provided
     if (agent && !formData.password) {
-      return basicValidation
+      return basicValidation;
     }
-    
+
     // For creating new agent or when password is provided
-    const passwordRequirements = getPasswordRequirements()
-    const passwordValid = formData.password && 
-                         passwordRequirements.minLength &&
-                         passwordRequirements.hasUppercase &&
-                         passwordRequirements.hasLowercase &&
-                         passwordRequirements.hasNumber &&
-                         formData.password === formData.confirmPassword
-    
-    return basicValidation && passwordValid
-  }
+    const passwordRequirements = getPasswordRequirements();
+    const passwordValid =
+      formData.password &&
+      passwordRequirements.minLength &&
+      passwordRequirements.hasUppercase &&
+      passwordRequirements.hasLowercase &&
+      passwordRequirements.hasNumber &&
+      passwordRequirements.hasSpecialChar &&
+      formData.password === formData.confirmPassword;
+
+    return basicValidation && passwordValid;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!validateForm()) {
-      return
+      return;
     }
 
     try {
-      await onSubmit(formData)
+      await onSubmit(formData);
       // Don't call onClose here - let the parent handle it after success
     } catch (error: any) {
       // Handle specific email validation error from server
-      if (error.response?.status === 409 && error.response?.data?.error?.includes('Email address is already taken')) {
-        setErrors(prev => ({ 
-          ...prev, 
-          email: error.response.data.error // Use the exact error message from backend
-        }))
+      if (
+        error.response?.status === 409 &&
+        error.response?.data?.error?.includes("Email address is already taken")
+      ) {
+        setErrors((prev) => ({
+          ...prev,
+          email: error.response.data.error, // Use the exact error message from backend
+        }));
       } else {
-        console.error('Form submission error:', error)
+        console.error("Form submission error:", error);
       }
     }
-  }
+  };
 
   const handleInputChange = (field: keyof AgentFormData, value: string) => {
     // For phone field, only allow digits, spaces, hyphens, parentheses, and plus sign
-    if (field === 'phone') {
-      value = value.replace(/[^\d\s\-\(\)\+]/g, '')
+    if (field === "phone") {
+      value = value.replace(/[^\d\s\-\(\)\+]/g, "");
     }
-    
-    setFormData(prev => ({ ...prev, [field]: value }))
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  }
+  };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onOpenChange={(isOpen) => {
         // Only allow closing when not loading and when dialog is being closed (isOpen = false)
         if (!isOpen && !loading) {
-          onClose()
+          onClose();
         }
       }}
       modal={true}
     >
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-lg"
         onPointerDownOutside={(e) => {
           // Prevent closing by clicking outside when loading
           if (loading) {
-            e.preventDefault()
+            e.preventDefault();
           }
-        }} 
+        }}
         onEscapeKeyDown={(e) => {
           // Prevent closing with escape key when loading
           if (loading) {
-            e.preventDefault()
+            e.preventDefault();
           }
         }}
       >
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold">
-            {agent ? 'Edit Agent' : 'Add New Agent'}
+            {agent ? "Edit Agent" : "Add New Agent"}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            {agent ? 'Update agent information below.' : 'Fill in the details to create a new agent account.'}
+            {agent
+              ? "Update agent information below."
+              : "Fill in the details to create a new agent account."}
           </p>
         </DialogHeader>
 
@@ -212,58 +237,83 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
           {/* Form Fields */}
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <Label htmlFor="name" className="text-sm font-medium mb-2">Full Name *</Label>
+              <Label htmlFor="name" className="text-sm font-medium mb-2">
+                Full Name *
+              </Label>
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
                 placeholder="Enter full name"
                 className={errors.name ? "border-destructive" : "shadow-none"}
               />
-              {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-sm text-destructive mt-1">{errors.name}</p>
+              )}
             </div>
 
             <div>
-              <Label htmlFor="email" className="text-sm font-medium mb-2">Email Address *</Label>
+              <Label htmlFor="email" className="text-sm font-medium mb-2">
+                Email Address *
+              </Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                onChange={(e) => handleInputChange("email", e.target.value)}
                 placeholder="Enter email address"
-                className={errors.email ? "border-destructive focus:border-destructive" : ""}
+                className={
+                  errors.email
+                    ? "border-destructive focus:border-destructive"
+                    : ""
+                }
               />
-              {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-sm text-destructive mt-1">{errors.email}</p>
+              )}
             </div>
 
             <div>
-              <Label htmlFor="phone" className="text-sm font-medium mb-2">Phone Number</Label>
+              <Label htmlFor="phone" className="text-sm font-medium mb-2">
+                Phone Number
+              </Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
                 placeholder="Enter phone number (optional)"
-                className={errors.phone ? "border-destructive focus:border-destructive" : ""}
+                className={
+                  errors.phone
+                    ? "border-destructive focus:border-destructive"
+                    : ""
+                }
                 maxLength={20}
               />
-              {errors.phone && <p className="text-sm text-destructive mt-1">{errors.phone}</p>}
+              {errors.phone && (
+                <p className="text-sm text-destructive mt-1">{errors.phone}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="password" className="text-sm font-medium mb-2">
-                  Password {!agent && '*'}
-                 
+                  Password {!agent && "*"}
                 </Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("password", e.target.value)
+                    }
                     placeholder={agent ? "New password" : "Enter password"}
-                    className={errors.password ? "border-destructive focus:border-destructive pr-10" : "pr-10 "}
+                    className={
+                      errors.password
+                        ? "border-destructive focus:border-destructive pr-10"
+                        : "pr-10 "
+                    }
                   />
                   <Button
                     type="button"
@@ -279,14 +329,20 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                     )}
                   </Button>
                 </div>
-                {errors.password && <p className="text-sm text-destructive mt-1">{errors.password}</p>}
-                
+                {errors.password && (
+                  <p className="text-sm text-destructive mt-1">
+                    {errors.password}
+                  </p>
+                )}
+
                 {/* Password Requirements - show only when creating new agent or when password field has focus/content */}
                 {(!agent || formData.password) && (
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs text-muted-foreground mb-1">Password requirements:</p>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Password requirements:
+                    </p>
                     {(() => {
-                      const requirements = getPasswordRequirements()
+                      const requirements = getPasswordRequirements();
                       return (
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-xs">
@@ -295,7 +351,13 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                             ) : (
                               <X className="h-3 w-3 text-muted-foreground" />
                             )}
-                            <span className={requirements.minLength ? "text-green-600" : "text-muted-foreground"}>
+                            <span
+                              className={
+                                requirements.minLength
+                                  ? "text-green-600"
+                                  : "text-muted-foreground"
+                              }
+                            >
                               At least 8 characters
                             </span>
                           </div>
@@ -305,7 +367,13 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                             ) : (
                               <X className="h-3 w-3 text-muted-foreground" />
                             )}
-                            <span className={requirements.hasUppercase ? "text-green-600" : "text-muted-foreground"}>
+                            <span
+                              className={
+                                requirements.hasUppercase
+                                  ? "text-green-600"
+                                  : "text-muted-foreground"
+                              }
+                            >
                               One uppercase letter
                             </span>
                           </div>
@@ -315,7 +383,13 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                             ) : (
                               <X className="h-3 w-3 text-muted-foreground" />
                             )}
-                            <span className={requirements.hasLowercase ? "text-green-600" : "text-muted-foreground"}>
+                            <span
+                              className={
+                                requirements.hasLowercase
+                                  ? "text-green-600"
+                                  : "text-muted-foreground"
+                              }
+                            >
                               One lowercase letter
                             </span>
                           </div>
@@ -325,29 +399,60 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                             ) : (
                               <X className="h-3 w-3 text-muted-foreground" />
                             )}
-                            <span className={requirements.hasNumber ? "text-green-600" : "text-muted-foreground"}>
+                            <span
+                              className={
+                                requirements.hasNumber
+                                  ? "text-green-600"
+                                  : "text-muted-foreground"
+                              }
+                            >
                               One number
                             </span>
                           </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            {requirements.hasSpecialChar ? (
+                              <Check className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <X className="h-3 w-3 text-muted-foreground" />
+                            )}
+                            <span
+                              className={
+                                requirements.hasSpecialChar
+                                  ? "text-green-600"
+                                  : "text-muted-foreground"
+                              }
+                            >
+                              One special character 
+                            </span>
+                          </div>
                         </div>
-                      )
+                      );
                     })()}
                   </div>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-sm font-medium mb-2">
-                  Confirm Password {(!agent || formData.password) && '*'}
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium mb-2"
+                >
+                  Confirm Password {(!agent || formData.password) && "*"}
                 </Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("confirmPassword", e.target.value)
+                    }
                     placeholder="Confirm password"
-                    className={errors.confirmPassword ? "border-destructive focus:border-destructive pr-10" : "pr-10"}
+                    className={
+                      errors.confirmPassword
+                        ? "border-destructive focus:border-destructive pr-10"
+                        : "pr-10"
+                    }
                   />
                   <Button
                     type="button"
@@ -363,24 +468,28 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                     )}
                   </Button>
                 </div>
-                {errors.confirmPassword && <p className="text-sm text-destructive mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                  <p className="text-sm text-destructive mt-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose} 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
               disabled={loading}
               className="min-w-[80px] cursor-pointer"
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={loading || !isFormValid()}
               className="min-w-[120px] cursor-pointer"
             >
@@ -389,13 +498,15 @@ export function AgentForm({ open, onClose, onSubmit, agent, loading = false }: A
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Saving...
                 </>
+              ) : agent ? (
+                "Update Agent"
               ) : (
-                agent ? 'Update Agent' : 'Create'
+                "Create"
               )}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
