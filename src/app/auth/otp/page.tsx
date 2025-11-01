@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import api from "@/utils/api";
 
-export default function OTPPage() {
+function OTPContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { verifyLoginOtp, resendLoginOtp } = useAuth();
@@ -409,5 +409,26 @@ export default function OTPPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function OTPPageLoading() {
+  return (
+    <div className="min-h-screen w-full bg-black flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-white animate-spin mx-auto mb-4" />
+        <p className="text-white/70">Loading verification page...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main component wrapped in Suspense
+export default function OTPPage() {
+  return (
+    <Suspense fallback={<OTPPageLoading />}>
+      <OTPContent />
+    </Suspense>
   );
 }
