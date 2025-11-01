@@ -72,12 +72,24 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
-      // Reset rate limit state on successful login
+      const result = await login(email, password);
+
+      // Check if OTP is required
+      if (result.requiresOtp) {
+        // Redirect to OTP page with email parameter
+        router.push(
+          `/auth/otp?email=${encodeURIComponent(
+            result.email || email
+          )}&type=login`
+        );
+        return;
+      }
+
+      // Reset rate limit state on successful login (handled in auth context)
       setAttemptsLeft(3);
       setIsRateLimited(false);
       setRemainingTime(0);
-      router.push("/dashboard");
+      // router.push("/dashboard"); // This is handled in the auth context
     } catch (err) {
       if (err instanceof Error) {
         // Check if it's a rate limit error (429 status)
