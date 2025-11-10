@@ -123,41 +123,27 @@ export default function LoginPage() {
   return (
     <AuthRedirect>
       <div className="min-h-screen w-full bg-black relative overflow-hidden">
-        {/* Enhanced Grid Background with Animation */}
+        {/* Subtle Grid Background */}
         <div
           className="absolute inset-0 z-0"
           style={{
-            background: "#000000",
             backgroundImage: `
-              linear-gradient(to right, rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: "60px 60px",
-            animation: "grid-move 20s linear infinite",
+            linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px)
+          `,
+            backgroundSize: "40px 40px",
           }}
         />
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/50 z-0"></div>
 
         {/* Floating Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-40 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-20 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute top-20 left-10 w-64 h-64 bg-slate-500/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-60 right-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-20 left-1/4 w-56 h-56 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
         </div>
-
-        {/* Custom Animation Styles */}
-        <style jsx>{`
-          @keyframes grid-move {
-            0% {
-              transform: translate(0, 0);
-            }
-            100% {
-              transform: translate(60px, 60px);
-            }
-          }
-        `}</style>
 
         <div className="flex min-h-screen relative z-10">
           {/* Left Side - Login Form */}
@@ -179,7 +165,7 @@ export default function LoginPage() {
                   height={32}
                   className="group-hover:opacity-80 transition-opacity"
                 />
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600 group-hover:from-blue-300 group-hover:to-blue-500 transition-all duration-200">
+                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-200 to-slate-400 group-hover:from-slate-100 group-hover:to-slate-300 transition-all duration-200">
                   Enquiro
                 </span>
               </Link>
@@ -195,19 +181,19 @@ export default function LoginPage() {
               {/* Welcome Text */}
               <div className="space-y-4 text-center">
                 {/* Badge */}
-                <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 backdrop-blur-sm">
-                  <Shield className="w-4 h-4 text-blue-400 mr-2" />
-                  <span className="text-sm font-medium text-blue-300">
-                    Secure Login
+                <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-slate-500/20 to-indigo-500/20 border border-slate-500/30 backdrop-blur-sm">
+                  <Shield className="w-4 h-4 text-slate-300 mr-2" />
+                  <span className="text-sm font-medium text-slate-200">
+                    Admin Portal
                   </span>
                 </div>
 
                 <h1 className="text-4xl md:text-5xl font-bold">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-200 via-slate-300 to-slate-400">
                     Welcome Back
                   </span>
                 </h1>
-                <p className="text-gray-300 text-lg">
+                <p className="text-slate-300 text-lg">
                   Enter your credentials to access your dashboard and manage
                   your customer support platform.
                 </p>
@@ -270,7 +256,7 @@ export default function LoginPage() {
                 {/* Email Field */}
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium text-gray-300"
+                    className="text-sm font-medium text-slate-300"
                     htmlFor="email"
                   >
                     Email Address
@@ -283,14 +269,14 @@ export default function LoginPage() {
                     required
                     autoComplete="username"
                     placeholder="Enter your email"
-                    className="h-12 bg-white/5 border-blue-500/30 text-white placeholder:text-gray-500 focus:border-blue-400 focus:ring-blue-400/20 backdrop-blur-sm transition-all duration-200"
+                    className="h-12 bg-white/5 border-slate-500/30 text-white placeholder:text-slate-500 focus:border-slate-400 focus:ring-slate-400/20 backdrop-blur-sm transition-all duration-200"
                   />
                 </div>
 
                 {/* Password Field */}
                 <div className="space-y-2">
                   <label
-                    className="text-sm font-medium text-gray-300"
+                    className="text-sm font-medium text-slate-300"
                     htmlFor="password"
                   >
                     Password
@@ -304,12 +290,12 @@ export default function LoginPage() {
                       required
                       autoComplete="current-password"
                       placeholder="Enter your password"
-                      className="h-12 bg-white/5 border-blue-500/30 text-white placeholder:text-gray-500 focus:border-blue-400 focus:ring-blue-400/20 pr-12 backdrop-blur-sm transition-all duration-200"
+                      className="h-12 bg-white/5 border-slate-500/30 text-white placeholder:text-slate-500 focus:border-slate-400 focus:ring-slate-400/20 pr-12 backdrop-blur-sm transition-all duration-200"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-400 transition-colors duration-200"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors duration-200"
                     >
                       {showPassword ? (
                         <EyeOff className="h-5 w-5" />
@@ -322,10 +308,10 @@ export default function LoginPage() {
 
                 {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center space-x-2 text-sm text-gray-300 cursor-pointer">
+                  <label className="flex items-center space-x-2 text-sm text-slate-300 cursor-pointer">
                     <input
                       type="checkbox"
-                      className="rounded border-blue-500/30 bg-white/5 text-blue-500 focus:ring-blue-400/20 focus:ring-offset-0"
+                      className="rounded border-slate-500/30 bg-white/5 text-blue-500 focus:ring-blue-400/20 focus:ring-offset-0"
                     />
                     <span>Remember me</span>
                   </label>
@@ -363,7 +349,7 @@ export default function LoginPage() {
                 </Button>
 
                 {/* Register Link */}
-                <div className="text-center text-gray-400">
+                <div className="text-center text-slate-400">
                   Don't have an account?{" "}
                   <Link
                     href="/auth/register"
@@ -385,13 +371,15 @@ export default function LoginPage() {
               backgroundPosition: "center",
             }}
           >
-            <div className="absolute inset-0" />
+            <div className="absolute inset-0 bg-slate-900/60 " />
             <div className="max-w-md text-white space-y-8 relative z-10">
               <div className="space-y-4">
-                <h2 className="relative z-20 bg-gradient-to-b from-neutral-200 to-neutral-500 bg-clip-text py-6 text-2xl font-bold text-transparent sm:text-4xl leading-tight">
-                  Effortlessly manage your team and operations.
+                <h2 className="text-3xl sm:text-4xl font-bold leading-tight">
+                  <span className="bg-gradient-to-b from-slate-100 to-slate-300 bg-clip-text text-transparent">
+                    Effortlessly manage your team and operations.
+                  </span>
                 </h2>
-                <p className="text-blue-100 text-lg">
+                <p className="text-slate-200 text-lg">
                   Log in to access your dashboard and manage your team.
                 </p>
               </div>
@@ -457,7 +445,7 @@ export default function LoginPage() {
               </div>
 
               {/* Copyright */}
-              <div className="text-blue-200 text-sm text-center">
+              <div className="text-slate-300 text-sm text-center">
                 Copyright © 2025 Enquiro Enterprises LTD.
               </div>
             </div>
