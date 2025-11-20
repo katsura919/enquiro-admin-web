@@ -104,7 +104,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(true); // Start as mobile to prevent flash
+  const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [animationData, setAnimationData] = useState(null);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -112,6 +112,30 @@ export default function DashboardLayout({
   const handleLogout = () => {
     logout();
   };
+
+  const toggleSidebar = () => {
+    console.log(
+      "Toggling sidebar. Current state:",
+      isSidebarOpen,
+      "isMobile:",
+      isMobile
+    );
+    setIsSidebarOpen((prev) => {
+      console.log("Setting isSidebarOpen to:", !prev);
+      return !prev;
+    });
+  };
+
+  // Debug state changes
+  useEffect(() => {
+    console.log(
+      "State changed - isSidebarOpen:",
+      isSidebarOpen,
+      "isMobile:",
+      isMobile
+    );
+  }, [isSidebarOpen, isMobile]);
+
   // Auto-expand knowledge base if we're on a knowledge sub-page
   useEffect(() => {
     if (pathname.startsWith("/dashboard/knowledge/")) {
@@ -125,10 +149,11 @@ export default function DashboardLayout({
   useEffect(() => {
     const handleResize = () => {
       const newIsMobile = window.innerWidth < 1024;
+      const wasMobile = isMobile;
       setIsMobile(newIsMobile);
 
-      // Close sidebar when switching to mobile view
-      if (newIsMobile && isSidebarOpen) {
+      // Only close sidebar when TRANSITIONING from desktop to mobile
+      if (newIsMobile && !wasMobile && isSidebarOpen) {
         setIsSidebarOpen(false);
       }
     };
@@ -136,7 +161,7 @@ export default function DashboardLayout({
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isSidebarOpen]);
+  }, [isMobile, isSidebarOpen]);
 
   // Load Lottie animation
   useEffect(() => {
@@ -189,13 +214,11 @@ export default function DashboardLayout({
             />
           )}
 
-          {/* Sidebar - fixed on the left */}
+          {/* Desktop Sidebar - always visible on desktop */}
           <div
             className={cn(
-              "fixed top-0 left-0 z-50 flex flex-col h-screen transition-all duration-300 ease-out bg-sidebar backdrop-blur-xl border-r border-border",
-              isSidebarOpen
-                ? "w-60"
-                : "lg:w-20 -translate-x-full lg:translate-x-0"
+              "hidden lg:flex fixed top-0 left-0 z-30 flex-col h-screen transition-all duration-300 ease-out bg-sidebar backdrop-blur-xl border-r border-border",
+              isSidebarOpen ? "w-60" : "w-20"
             )}
           >
             {/* Header */}
@@ -484,6 +507,203 @@ export default function DashboardLayout({
               </ScrollArea>
             </div>
           </div>
+
+          {/* Mobile Sidebar - overlay on mobile */}
+          <div
+            className={cn(
+              "lg:hidden fixed top-0 left-0 z-50 flex flex-col h-screen w-60 transition-transform duration-300 ease-out bg-sidebar backdrop-blur-xl border-r border-border",
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            )}
+          >
+            {/* Header */}
+            <div className="flex h-20 shrink-0 items-center justify-between px-6">
+              <Link
+                href="/"
+                className="flex items-center gap-3 text-white transition-all duration-300 ease-out group"
+              >
+                {/* Logo icon */}
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110">
+                  <Image
+                    src="/logo.png"
+                    alt="Enquiro Logo"
+                    width={40}
+                    height={50}
+                    className="rounded-lg"
+                  />
+                </div>
+                {/* Brand name */}
+                <span className="text-xl font-bold transition-all duration-300 ease-out whitespace-nowrap">
+                  Enquiro
+                </span>
+              </Link>
+            </div>
+
+            {/* Navigation with ScrollArea */}
+            <div className="flex-1 min-h-0">
+              <ScrollArea className="h-full px-4 pb-4">
+                <nav className="py-4">
+                  <div className="space-y-6">
+                    {navigation.map((section, sectionIndex) => (
+                      <div key={section.category}>
+                        {/* Category Header */}
+                        <div className="px-3 py-2 text-xs font-semibold text-white/50 uppercase tracking-wider">
+                          {section.category}
+                        </div>
+
+                        {/* Category Items */}
+                        <div className="space-y-1">
+                          {section.items.map((item) => {
+                            const isActive =
+                              pathname === item.href ||
+                              (item.children &&
+                                item.children.some(
+                                  (child) => pathname === child.href
+                                )) ||
+                              (item.href === "/dashboard/settings" &&
+                                pathname.startsWith("/dashboard/settings"));
+                            const isExpanded = expandedItems.includes(
+                              item.name
+                            );
+                            const hasChildren =
+                              item.children && item.children.length > 0;
+
+                            const toggleExpanded = () => {
+                              if (hasChildren) {
+                                setExpandedItems((prev) =>
+                                  prev.includes(item.name)
+                                    ? prev.filter((name) => name !== item.name)
+                                    : [...prev, item.name]
+                                );
+                              }
+                            };
+
+                            return (
+                              <div key={item.name}>
+                                {/* Main navigation item */}
+                                {hasChildren ? (
+                                  <div
+                                    className={cn(
+                                      "group relative flex items-center gap-3 rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
+                                      "hover:bg-white/10",
+                                      isActive
+                                        ? "bg-white/10 text-white shadow-lg"
+                                        : "text-white/70 hover:text-white"
+                                    )}
+                                    onClick={toggleExpanded}
+                                  >
+                                    {isActive && (
+                                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
+                                    )}
+                                    <div className="flex-shrink-0">
+                                      <item.icon
+                                        className={cn(
+                                          "h-5 w-5 transition-all duration-300",
+                                          isActive
+                                            ? "text-white"
+                                            : "text-white/70 group-hover:text-white"
+                                        )}
+                                      />
+                                    </div>
+                                    <span className="flex-1">{item.name}</span>
+                                    <div className="flex-shrink-0">
+                                      <ChevronRight
+                                        className={cn(
+                                          "h-4 w-4 transition-transform duration-200",
+                                          isExpanded ? "rotate-90" : "rotate-0",
+                                          isActive
+                                            ? "text-white"
+                                            : "text-white/70"
+                                        )}
+                                      />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <Link
+                                    href={item.href}
+                                    className={cn(
+                                      "group relative flex items-center gap-3 rounded-xl p-3 text-sm font-medium transition-all duration-300 ease-out cursor-pointer",
+                                      "hover:bg-white/10",
+                                      isActive
+                                        ? "bg-white/10 text-white shadow-lg"
+                                        : "text-white/70 hover:text-white"
+                                    )}
+                                    onClick={() => setIsSidebarOpen(false)}
+                                  >
+                                    {isActive && (
+                                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-full shadow-lg" />
+                                    )}
+                                    <div className="flex-shrink-0">
+                                      <item.icon
+                                        className={cn(
+                                          "h-5 w-5 transition-all duration-300",
+                                          isActive
+                                            ? "text-white"
+                                            : "text-white/70 group-hover:text-white"
+                                        )}
+                                      />
+                                    </div>
+                                    <span className="flex-1">{item.name}</span>
+                                  </Link>
+                                )}
+
+                                {/* Sub-navigation items */}
+                                {hasChildren && (
+                                  <div
+                                    className={cn(
+                                      "ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
+                                      isExpanded
+                                        ? "max-h-96 opacity-100"
+                                        : "max-h-0 opacity-0"
+                                    )}
+                                  >
+                                    {item.children.map((child, childIndex) => {
+                                      const isChildActive =
+                                        pathname === child.href;
+                                      return (
+                                        <Link
+                                          key={child.name}
+                                          href={child.href}
+                                          className={cn(
+                                            "group relative flex items-center gap-3 rounded-lg p-2 text-sm font-medium transition-all duration-200",
+                                            "hover:bg-white/10",
+                                            isChildActive
+                                              ? "bg-white/10 text-white"
+                                              : "text-white/70 hover:text-white"
+                                          )}
+                                          onClick={() =>
+                                            setIsSidebarOpen(false)
+                                          }
+                                        >
+                                          <div className="flex-shrink-0">
+                                            <child.icon
+                                              className={cn(
+                                                "h-4 w-4 transition-colors",
+                                                isChildActive
+                                                  ? "text-white"
+                                                  : "text-white/70 group-hover:text-white"
+                                              )}
+                                            />
+                                          </div>
+                                          <span className="truncate">
+                                            {child.name}
+                                          </span>
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </nav>
+              </ScrollArea>
+            </div>
+          </div>
+
           {/* Main content */}
           <main
             className={cn(
@@ -492,10 +712,7 @@ export default function DashboardLayout({
             )}
           >
             {/* Topbar always at the top of the main content */}
-            <Topbar
-              onMenuToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-              isMobile={isMobile}
-            />
+            <Topbar onMenuToggle={toggleSidebar} isMobile={isMobile} />
             <div className="bg-background flex flex-col flex-1 h-full">
               {children}
             </div>

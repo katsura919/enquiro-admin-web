@@ -102,7 +102,7 @@ export default function Topbar({ onMenuToggle, isMobile }: TopbarProps) {
       {/* Left section */}
       <div className="flex items-center gap-4">
         {/* Menu toggle button - always visible */}
-        {onMenuToggle && (
+        {onMenuToggle &&  (
           <Button
             variant="ghost"
             size="sm"
