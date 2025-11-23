@@ -15,8 +15,17 @@ interface Message {
   _id: string;
   sessionId: string;
   content: string;
-  sender: "user" | "bot";
+  sender: "user" | "agent" | "ai" | "customer" | "system";
   displayTime: string;
+  messageType?: "text" | "image" | "file";
+  attachments?: Array<{
+    fileName: string;
+    fileUrl: string;
+    fileSize?: number;
+    mimeType: string;
+  }>;
+  systemMessageType?: string;
+  isGoodResponse?: boolean | null;
 }
 
 interface ChatSession {
@@ -51,6 +60,7 @@ export default function SessionsLayout({
   const [totalCount, setTotalCount] = useState(0);
   const [limit] = useState(10);
 
+  console.log(messages);
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const businessId = user?.businessId;
@@ -100,23 +110,18 @@ export default function SessionsLayout({
           }
         );
 
-        // Transform the chat data into messages
-        const transformedMessages = response.data.flatMap((chat: any) => [
-          {
-            _id: `${chat._id}-query`,
-            sessionId: chat.sessionId,
-            content: chat.query,
-            sender: "user",
-            displayTime: chat.createdAt,
-          },
-          {
-            _id: `${chat._id}-response`,
-            sessionId: chat.sessionId,
-            content: chat.response,
-            sender: "bot",
-            displayTime: chat.createdAt,
-          },
-        ]);
+        // Transform the chat data into messages using new chat model
+        const transformedMessages = response.data.map((chat: any) => ({
+          _id: chat._id,
+          sessionId: chat.sessionId,
+          content: chat.message || "",
+          sender: chat.senderType || "ai",
+          displayTime: chat.createdAt,
+          messageType: chat.messageType,
+          attachments: chat.attachments,
+          systemMessageType: chat.systemMessageType,
+          isGoodResponse: chat.isGoodResponse,
+        }));
 
         setMessages(transformedMessages);
       } catch (error) {
@@ -133,14 +138,15 @@ export default function SessionsLayout({
     if (!selectedSessionId || !businessId || !token) return;
 
     try {
-      // Create a new chat message
+      // Create a new chat message using new model structure
       await axios.post(
-        `${API_URL}/chat`,
+        `${API_URL}/chat/send-message`,
         {
           businessId,
           sessionId: selectedSessionId,
-          query: content,
-          response: "", // Will be filled by AI backend
+          message: content,
+          messageType: "text",
+          senderType: "agent", // Agent sending message
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -155,22 +161,17 @@ export default function SessionsLayout({
         }
       );
 
-      const transformedMessages = response.data.flatMap((chat: any) => [
-        {
-          _id: `${chat._id}-query`,
-          sessionId: chat.sessionId,
-          content: chat.query,
-          sender: "user",
-          displayTime: chat.createdAt,
-        },
-        {
-          _id: `${chat._id}-response`,
-          sessionId: chat.sessionId,
-          content: chat.response,
-          sender: "bot",
-          displayTime: chat.createdAt,
-        },
-      ]);
+      const transformedMessages = response.data.map((chat: any) => ({
+        _id: chat._id,
+        sessionId: chat.sessionId,
+        content: chat.message || "",
+        sender: chat.senderType || "ai",
+        displayTime: chat.createdAt,
+        messageType: chat.messageType,
+        attachments: chat.attachments,
+        systemMessageType: chat.systemMessageType,
+        isGoodResponse: chat.isGoodResponse,
+      }));
 
       setMessages(transformedMessages);
     } catch (error) {
@@ -216,8 +217,12 @@ export default function SessionsLayout({
             messages={messages.map((msg) => ({
               id: msg._id,
               content: msg.content,
-              sender: msg.sender === "bot" ? "customer" : "user",
+              sender: msg.sender,
               timestamp: new Date(msg.displayTime),
+              messageType: msg.messageType,
+              attachments: msg.attachments,
+              systemMessageType: msg.systemMessageType,
+              isGoodResponse: msg.isGoodResponse,
             }))}
             onSendMessage={handleSendMessage}
           />
