@@ -1,9 +1,9 @@
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface SearchBarProps {
-  value: string
-  onChange: (value: string) => void
+  value: string;
+  onChange: (value: string) => void;
 }
 
 export default function SearchBar({ value, onChange }: SearchBarProps) {
@@ -14,8 +14,8 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
         placeholder="Search knowledge base..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pl-10 bg-background text-foreground border-border"
+        className="pl-10 bg-card shadow-none"
       />
     </div>
-  )
-} 
+  );
+}
