@@ -1,23 +1,21 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, UserCheck, UserX, Shield } from "lucide-react"
+import * as React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, UserCheck, UserX, Shield } from "lucide-react";
 
 interface AgentStatsCardsProps {
-  totalAgents: number
-  activeAgents: number
-  inactiveAgents: number
-  adminCount: number
-  loading?: boolean
+  totalAgents: number;
+  activeAgents: number;
+  inactiveAgents: number;
+  loading?: boolean;
 }
 
 export function AgentStatsCards({
   totalAgents,
   activeAgents,
   inactiveAgents,
-  adminCount,
-  loading = false
+  loading = false,
 }: AgentStatsCardsProps) {
   const stats = [
     {
@@ -25,35 +23,28 @@ export function AgentStatsCards({
       value: totalAgents,
       icon: Users,
       color: "text-blue-600",
-      bgColor: "bg-blue-50"
+      bgColor: "bg-blue-50",
     },
     {
       title: "Active Agents",
       value: activeAgents,
       icon: UserCheck,
       color: "text-green-600",
-      bgColor: "bg-green-50"
+      bgColor: "bg-green-50",
     },
     {
       title: "Inactive Agents",
       value: inactiveAgents,
       icon: UserX,
       color: "text-red-600",
-      bgColor: "bg-red-50"
+      bgColor: "bg-red-50",
     },
-    {
-      title: "Administrators",
-      value: adminCount,
-      icon: Shield,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50"
-    }
-  ]
+  ];
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, index) => (
           <Card className="border-border" key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -68,15 +59,18 @@ export function AgentStatsCards({
           </Card>
         ))}
       </div>
-    )
+    );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {stats.map((stat, index) => {
-        const Icon = stat.icon
+        const Icon = stat.icon;
         return (
-          <Card key={index} className="hover:shadow-md transition-shadow border-border">
+          <Card
+            key={index}
+            className="hover:shadow-md transition-shadow border-border"
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.title}
@@ -91,12 +85,11 @@ export function AgentStatsCards({
                 {index === 0 && "Total registered agents"}
                 {index === 1 && "Currently active"}
                 {index === 2 && "Deactivated accounts"}
-                {index === 3 && "Admin privileges"}
               </p>
             </CardContent>
           </Card>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

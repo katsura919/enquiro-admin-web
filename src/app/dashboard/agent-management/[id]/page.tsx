@@ -1,152 +1,120 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { 
-  ChevronLeft, 
-  Edit, 
-  Trash2, 
-  XCircle
-} from "lucide-react"
-import { useAuth } from "@/lib/auth"
-import { toast } from "@/hooks/useToast"
-import api from "@/utils/api"
+import * as React from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Edit, Trash2, XCircle } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { toast } from "@/hooks/useToast";
+import api from "@/utils/api";
 
 // Import components
-import { AgentProfileCard } from "./components/AgentProfileCard"
-import { AgentStatsCards } from "./components/AgentStatsCards"
-import { AgentEscalationsTable } from "./components/AgentEscalationsTable"
-import { AgentProfileSkeleton } from "./components/AgentProfileSkeleton"
+import { AgentProfileCard } from "./components/AgentProfileCard";
+import { AgentStatsCards } from "./components/AgentStatsCards";
+import { AgentEscalationsTable } from "./components/AgentEscalationsTable";
+import { AgentProfileSkeleton } from "./components/AgentProfileSkeleton";
+import { EditAgentDialog } from "../components/EditAgentDialog";
+import { DeleteAgentDialog } from "../components/DeleteAgentDialog";
 
 interface Agent {
-  _id: string
-  businessId: string
-  name: string
-  email: string
-  phone?: string
-  profilePic?: string
-  role: string
-  createdAt: string
-  deletedAt?: string | null
+  _id: string;
+  businessId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  profilePic?: string;
+  role: string;
+  createdAt: string;
+  deletedAt?: string | null;
 }
 
 interface AgentStats {
-  totalSessions: number
-  activeSessions: number
-  resolvedSessions: number
-  averageResponseTime: number
-  customerRating: number
-  totalMessages: number
+  totalSessions: number;
+  activeSessions: number;
+  resolvedSessions: number;
+  averageResponseTime: number;
+  customerRating: number;
+  totalMessages: number;
 }
 
 interface Escalation {
-  _id: string
-  caseNumber: string
-  customerName: string
-  customerEmail: string
-  concern: string
-  status: "escalated" | "pending" | "resolved"
-  createdAt: string
+  _id: string;
+  caseNumber: string;
+  customerName: string;
+  customerEmail: string;
+  concern: string;
+  status: "escalated" | "pending" | "resolved";
+  createdAt: string;
 }
 
 interface CountData {
-  totalCases: number
-  totalResolvedCases: number
+  totalCases: number;
+  totalResolvedCases: number;
 }
 
 interface RatingStats {
-  averageRating: number
-  totalRatings: number
+  averageRating: number;
+  totalRatings: number;
 }
 
 export default function AgentDetailsPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { user } = useAuth()
-  const agentId = params.id as string
+  const params = useParams();
+  const router = useRouter();
+  const { user } = useAuth();
+  const agentId = params.id as string;
 
-  const [agent, setAgent] = React.useState<Agent | null>(null)
-  const [stats, setStats] = React.useState<AgentStats | null>(null)
-  const [escalations, setEscalations] = React.useState<Escalation[]>([])
-  const [counts, setCounts] = React.useState<CountData | null>(null)
-  const [ratingStats, setRatingStats] = React.useState<RatingStats | null>(null)
-  const [escalationsLoading, setEscalationsLoading] = React.useState(false)
-  const [escalationsPage, setEscalationsPage] = React.useState(1)
-  const [escalationsTotalPages, setEscalationsTotalPages] = React.useState(1)
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<string | null>(null)
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [editForm, setEditForm] = React.useState({
-    name: '',
-    email: '',
-    phone: ''
-  })
+  const [agent, setAgent] = React.useState<Agent | null>(null);
+  const [stats, setStats] = React.useState<AgentStats | null>(null);
+  const [escalations, setEscalations] = React.useState<Escalation[]>([]);
+  const [counts, setCounts] = React.useState<CountData | null>(null);
+  const [ratingStats, setRatingStats] = React.useState<RatingStats | null>(
+    null
+  );
+  const [escalationsLoading, setEscalationsLoading] = React.useState(false);
+  const [escalationsPage, setEscalationsPage] = React.useState(1);
+  const [escalationsTotalPages, setEscalationsTotalPages] = React.useState(1);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [isEditOpen, setIsEditOpen] = React.useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (agentId && user?.businessId) {
-      loadAgentDetails()
-      loadAgentRatings()
+      loadAgentDetails();
+      loadAgentRatings();
     }
-  }, [agentId, user?.businessId])
+  }, [agentId, user?.businessId]);
 
   React.useEffect(() => {
     if (agentId) {
-      loadAgentEscalations()
+      loadAgentEscalations();
     }
-  }, [agentId, escalationsPage])
+  }, [agentId, escalationsPage]);
 
   const loadAgentDetails = async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
-      console.log('Fetching agent details for ID:', agentId)
+      console.log("Fetching agent details for ID:", agentId);
 
-      // Fetch agent details - need to find a specific route or use a different approach
-      // Since /:businessId conflicts with /:id, we'll try the business route first
-      let agentResponse;
-      try {
-        // Try to get the specific agent from the business agents list
-        if (user?.businessId) {
-          const businessAgentsResponse = await api.get(`/agent/${user.businessId}`, {
-            params: { limit: 1000 } // Get all agents to find the specific one
-          })
-          const foundAgent = businessAgentsResponse.data.agents?.find((agent: Agent) => agent._id === agentId)
-          if (foundAgent) {
-            agentResponse = { data: foundAgent }
-          } else {
-            throw new Error('Agent not found in business')
-          }
-        } else {
-          throw new Error('Business ID not available')
-        }
-      } catch (businessError) {
-        // Fallback: try direct agent endpoint (might work if route order is fixed)
-        console.log('Trying direct agent endpoint...')
-        agentResponse = await api.get(`/agent/single/${agentId}`) // Using a different path
-      }
+      // Fetch agent details directly by ID (includes deleted agents)
+      const agentResponse = await api.get(`/agent/${agentId}`);
 
       if (!agentResponse?.data) {
-        throw new Error('Agent not found')
+        throw new Error("Agent not found");
       }
 
-      setAgent(agentResponse.data)
-      // Initialize edit form with current data
-      setEditForm({
-        name: agentResponse.data.name || '',
-        email: agentResponse.data.email || '',
-        phone: agentResponse.data.phone || ''
-      })
-      console.log('Agent data loaded:', agentResponse.data)
+      setAgent(agentResponse.data);
+      console.log("Agent data loaded:", agentResponse.data);
 
       // Fetch agent statistics (if endpoint exists)
       try {
-        const statsResponse = await api.get(`/agent/${agentId}/stats`)
-        setStats(statsResponse.data)
-        console.log('Agent stats loaded:', statsResponse.data)
+        const statsResponse = await api.get(`/agent/${agentId}/stats`);
+        setStats(statsResponse.data);
+        console.log("Agent stats loaded:", statsResponse.data);
       } catch (statsError) {
-        console.log('Stats endpoint not available, using defaults')
+        console.log("Stats endpoint not available, using defaults");
         // If stats endpoint doesn't exist, set default stats
         setStats({
           totalSessions: 0,
@@ -154,133 +122,115 @@ export default function AgentDetailsPage() {
           resolvedSessions: 0,
           averageResponseTime: 0,
           customerRating: 0,
-          totalMessages: 0
-        })
+          totalMessages: 0,
+        });
       }
     } catch (err: any) {
-      console.error('Failed to load agent details:', err)
-      setError(err.response?.data?.error || err.message || "Failed to load agent details")
+      console.error("Failed to load agent details:", err);
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to load agent details"
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const loadAgentEscalations = async () => {
     try {
-      setEscalationsLoading(true)
-      console.log('Fetching escalations for agent ID:', agentId, 'page:', escalationsPage)
-      
+      setEscalationsLoading(true);
+      console.log(
+        "Fetching escalations for agent ID:",
+        agentId,
+        "page:",
+        escalationsPage
+      );
+
       const response = await api.get(`/escalation/agent/${agentId}`, {
-        params: { 
+        params: {
           limit: 10, // Show 10 escalations per page
           page: escalationsPage,
-          status: 'all' 
-        }
-      })
-      
-      setEscalations(response.data.escalations || [])
-      setCounts(response.data.counts || null)
-      setEscalationsTotalPages(response.data.totalPages || 1)
-      console.log('Agent escalations loaded:', response.data.escalations)
-      console.log('Agent counts loaded:', response.data.counts)
+          status: "all",
+        },
+      });
+
+      setEscalations(response.data.escalations || []);
+      setCounts(response.data.counts || null);
+      setEscalationsTotalPages(response.data.totalPages || 1);
+      console.log("Agent escalations loaded:", response.data.escalations);
+      console.log("Agent counts loaded:", response.data.counts);
     } catch (err: any) {
-      console.error('Failed to load agent escalations:', err)
+      console.error("Failed to load agent escalations:", err);
       // Don't show error for escalations, just keep empty array
-      setEscalations([])
+      setEscalations([]);
     } finally {
-      setEscalationsLoading(false)
+      setEscalationsLoading(false);
     }
-  }
+  };
 
   const handleEscalationsPageChange = (newPage: number) => {
-    setEscalationsPage(newPage)
-  }
+    setEscalationsPage(newPage);
+  };
 
   const loadAgentRatings = async () => {
     try {
-      console.log('Fetching ratings for agent ID:', agentId)
-      
+      console.log("Fetching ratings for agent ID:", agentId);
+
       const response = await api.get(`/agent-rating/agent/${agentId}`, {
-        params: { 
-          limit: 1 // We only need the stats, not all ratings
-        }
-      })
-      
+        params: {
+          limit: 1, // We only need the stats, not all ratings
+        },
+      });
+
       if (response.data.success && response.data.stats) {
-        setRatingStats(response.data.stats)
-        console.log('Agent ratings loaded:', response.data.stats)
+        setRatingStats(response.data.stats);
+        console.log("Agent ratings loaded:", response.data.stats);
       }
     } catch (err: any) {
-      console.error('Failed to load agent ratings:', err)
+      console.error("Failed to load agent ratings:", err);
       // Don't show error for ratings, just keep null
-      setRatingStats(null)
+      setRatingStats(null);
     }
-  }
+  };
 
-  const handleEdit = () => {
-    // Navigate back to main page with edit mode
-    router.push(`/dashboard/agent-management?edit=${agentId}`)
-  }
+  const handleEditAgent = () => {
+    setIsEditOpen(true);
+  };
 
-  const handleProfileEdit = () => {
-    if (agent) {
-      setEditForm({
-        name: agent.name || '',
-        email: agent.email || '',
-        phone: agent.phone || ''
-      })
-      setIsEditing(true)
-    }
-  }
+  const handleDeleteAgent = () => {
+    setIsDeleteOpen(true);
+  };
 
-  const handleProfileSave = async () => {
-    if (!agent) return
+  const handleEditSubmit = async (data: any) => {
+    if (!agent) return;
 
     try {
-      const response = await api.put(`/agent/${agentId}`, editForm)
-      setAgent(response.data)
-      setIsEditing(false)
-      toast.success("Profile updated successfully")
+      const response = await api.put(`/agent/${agentId}`, data);
+      setAgent(response.data);
+      setIsEditOpen(false);
+      toast.success("Agent updated successfully");
+      loadAgentDetails();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "Failed to update profile")
+      throw err;
     }
-  }
+  };
 
-  const handleProfileCancel = () => {
-    if (agent) {
-      setEditForm({
-        name: agent.name || '',
-        email: agent.email || '',
-        phone: agent.phone || ''
-      })
-    }
-    setIsEditing(false)
-  }
-
-  const handleFormChange = (field: string, value: string) => {
-    setEditForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleDelete = async () => {
-    if (!agent) return
-
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${agent.name || 'this agent'}? This action cannot be undone.`
-    )
-    
-    if (!confirmed) return
+  const handleDeleteConfirm = async () => {
+    if (!agent) return;
 
     try {
-      await api.delete(`/agent/${agentId}`)
-      toast.success("Agent deleted successfully")
-      router.push("/dashboard/agent-management")
+      await api.delete(`/agent/${agentId}`);
+      toast.success("Agent deleted successfully");
+      router.push("/dashboard/agent-management");
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "Failed to delete agent")
+      toast.error(err.response?.data?.error || "Failed to delete agent");
+      throw err;
     }
-  }
+  };
 
   if (loading) {
-    return <AgentProfileSkeleton />
+    return <AgentProfileSkeleton />;
   }
 
   if (error || !agent) {
@@ -297,7 +247,8 @@ export default function AgentDetailsPage() {
             <XCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Agent Not Found</h3>
             <p className="text-muted-foreground mb-4">
-              {error || "The agent you're looking for doesn't exist or may have been deleted."}
+              {error ||
+                "The agent you're looking for doesn't exist or may have been deleted."}
             </p>
             <Button onClick={() => router.push("/dashboard/agent-management")}>
               Back to Agent Management
@@ -305,7 +256,7 @@ export default function AgentDetailsPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -331,22 +282,22 @@ export default function AgentDetailsPage() {
         <div className="lg:col-span-1">
           <AgentProfileCard
             agent={agent}
-            isEditing={isEditing}
-            editForm={editForm}
-            onEdit={handleProfileEdit}
-            onSave={handleProfileSave}
-            onCancel={handleProfileCancel}
-            onFormChange={handleFormChange}
+            onEdit={handleEditAgent}
+            onDelete={handleDeleteAgent}
           />
         </div>
 
         {/* Right Column - Stats & Escalations (2/3 width) */}
         <div className="lg:col-span-2 space-y-4">
           {/* Performance Stats */}
-          <AgentStatsCards stats={stats} counts={counts} ratingStats={ratingStats} />
+          <AgentStatsCards
+            stats={stats}
+            counts={counts}
+            ratingStats={ratingStats}
+          />
 
           {/* Agent Escalations */}
-          <AgentEscalationsTable 
+          <AgentEscalationsTable
             escalations={escalations}
             loading={escalationsLoading}
             currentPage={escalationsPage}
@@ -355,6 +306,20 @@ export default function AgentDetailsPage() {
           />
         </div>
       </div>
+
+      <EditAgentDialog
+        agent={agent}
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSubmit={handleEditSubmit}
+      />
+
+      <DeleteAgentDialog
+        agent={agent}
+        open={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
-  )
+  );
 }
