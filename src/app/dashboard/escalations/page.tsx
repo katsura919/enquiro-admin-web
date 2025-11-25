@@ -1,82 +1,108 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useRouter } from "next/navigation"
-import { EscalationTable, Escalation } from "./components/EscalationTable"
-import { EscalationCountCards } from "./components/EscalationCountCards"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Filter } from "lucide-react"
-import { useAuth } from "@/lib/auth"
-import api from "@/utils/api"
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import { EscalationTable, Escalation } from "./components/EscalationTable";
+import { EscalationCountCards } from "./components/EscalationCountCards";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Filter, Calendar as CalendarIcon, X } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import api from "@/utils/api";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 export default function EscalationsPage() {
-  const router = useRouter()
-  const { user } = useAuth()
-  const [escalations, setEscalations] = React.useState<Escalation[]>([])
-  const [initialLoading, setInitialLoading] = React.useState(true) // For first load
-  const [paginationLoading, setPaginationLoading] = React.useState(false) // For pagination
-  const [status, setStatus] = React.useState<"all" | "escalated" | "pending" | "resolved">("all")
-  const [page, setPage] = React.useState(1)
-  const [totalPages, setTotalPages] = React.useState(1)
-  const [search, setSearch] = React.useState("")
-  const [debouncedSearch, setDebouncedSearch] = React.useState("")
-  const [selectedIds, setSelectedIds] = React.useState<string[]>([])
-  const [isMobile, setIsMobile] = React.useState(false)
-  const businessId = user?.businessId
+  const router = useRouter();
+  const { user } = useAuth();
+  const [escalations, setEscalations] = React.useState<Escalation[]>([]);
+  const [initialLoading, setInitialLoading] = React.useState(true); // For first load
+  const [paginationLoading, setPaginationLoading] = React.useState(false); // For pagination
+  const [status, setStatus] = React.useState<
+    "all" | "escalated" | "pending" | "resolved"
+  >("all");
+  const [page, setPage] = React.useState(1);
+  const [totalPages, setTotalPages] = React.useState(1);
+  const [search, setSearch] = React.useState("");
+  const [debouncedSearch, setDebouncedSearch] = React.useState("");
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [dateRange, setDateRange] = React.useState<DateRange | undefined>();
+  const [dateRangeOpen, setDateRangeOpen] = React.useState(false);
+  const businessId = user?.businessId;
 
   // Debounce search input
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(search)
-      setPage(1) // Reset to first page when search changes
-    }, 500) // 500ms delay
+      setDebouncedSearch(search);
+      setPage(1); // Reset to first page when search changes
+    }, 500); // 500ms delay
 
-    return () => clearTimeout(timer)
-  }, [search])
+    return () => clearTimeout(timer);
+  }, [search]);
 
   // Check if mobile on mount and resize
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+      setIsMobile(window.innerWidth < 768);
+    };
 
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   React.useEffect(() => {
     if (!businessId) {
-      console.log("Missing businessId, skipping fetch")
-      return
+      console.log("Missing businessId, skipping fetch");
+      return;
     }
-    
+
     // Determine which loading state to use
-    const isFirstLoad = escalations.length === 0
+    const isFirstLoad = escalations.length === 0;
     if (isFirstLoad) {
-      setInitialLoading(true)
+      setInitialLoading(true);
     } else {
-      setPaginationLoading(true)
+      setPaginationLoading(true);
     }
 
     // Build query parameters
     const queryParams = new URLSearchParams({
       status: status,
       page: page.toString(),
-      limit: '13'
-    })
-    
+      limit: "13",
+    });
+
     // Add search parameter if it exists
     if (debouncedSearch.trim()) {
-      queryParams.append('search', debouncedSearch.trim())
+      queryParams.append("search", debouncedSearch.trim());
     }
 
-    api.get(`/escalation/business/${businessId}?${queryParams.toString()}`)
+    // Add date range parameters if they exist
+    if (dateRange?.from) {
+      queryParams.append("startDate", format(dateRange.from, "yyyy-MM-dd"));
+    }
+    if (dateRange?.to) {
+      queryParams.append("endDate", format(dateRange.to, "yyyy-MM-dd"));
+    }
+
+    api
+      .get(`/escalation/business/${businessId}?${queryParams.toString()}`)
       .then((res: any) => {
-        console.log("API Response:", res.data)
+        console.log("API Response:", res.data);
         // Transform the data to match the EscalationTable interface
         const transformed = res.data.escalations.map((e: any) => ({
           _id: e._id,
@@ -87,34 +113,47 @@ export default function EscalationsPage() {
           status: e.status,
           createdAt: e.createdAt,
           caseOwner: e.caseOwner,
-        }))
-        console.log("Transformed escalations:", transformed)
-        setEscalations(transformed)
-        setTotalPages(res.data.totalPages)
+        }));
+        console.log("Transformed escalations:", transformed);
+        setEscalations(transformed);
+        setTotalPages(res.data.totalPages);
       })
       .catch((error: any) => {
-        console.error("Error fetching escalations:", error)
-        setEscalations([])
+        console.error("Error fetching escalations:", error);
+        setEscalations([]);
       })
       .finally(() => {
-        setInitialLoading(false)
-        setPaginationLoading(false)
-      })
-  }, [businessId, status, page, debouncedSearch])
+        setInitialLoading(false);
+        setPaginationLoading(false);
+      });
+  }, [
+    businessId,
+    status,
+    page,
+    debouncedSearch,
+    dateRange?.from,
+    dateRange?.to,
+  ]);
 
   const handleRowClick = (id: string) => {
-    router.push(`/dashboard/escalations/${id}`)
-  }
+    router.push(`/dashboard/escalations/${id}`);
+  };
 
-  const handleCountCardClick = (selectedStatus: "all" | "escalated" | "pending" | "resolved") => {
-    setStatus(selectedStatus)
-    setPage(1) // Reset to first page when changing filter
-  }
+  const handleCountCardClick = (
+    selectedStatus: "all" | "escalated" | "pending" | "resolved"
+  ) => {
+    setStatus(selectedStatus);
+    setPage(1); // Reset to first page when changing filter
+  };
 
-  console.log("Rendering with escalations:", escalations)
+  const handleClearDateRange = () => {
+    setDateRange(undefined);
+    setPage(1);
+  };
+
+  console.log("Rendering with escalations:", escalations);
   return (
     <div className="p-6 w-full">
-
       {/* Count Cards */}
       {businessId && (
         <EscalationCountCards
@@ -129,21 +168,67 @@ export default function EscalationsPage() {
         <Input
           placeholder="Search by customer, case #, or concern..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="bg-card shadow-none max-w-md flex-1 sm:flex-none"
         />
-        <Select value={status} onValueChange={(value) => handleCountCardClick(value as "all" | "escalated" | "pending" | "resolved")}>
-          <SelectTrigger className="bg-card min-w-[180px]">
-            <Filter className="w-4 h-4" />
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent align="end">
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="escalated">Escalated</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="resolved">Resolved</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          {/* Status Filter */}
+          <Select
+
+            value={status}
+            onValueChange={(value) =>
+              handleCountCardClick(
+                value as "all" | "escalated" | "pending" | "resolved"
+              )
+            }
+          >
+            <SelectTrigger className="bg-card cursor-pointer min-w-[180px]">
+              <Filter className="w-4 h-4" />
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="escalated">Escalated</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Date Range Picker */}
+          <Popover open={dateRangeOpen} onOpenChange={setDateRangeOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-card w-[100px] justify-start text-left font-normal  hover:bg-card cusor-pointer"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                <span>Date</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                mode="range"
+                selected={dateRange}
+                onSelect={(range) => {
+                  setDateRange(range);
+                  setPage(1);
+                }}
+                numberOfMonths={2}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          {(dateRange?.from || dateRange?.to) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClearDateRange}
+              className="h-10 w-10"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Escalation Table */}
@@ -154,17 +239,17 @@ export default function EscalationsPage() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
       />
-      
+
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
         <div className="text-sm text-muted-foreground">
           Showing {escalations.length} of {totalPages * 14} total escalations
         </div>
         <div className="flex items-center gap-2">
-          <Button 
+          <Button
             className="bg-card"
-            disabled={page <= 1} 
-            onClick={() => setPage(p => p - 1)} 
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
             variant="outline"
           >
             Previous
@@ -172,10 +257,10 @@ export default function EscalationsPage() {
           <span className="px-3 py-1 text-sm text-muted-foreground rounded">
             Page {page} of {totalPages}
           </span>
-          <Button 
+          <Button
             className="bg-card"
-            disabled={page >= totalPages} 
-            onClick={() => setPage(p => p + 1)} 
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
             variant="outline"
           >
             Next
@@ -183,5 +268,5 @@ export default function EscalationsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
