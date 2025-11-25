@@ -22,22 +22,22 @@ export function AgentStatsCards({
       title: "Total Agents",
       value: totalAgents,
       icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "white",
+      bgColor: "",
     },
     {
       title: "Active Agents",
       value: activeAgents,
       icon: UserCheck,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      color: "white",
+      bgColor: "",
     },
     {
       title: "Inactive Agents",
       value: inactiveAgents,
       icon: UserX,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
+      color: "white",
+      bgColor: "",
     },
   ];
 
@@ -69,7 +69,7 @@ export function AgentStatsCards({
         return (
           <Card
             key={index}
-            className="hover:shadow-md transition-shadow border-border"
+            className="bg-card border-border shadow-none"
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
