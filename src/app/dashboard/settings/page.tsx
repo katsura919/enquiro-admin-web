@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
-  Check,
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import {
   Save,
   Shield,
   Eye,
   EyeOff,
   Lock,
-  Smartphone,
   Clock,
-  Globe,
   AlertTriangle,
   Download,
   RefreshCw,
@@ -583,129 +587,105 @@ export default function AccountSettingsPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Personal Details */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="firstName"
-                  className="text-sm font-medium text-foreground"
-                >
-                  First Name
-                </Label>
-                <Input
-                  id="firstName"
-                  value={userData.firstName}
-                  onChange={(e) =>
-                    handleInputChange("firstName", e.target.value)
-                  }
-                  placeholder="Enter your first name"
-                  className="bg-card text-foreground border-border shadow-none"
-                />
+            <FieldGroup>
+              {/* Personal Details */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field>
+                  <FieldLabel htmlFor="firstName">First Name</FieldLabel>
+                  <Input
+                    id="firstName"
+                    value={userData.firstName}
+                    onChange={(e) =>
+                      handleInputChange("firstName", e.target.value)
+                    }
+                    placeholder="Enter your first name"
+                  />
+                </Field>
+
+                <Field>
+                  <FieldLabel htmlFor="lastName">Last Name</FieldLabel>
+                  <Input
+                    id="lastName"
+                    value={userData.lastName}
+                    onChange={(e) =>
+                      handleInputChange("lastName", e.target.value)
+                    }
+                    placeholder="Enter your last name"
+                  />
+                </Field>
               </div>
 
-              <div className="space-y-2">
-                <Label
-                  htmlFor="lastName"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Last Name
-                </Label>
-                <Input
-                  id="lastName"
-                  value={userData.lastName}
-                  onChange={(e) =>
-                    handleInputChange("lastName", e.target.value)
-                  }
-                  placeholder="Enter your last name"
-                  className="bg-card text-foreground border-border shadow-none"
-                />
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Email Address
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={userData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="Enter your email"
-                  className={`bg-card text-foreground border-border shadow-none ${
-                    validationErrors.email
-                      ? "border-red-500 focus-visible:ring-red-500"
-                      : ""
-                  }`}
-                />
-                {validationErrors.email && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    {validationErrors.email}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="phoneNumber"
-                  className="text-sm font-medium text-foreground"
-                >
-                  Phone Number
-                </Label>
-                <Input
-                  id="phoneNumber"
-                  value={userData.phoneNumber}
-                  onChange={(e) =>
-                    handleInputChange("phoneNumber", e.target.value)
-                  }
-                  placeholder="Enter your phone number"
-                  className={`bg-card text-foreground border-border shadow-none ${
-                    validationErrors.phoneNumber
-                      ? "border-red-500 focus-visible:ring-red-500"
-                      : ""
-                  }`}
-                />
-                {validationErrors.phoneNumber && (
-                  <p className="text-sm text-red-500 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    {validationErrors.phoneNumber}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Save Button - Only show when there are changes */}
-            {hasChanges() && (
-              <div className="pt-6 border-t border-border">
-                <Button
-                  onClick={handleSave}
-                  disabled={
-                    isSaving ||
-                    !!validationErrors.email ||
-                    !!validationErrors.phoneNumber
-                  }
-                  className="bg-primary hover:bg-primary/90 px-6 py-2 h-auto w-full"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Save Changes
-                    </>
+              {/* Contact Information */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field data-invalid={!!validationErrors.email}>
+                  <FieldLabel htmlFor="email">Email Address</FieldLabel>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={userData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    placeholder="Enter your email"
+                    className={
+                      validationErrors.email ? "border-destructive" : ""
+                    }
+                  />
+                  {validationErrors.email && (
+                    <FieldError>
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
+                      {validationErrors.email}
+                    </FieldError>
                   )}
-                </Button>
+                </Field>
+
+                <Field data-invalid={!!validationErrors.phoneNumber}>
+                  <FieldLabel htmlFor="phoneNumber">Phone Number</FieldLabel>
+                  <Input
+                    id="phoneNumber"
+                    value={userData.phoneNumber}
+                    onChange={(e) =>
+                      handleInputChange("phoneNumber", e.target.value)
+                    }
+                    placeholder="Enter your phone number"
+                    className={
+                      validationErrors.phoneNumber ? "border-destructive" : ""
+                    }
+                  />
+                  {validationErrors.phoneNumber && (
+                    <FieldError>
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
+                      {validationErrors.phoneNumber}
+                    </FieldError>
+                  )}
+                </Field>
               </div>
-            )}
+
+              {/* Save Button - Only show when there are changes */}
+              {hasChanges() && (
+                <div className="pt-6 border-t border-border">
+                  <Button
+                    onClick={handleSave}
+                    disabled={
+                      isSaving ||
+                      !!validationErrors.email ||
+                      !!validationErrors.phoneNumber
+                    }
+                    className="w-full"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </FieldGroup>
           </CardContent>
         </Card>
 
@@ -793,14 +773,11 @@ export default function AccountSettingsPage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="currentPassword"
-                    className="text-sm font-medium text-foreground"
-                  >
+              <FieldGroup>
+                <Field data-invalid={!!passwordErrors.currentPassword}>
+                  <FieldLabel htmlFor="currentPassword">
                     Current Password
-                  </Label>
+                  </FieldLabel>
                   <div className="relative">
                     <Input
                       id="currentPassword"
@@ -810,9 +787,9 @@ export default function AccountSettingsPage() {
                         handlePasswordChange("currentPassword", e.target.value)
                       }
                       placeholder="Enter your current password"
-                      className={`bg-card text-foreground border-border shadow-none pr-10 ${
+                      className={`pr-10 ${
                         passwordErrors.currentPassword
-                          ? "border-red-500 focus-visible:ring-red-500"
+                          ? "border-destructive"
                           : ""
                       }`}
                     />
@@ -833,20 +810,15 @@ export default function AccountSettingsPage() {
                     </Button>
                   </div>
                   {passwordErrors.currentPassword && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
+                    <FieldError>
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
                       {passwordErrors.currentPassword}
-                    </p>
+                    </FieldError>
                   )}
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="newPassword"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    New Password
-                  </Label>
+                <Field data-invalid={!!passwordErrors.newPassword}>
+                  <FieldLabel htmlFor="newPassword">New Password</FieldLabel>
                   <div className="relative">
                     <Input
                       id="newPassword"
@@ -856,10 +828,8 @@ export default function AccountSettingsPage() {
                         handlePasswordChange("newPassword", e.target.value)
                       }
                       placeholder="Enter your new password"
-                      className={`bg-card text-foreground border-border shadow-none pr-10 ${
-                        passwordErrors.newPassword
-                          ? "border-red-500 focus-visible:ring-red-500"
-                          : ""
+                      className={`pr-10 ${
+                        passwordErrors.newPassword ? "border-destructive" : ""
                       }`}
                     />
                     <Button
@@ -877,10 +847,10 @@ export default function AccountSettingsPage() {
                     </Button>
                   </div>
                   {passwordErrors.newPassword && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
+                    <FieldError>
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
                       {passwordErrors.newPassword}
-                    </p>
+                    </FieldError>
                   )}
                   {passwordData.newPassword && !passwordErrors.newPassword && (
                     <div className="space-y-2">
@@ -910,15 +880,12 @@ export default function AccountSettingsPage() {
                       </div>
                     </div>
                   )}
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="confirmPassword"
-                    className="text-sm font-medium text-foreground"
-                  >
+                <Field data-invalid={!!passwordErrors.confirmPassword}>
+                  <FieldLabel htmlFor="confirmPassword">
                     Confirm New Password
-                  </Label>
+                  </FieldLabel>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -928,9 +895,9 @@ export default function AccountSettingsPage() {
                         handlePasswordChange("confirmPassword", e.target.value)
                       }
                       placeholder="Confirm your new password"
-                      className={`bg-card text-foreground border-border shadow-none pr-10 ${
+                      className={`pr-10 ${
                         passwordErrors.confirmPassword
-                          ? "border-red-500 focus-visible:ring-red-500"
+                          ? "border-destructive"
                           : ""
                       }`}
                     />
@@ -951,12 +918,12 @@ export default function AccountSettingsPage() {
                     </Button>
                   </div>
                   {passwordErrors.confirmPassword && (
-                    <p className="text-sm text-red-500 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" />
+                    <FieldError>
+                      <AlertTriangle className="h-3 w-3 inline mr-1" />
                       {passwordErrors.confirmPassword}
-                    </p>
+                    </FieldError>
                   )}
-                </div>
+                </Field>
 
                 <div className="flex gap-3 pt-2">
                   <Button
@@ -970,7 +937,6 @@ export default function AccountSettingsPage() {
                       !!passwordErrors.newPassword ||
                       !!passwordErrors.confirmPassword
                     }
-                    className="bg-primary hover:bg-primary/90"
                   >
                     {isChangingPassword ? (
                       <>
@@ -997,7 +963,7 @@ export default function AccountSettingsPage() {
                     Cancel
                   </Button>
                 </div>
-              </div>
+              </FieldGroup>
             )}
           </CardContent>
         </Card>
@@ -1177,30 +1143,29 @@ export default function AccountSettingsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="otpPassword">Current Password</Label>
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="otpPassword">Current Password</FieldLabel>
               <Input
                 id="otpPassword"
                 type="password"
                 value={otpPassword}
                 onChange={(e) => setOtpPassword(e.target.value)}
                 placeholder="Enter your current password"
-                className="mt-1"
               />
-            </div>
+            </Field>
 
             {(otpAction === "disable" ||
               (otpAction === "backup" && otpSettings.otpEnabled)) && (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="otpCode">OTP Code</Label>
+              <Field>
+                <div className="flex items-center justify-between">
+                  <FieldLabel htmlFor="otpCode">OTP Code</FieldLabel>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleSendOtpCode}
                     disabled={isOtpLoading}
-                    className="text-xs"
+                    className="text-xs h-auto p-1"
                   >
                     Send Code
                   </Button>
@@ -1213,9 +1178,9 @@ export default function AccountSettingsPage() {
                   placeholder="Enter 6-digit code"
                   maxLength={6}
                 />
-              </div>
+              </Field>
             )}
-          </div>
+          </FieldGroup>
 
           <DialogFooter>
             <Button
