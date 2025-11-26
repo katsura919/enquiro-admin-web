@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import AuthRedirect from "@/components/auth-redirect";
-import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -149,11 +148,7 @@ export default function LoginPage() {
           {/* Left Side - Login Form */}
           <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
             {/* Logo/Brand top left */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
+            <div>
               <Link
                 href="/"
                 className="absolute top-8 left-8 flex items-center gap-2 group"
@@ -169,15 +164,10 @@ export default function LoginPage() {
                   Enquiro
                 </span>
               </Link>
-            </motion.div>
+            </div>
 
             {/* Login Form Centered */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="w-full max-w-md space-y-8"
-            >
+            <div className="w-full max-w-md space-y-8">
               {/* Welcome Text */}
               <div className="space-y-4 text-center">
                 {/* Badge */}
@@ -203,11 +193,7 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Rate Limit Error */}
                 {isRateLimited && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg backdrop-blur-sm"
-                  >
+                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg backdrop-blur-sm">
                     <div className="flex items-center space-x-3">
                       <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
                       <div className="flex-1">
@@ -219,30 +205,22 @@ export default function LoginPage() {
                         </p>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Regular Error */}
                 {error && !isRateLimited && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 backdrop-blur-sm"
-                  >
+                  <div className="p-4 text-sm bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 backdrop-blur-sm">
                     <div className="flex items-center space-x-2">
                       <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                       <span>{error}</span>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Attempts Warning */}
                 {!isRateLimited && attemptsLeft <= 2 && attemptsLeft > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg backdrop-blur-sm"
-                  >
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg backdrop-blur-sm">
                     <div className="flex items-center space-x-2">
                       <Shield className="w-4 h-4 text-amber-400" />
                       <span className="text-sm text-amber-400">
@@ -250,7 +228,7 @@ export default function LoginPage() {
                         remaining before temporary lockout
                       </span>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
                 {/* Email Field */}
@@ -359,7 +337,7 @@ export default function LoginPage() {
                   </Link>
                 </div>
               </form>
-            </motion.div>
+            </div>
           </div>
 
           {/* Right Side - Promotional Content */}
