@@ -153,7 +153,9 @@ export default function AgentManagementPage() {
         ...(search.trim() && { search: search.trim() }),
       };
 
-      const response = await api.get(`/agent/${user.businessId}`, { params });
+      const response = await api.get(`/agent/business/${user.businessId}`, {
+        params,
+      });
 
       // Update states with paginated response
       setAgents(response.data.agents);

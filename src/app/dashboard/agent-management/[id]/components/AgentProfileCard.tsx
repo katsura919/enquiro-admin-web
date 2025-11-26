@@ -4,7 +4,7 @@ import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Mail, Phone, Trash2 } from "lucide-react";
+import { Edit, Mail, Phone, Trash2, Key } from "lucide-react";
 
 interface Agent {
   _id: string;
@@ -22,12 +22,14 @@ interface AgentProfileCardProps {
   agent: Agent;
   onEdit: () => void;
   onDelete: () => void;
+  onChangePassword: () => void;
 }
 
 export function AgentProfileCard({
   agent,
   onEdit,
   onDelete,
+  onChangePassword,
 }: AgentProfileCardProps) {
   const getInitials = (name: string) => {
     if (!name || typeof name !== "string") {
@@ -47,80 +49,110 @@ export function AgentProfileCard({
 
   return (
     <>
-      <Card className="overflow-hidden bg-card border-muted-gray shadow-none sticky top-4">
+      <Card className="overflow-hidden bg-card border-muted-gray shadow-none sticky top-24">
         <CardContent className="p-0">
-          {/* Compact Profile Header */}
-          <div className="bg-gradient-to-br from-blue-500 to-purple-600 px-4 py-6">
-            <div className="flex flex-col items-center text-center">
-              <Avatar className="h-24 w-24 border-4 border-white/20 shadow-xl ring-2 ring-white/10">
+          {/* Profile Header with Gradient */}
+          <div className="bg-gradient-to-br from-blue-500 to-purple-600 px-6 py-8 relative overflow-hidden">
+            {/* Decorative Elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
+
+            <div className="flex flex-col items-center text-center relative z-10">
+              <Avatar className="h-28 w-28 border-4 border-white/30 shadow-2xl ring-4 ring-white/10">
                 <AvatarImage
                   src={agent.profilePic}
                   alt={agent.name || "Agent"}
                 />
-                <AvatarFallback className="text-xl font-bold bg-white/20 text-white backdrop-blur-sm">
+                <AvatarFallback className="text-2xl font-bold bg-white/20 text-white backdrop-blur-sm">
                   {getInitials(agent.name || "")}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="mt-3">
-                <h2 className="text-lg font-bold text-white">
+              <div className="mt-4">
+                <h2 className="text-xl font-bold text-white">
                   {agent.name || "Unknown Agent"}
                 </h2>
-                <p className="text-xs text-white/80 capitalize mt-1">
+                <p className="text-sm text-white/90 capitalize mt-1.5 font-medium">
                   {agent.role || "Support Agent"}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Compact Contact Information */}
-          <div className="px-4 py-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-              Contact
-            </h3>
+          {/* Contact Information */}
+          <div className="px-6 py-6 space-y-4">
+            <div>
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                Contact Information
+              </h3>
 
-            <div className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Phone className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground">Phone</p>
-                  <p className="text-sm text-foreground font-medium truncate">
-                    {agent.phone || "+1 555 666 7890"}
-                  </p>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 group">
+                  <div className="p-2 bg-muted rounded-lg group-hover:bg-muted/70 transition-colors">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground font-medium mb-1">
+                      Phone Number
+                    </p>
+                    <p className="text-sm text-foreground font-medium truncate">
+                      {agent.phone || "Not provided"}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-2">
-                <Mail className="h-3.5 w-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground">Email</p>
-                  <p className="text-sm text-primary hover:underline cursor-pointer font-medium truncate">
-                    {agent.email || "email@example.com"}
-                  </p>
+                <div className="flex items-start gap-3 group">
+                  <div className="p-2 bg-muted rounded-lg group-hover:bg-muted/70 transition-colors">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground font-medium mb-1">
+                      Email Address
+                    </p>
+                    <p className="text-sm text-primary hover:underline cursor-pointer font-medium truncate">
+                      {agent.email || "email@example.com"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onEdit}
-                className="flex-1 bg-card shadow-none h-8 text-xs"
-              >
-                <Edit className="h-3.5 w-3.5 mr-1.5" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onDelete}
-                className="flex-1 bg-card shadow-none h-8 text-xs text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                Delete
-              </Button>
+            {/* Divider */}
+            <div className="border-t pt-4 mt-4">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                Actions
+              </h3>
+
+              {/* Action Buttons */}
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onEdit}
+                  className="w-full justify-start h-9 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:hover:bg-blue-950 dark:hover:text-blue-400 dark:hover:border-blue-900 transition-all"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onChangePassword}
+                  className="w-full justify-start h-9 hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 dark:hover:bg-purple-950 dark:hover:text-purple-400 dark:hover:border-purple-900 transition-all"
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  Change Password
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onDelete}
+                  className="w-full justify-start h-9 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Agent
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

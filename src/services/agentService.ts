@@ -1,4 +1,4 @@
-import api from '@/utils/api';
+import api from "@/utils/api";
 
 export interface Agent {
   _id: string;
@@ -34,13 +34,13 @@ export const agentService = {
   // Get all agents (optionally by business)
   getAgents: async (businessId?: string): Promise<Agent[]> => {
     const params = businessId ? { businessId } : {};
-    const response = await api.get('/agent', { params });
+    const response = await api.get("/agent", { params });
     return response.data;
   },
 
   // Get agents by business ID
   getAgentsByBusiness: async (businessId: string): Promise<Agent[]> => {
-    const response = await api.get(`/agent/${businessId}`);
+    const response = await api.get(`/agent/business/${businessId}`);
     return response.data;
   },
 
@@ -52,7 +52,7 @@ export const agentService = {
 
   // Create a new agent
   createAgent: async (data: CreateAgentData): Promise<Agent> => {
-    const response = await api.post('/agent', data);
+    const response = await api.post("/agent", data);
     return response.data;
   },
 
@@ -69,22 +69,27 @@ export const agentService = {
   },
 
   // Restore a deleted agent
-  restoreAgent: async (id: string): Promise<{ message: string; agent: Agent }> => {
+  restoreAgent: async (
+    id: string
+  ): Promise<{ message: string; agent: Agent }> => {
     const response = await api.patch(`/agent/${id}/restore`);
     return response.data;
   },
 
   // Search agents by name
-  searchAgents: async (search: string, businessId?: string): Promise<Agent[]> => {
+  searchAgents: async (
+    search: string,
+    businessId?: string
+  ): Promise<Agent[]> => {
     const params: any = { search };
     if (businessId) params.businessId = businessId;
-    const response = await api.get('/agent/search', { params });
+    const response = await api.get("/agent/search", { params });
     return response.data;
   },
 
   // Get agent info using token
   getAgentInfo: async (): Promise<Agent> => {
-    const response = await api.get('/agent/info');
+    const response = await api.get("/agent/info");
     return response.data;
-  }
+  },
 };

@@ -14,6 +14,7 @@ import { AgentStatsCards } from "./components/AgentStatsCards";
 import { AgentEscalationsTable } from "./components/AgentEscalationsTable";
 import { AgentProfileSkeleton } from "./components/AgentProfileSkeleton";
 import { EditAgentDialog } from "../components/EditAgentDialog";
+import { ChangePasswordDialog } from "../components/ChangePasswordDialog";
 import { DeleteAgentDialog } from "../components/DeleteAgentDialog";
 
 interface Agent {
@@ -76,6 +77,7 @@ export default function AgentDetailsPage() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isEditOpen, setIsEditOpen] = React.useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = React.useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -198,6 +200,10 @@ export default function AgentDetailsPage() {
     setIsEditOpen(true);
   };
 
+  const handleChangePassword = () => {
+    setIsChangePasswordOpen(true);
+  };
+
   const handleDeleteAgent = () => {
     setIsDeleteOpen(true);
   };
@@ -211,6 +217,18 @@ export default function AgentDetailsPage() {
       setIsEditOpen(false);
       toast.success("Agent updated successfully");
       loadAgentDetails();
+    } catch (err: any) {
+      throw err;
+    }
+  };
+
+  const handleChangePasswordSubmit = async (data: any) => {
+    if (!agent) return;
+
+    try {
+      await api.put(`/agent/${agentId}`, { password: data.newPassword });
+      setIsChangePasswordOpen(false);
+      toast.success("Password changed successfully");
     } catch (err: any) {
       throw err;
     }
@@ -260,50 +278,65 @@ export default function AgentDetailsPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
-      {/* Compact Header with Back Button */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-          className="h-8 w-8 cursor-pointer"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Agent Profile</h1>
+    <div className="min-h-screen bg-background">
+      {/* Header Section */}
+      <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="px-4 md:px-6 py-4">
+
+
+          {/* Page Header */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="h-9 w-9"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl md:text-1xl font-bold text-foreground">
+                  {agent.name}
+                </h1>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Two Column Layout - 1/3 and 2/3 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left Sidebar - Agent Profile Card (1/3 width) */}
-        <div className="lg:col-span-1">
-          <AgentProfileCard
-            agent={agent}
-            onEdit={handleEditAgent}
-            onDelete={handleDeleteAgent}
-          />
-        </div>
+      {/* Main Content */}
+      <div className="p-4 md:p-6 lg:p-8">
+        {/* Two Column Layout - 1/3 and 2/3 */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Sidebar - Agent Profile Card */}
+          <div className="lg:col-span-4">
+            <AgentProfileCard
+              agent={agent}
+              onEdit={handleEditAgent}
+              onChangePassword={handleChangePassword}
+              onDelete={handleDeleteAgent}
+            />
+          </div>
 
-        {/* Right Column - Stats & Escalations (2/3 width) */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Performance Stats */}
-          <AgentStatsCards
-            stats={stats}
-            counts={counts}
-            ratingStats={ratingStats}
-          />
+          {/* Right Column - Stats & Escalations */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Performance Stats */}
+            <AgentStatsCards
+              stats={stats}
+              counts={counts}
+              ratingStats={ratingStats}
+            />
 
-          {/* Agent Escalations */}
-          <AgentEscalationsTable
-            escalations={escalations}
-            loading={escalationsLoading}
-            currentPage={escalationsPage}
-            totalPages={escalationsTotalPages}
-            onPageChange={handleEscalationsPageChange}
-          />
+            {/* Agent Escalations */}
+            <AgentEscalationsTable
+              escalations={escalations}
+              loading={escalationsLoading}
+              currentPage={escalationsPage}
+              totalPages={escalationsTotalPages}
+              onPageChange={handleEscalationsPageChange}
+            />
+          </div>
         </div>
       </div>
 
@@ -312,6 +345,13 @@ export default function AgentDetailsPage() {
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         onSubmit={handleEditSubmit}
+      />
+
+      <ChangePasswordDialog
+        agentId={agentId}
+        open={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        onSubmit={handleChangePasswordSubmit}
       />
 
       <DeleteAgentDialog
