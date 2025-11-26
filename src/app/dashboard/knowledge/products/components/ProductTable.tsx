@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,97 +8,101 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { 
-  Edit, 
-  Trash2, 
-  Eye,
-  EyeOff,
-  MoreVertical,
-  ArrowUpDown
-} from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Product } from "./types"
+} from "@/components/ui/tooltip";
+import { Eye, EyeOff, ArrowUpDown } from "lucide-react";
+import { Product } from "./types";
 
 interface ProductTableProps {
-  products: Product[]
-  onEdit: (product: Product) => void
-  onDelete: (id: string) => void
-  onToggleStatus: (id: string) => void
+  products: Product[];
+  onEdit: (product: Product) => void;
+  onDelete: (id: string) => void;
+  onToggleStatus: (id: string) => void;
 }
 
-type SortField = 'name' | 'sku' | 'category' | 'price' | 'quantity' | 'createdAt'
-type SortDirection = 'asc' | 'desc'
+type SortField =
+  | "name"
+  | "sku"
+  | "category"
+  | "price"
+  | "quantity"
+  | "createdAt";
+type SortDirection = "asc" | "desc";
 
-export default function ProductTable({ products, onEdit, onDelete, onToggleStatus }: ProductTableProps) {
-  const [sortField, setSortField] = useState<SortField>('createdAt')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+export default function ProductTable({
+  products,
+  onEdit,
+  onDelete,
+  onToggleStatus,
+}: ProductTableProps) {
+  const [sortField, setSortField] = useState<SortField>("createdAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP'
-    }).format(amount)
-  }
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+    }).format(amount);
+  };
 
   const getStockStatus = (quantity: number) => {
-    if (quantity === 0) return { text: "Out of Stock", variant: "destructive" as const }
-    if (quantity < 10) return { text: "Low Stock", variant: "secondary" as const }
-    return { text: "In Stock", variant: "default" as const }
-  }
+    if (quantity === 0)
+      return { text: "Out of Stock", variant: "destructive" as const };
+    if (quantity < 10)
+      return { text: "Low Stock", variant: "secondary" as const };
+    return { text: "In Stock", variant: "default" as const };
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortField(field)
-      setSortDirection('asc')
+      setSortField(field);
+      setSortDirection("asc");
     }
-  }
+  };
 
   const sortedProducts = [...products].sort((a, b) => {
-    let aValue: any = a[sortField]
-    let bValue: any = b[sortField]
+    let aValue: any = a[sortField];
+    let bValue: any = b[sortField];
 
-    if (sortField === 'price') {
-      aValue = a.price.amount
-      bValue = b.price.amount
+    if (sortField === "price") {
+      aValue = a.price.amount;
+      bValue = b.price.amount;
     }
 
-    if (sortField === 'createdAt') {
-      aValue = new Date(a.createdAt).getTime()
-      bValue = new Date(b.createdAt).getTime()
+    if (sortField === "createdAt") {
+      aValue = new Date(a.createdAt).getTime();
+      bValue = new Date(b.createdAt).getTime();
     }
 
-    if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase()
-      bValue = bValue.toLowerCase()
+    if (typeof aValue === "string") {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
     }
 
-    if (sortDirection === 'asc') {
-      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+    if (sortDirection === "asc") {
+      return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
     } else {
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
     }
-  })
+  });
 
-  const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
-    <TableHead 
+  const SortableHeader = ({
+    field,
+    children,
+  }: {
+    field: SortField;
+    children: React.ReactNode;
+  }) => (
+    <TableHead
       className="cursor-pointer hover:bg-muted/50 select-none"
       onClick={() => handleSort(field)}
     >
@@ -107,7 +111,7 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
         <ArrowUpDown className="h-4 w-4" />
       </div>
     </TableHead>
-  )
+  );
 
   return (
     <TooltipProvider>
@@ -121,16 +125,21 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
               <SortableHeader field="price">Price</SortableHeader>
               <SortableHeader field="quantity">Stock</SortableHeader>
               <TableHead>Status</TableHead>
-              <TableHead>Visibility</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-20">Visibility</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sortedProducts.map((product, index) => {
-              const stockStatus = getStockStatus(product.quantity)
+              const stockStatus = getStockStatus(product.quantity);
               const productId = product.id ?? product._id;
               return (
-                <TableRow key={productId ?? index} className={!product.isActive ? 'opacity-60' : ''}>
+                <TableRow
+                  key={productId ?? index}
+                  className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+                    !product.isActive ? "opacity-60" : ""
+                  }`}
+                  onClick={() => onEdit(product)}
+                >
                   <TableCell>
                     <div>
                       <div className="font-medium">{product.name}</div>
@@ -141,7 +150,9 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono text-sm">{product.sku}</TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {product.sku}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{product.category}</Badge>
                   </TableCell>
@@ -161,15 +172,18 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
                       {product.isActive ? "Active" : "Inactive"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         {productId && (
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
-                            onClick={() => onToggleStatus(productId)}
-                            className="h-8 w-8 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleStatus(productId);
+                            }}
+                            className="h-8 w-8 p-0 cursor-pointer"
                           >
                             {product.isActive ? (
                               <Eye className="h-4 w-4 text-blue-500" />
@@ -180,42 +194,20 @@ export default function ProductTable({ products, onEdit, onDelete, onToggleStatu
                         )}
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{product.isActive ? 'Active product - Click to deactivate' : 'Inactive product - Click to activate'}</p>
+                        <p>
+                          {product.isActive
+                            ? "Active product - Click to deactivate"
+                            : "Inactive product - Click to activate"}
+                        </p>
                       </TooltipContent>
                     </Tooltip>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => onEdit(product)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {productId && (
-                          <DropdownMenuItem 
-                            onClick={() => onDelete(productId)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
                 </TableRow>
-              )
+              );
             })}
           </TableBody>
         </Table>
       </div>
     </TooltipProvider>
-  )
+  );
 }
