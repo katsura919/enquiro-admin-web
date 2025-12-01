@@ -22,6 +22,8 @@ function OTPContent() {
   const type = searchParams.get("type") || "login"; // login, settings_change, etc.
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [backupCode, setBackupCode] = useState("");
+  const [useBackupCode, setUseBackupCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
@@ -96,12 +98,36 @@ function OTPContent() {
     }
   };
 
-  const handleVerifyOtp = async () => {
-    const otpCode = otp.join("");
+  const handleBackupCodeChange = (value: string) => {
+    // Remove all non-alphanumeric characters
+    const cleaned = value.replace(/[^A-Z0-9]/gi, "").toUpperCase();
 
-    if (otpCode.length !== 6) {
-      toast.error("Please enter a complete 6-digit code");
-      return;
+    // Limit to 8 characters
+    const limited = cleaned.slice(0, 8);
+
+    // Format with dash after 4 characters
+    let formatted = limited;
+    if (limited.length > 4) {
+      formatted = limited.slice(0, 4) + "-" + limited.slice(4);
+    }
+
+    setBackupCode(formatted);
+  };
+
+  const handleVerifyOtp = async () => {
+    const otpCode = useBackupCode ? backupCode.replace("-", "") : otp.join("");
+
+    if (useBackupCode) {
+      // Check if the formatted backup code has 9 characters (8 chars + 1 dash)
+      if (backupCode.replace("-", "").length !== 8) {
+        toast.error("Please enter a complete 8-character backup code");
+        return;
+      }
+    } else {
+      if (otpCode.length !== 6) {
+        toast.error("Please enter a complete 6-digit code");
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -127,9 +153,13 @@ function OTPContent() {
       console.error("OTP verification error:", error);
       toast.error(error.message || "Invalid or expired code");
 
-      // Clear OTP on error
-      setOtp(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+      // Clear inputs on error
+      if (useBackupCode) {
+        setBackupCode("");
+      } else {
+        setOtp(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+      }
     } finally {
       setIsLoading(false);
     }
@@ -151,6 +181,8 @@ function OTPContent() {
       setTimeLeft(300); // Reset timer
       setCanResend(false);
       setOtp(["", "", "", "", "", ""]); // Clear current input
+      setBackupCode("");
+      setUseBackupCode(false); // Reset to OTP mode
       inputRefs.current[0]?.focus();
     } catch (error: any) {
       console.error("Resend OTP error:", error);
@@ -185,47 +217,9 @@ function OTPContent() {
         <div className="absolute bottom-20 left-1/3 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
-      <div className="flex min-h-screen relative z-10">
+      <div className="flex min-h-screen relative z-10 items-center justify-center">
         {/* Main Content */}
-        <div className="flex-1 flex flex-col items-center justify-center p-8 relative">
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="absolute top-8 left-8"
-          >
-            <Link href="/" className="flex items-center gap-2 group">
-              <Image
-                src="/logo.png"
-                alt="Enquiro Logo"
-                width={32}
-                height={32}
-                className="group-hover:opacity-80 transition-opacity"
-              />
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-blue-600">
-                Enquiro
-              </span>
-            </Link>
-          </motion.div>
-
-          {/* Back Button */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="absolute top-8 right-8"
-          >
-            <Button
-              variant="ghost"
-              onClick={() => router.back()}
-              className="text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-200"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-          </motion.div>
-
+        <div className="w-full max-w-xl flex flex-col items-center justify-center p-8 relative">
           {/* OTP Form */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -244,57 +238,107 @@ function OTPContent() {
 
               <h1 className="text-4xl md:text-5xl font-bold">
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600">
-                  Enter Verification Code
+                  {useBackupCode
+                    ? "Enter Backup Code"
+                    : "Enter Verification Code"}
                 </span>
               </h1>
 
               <div className="space-y-2">
-                <p className="text-gray-300 text-lg">
-                  We've sent a 6-digit verification code to
-                </p>
-                <p className="text-blue-400 font-medium text-lg">{email}</p>
+                {useBackupCode ? (
+                  <p className="text-gray-300 text-lg">
+                    Enter one of your 8-character backup codes
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-gray-300 text-lg">
+                      We've sent a 6-digit verification code to
+                    </p>
+                    <p className="text-blue-400 font-medium text-lg">{email}</p>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* OTP Input */}
+            {/* OTP/Backup Code Input */}
             <div className="space-y-6">
-              <div className="flex justify-center gap-3">
-                {otp.map((digit, index) => (
+              {useBackupCode ? (
+                /* Backup Code Input */
+                <div className="flex justify-center">
                   <Input
-                    key={index}
-                    ref={(el) => {
-                      inputRefs.current[index] = el;
-                    }}
                     type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleInputChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    onPaste={handlePaste}
-                    className="w-12 h-14 text-center text-2xl font-bold bg-white/5 border-blue-500/30 text-white focus:border-blue-400 focus:ring-blue-400/20 backdrop-blur-sm transition-all duration-200"
+                    maxLength={9}
+                    value={backupCode}
+                    onChange={(e) => handleBackupCodeChange(e.target.value)}
+                    placeholder="XXXX-XXXX"
+                    className="w-full max-w-xs h-14 text-center text-2xl font-bold bg-white/5 border-blue-500/30 text-white focus:border-blue-400 focus:ring-blue-400/20 backdrop-blur-sm transition-all duration-200 tracking-widest uppercase"
+                    autoFocus
                   />
-                ))}
+                </div>
+              ) : (
+                /* OTP Input */
+                <div className="flex justify-center gap-3">
+                  {otp.map((digit, index) => (
+                    <Input
+                      key={index}
+                      ref={(el) => {
+                        inputRefs.current[index] = el;
+                      }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleInputChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      onPaste={handlePaste}
+                      className="w-12 h-14 text-center text-2xl font-bold bg-white/5 border-blue-500/30 text-white focus:border-blue-400 focus:ring-blue-400/20 backdrop-blur-sm transition-all duration-200"
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Toggle Button */}
+              <div className="text-center">
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setUseBackupCode(!useBackupCode);
+                    setOtp(["", "", "", "", "", ""]);
+                    setBackupCode("");
+                  }}
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all duration-200 text-sm"
+                >
+                  {useBackupCode
+                    ? "Use verification code instead"
+                    : "Use backup code instead"}
+                </Button>
               </div>
 
-              {/* Timer */}
-              <div className="text-center">
-                {timeLeft > 0 ? (
-                  <div className="flex items-center justify-center gap-2 text-gray-400">
-                    <Clock className="w-4 h-4" />
-                    <span>Code expires in {formatTime(timeLeft)}</span>
-                  </div>
-                ) : (
-                  <div className="text-red-400 font-medium">
-                    Verification code has expired
-                  </div>
-                )}
-              </div>
+              {/* Timer - Only show for OTP mode */}
+              {!useBackupCode && (
+                <div className="text-center">
+                  {timeLeft > 0 ? (
+                    <div className="flex items-center justify-center gap-2 text-gray-400">
+                      <Clock className="w-4 h-4" />
+                      <span>Code expires in {formatTime(timeLeft)}</span>
+                    </div>
+                  ) : (
+                    <div className="text-red-400 font-medium">
+                      Verification code has expired
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Verify Button */}
               <Button
                 onClick={handleVerifyOtp}
-                disabled={isLoading || otp.join("").length !== 6}
+                disabled={
+                  isLoading ||
+                  (useBackupCode
+                    ? backupCode.replace("-", "").length !== 8
+                    : otp.join("").length !== 6)
+                }
                 className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-base transition-all duration-300 disabled:opacity-50"
               >
                 {isLoading ? (
@@ -305,43 +349,60 @@ function OTPContent() {
                 ) : (
                   <span className="flex items-center justify-center">
                     <CheckCircle className="mr-2 h-5 w-5" />
-                    Verify Code
+                    {useBackupCode ? "Verify Backup Code" : "Verify Code"}
                   </span>
                 )}
               </Button>
 
-              {/* Resend Section */}
-              <div className="text-center">
-                {canResend ? (
-                  <Button
-                    variant="ghost"
-                    onClick={handleResendOtp}
-                    disabled={isResending}
-                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all duration-200"
-                  >
-                    {isResending ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 rounded-full border-2 border-blue-400/20 border-t-blue-400 animate-spin" />
-                        <span>Sending...</span>
-                      </div>
-                    ) : (
-                      <span className="flex items-center">
-                        <RotateCcw className="mr-2 h-4 w-4" />
-                        Resend Code
-                      </span>
-                    )}
-                  </Button>
-                ) : (
-                  <p className="text-gray-400">
-                    Didn't receive the code? You can resend it when the timer
-                    expires.
-                  </p>
-                )}
-              </div>
+              {/* Resend Section - Only show for OTP mode */}
+              {!useBackupCode && (
+                <div className="text-center">
+                  {canResend ? (
+                    <Button
+                      variant="ghost"
+                      onClick={handleResendOtp}
+                      disabled={isResending}
+                      className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 transition-all duration-200"
+                    >
+                      {isResending ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 rounded-full border-2 border-blue-400/20 border-t-blue-400 animate-spin" />
+                          <span>Sending...</span>
+                        </div>
+                      ) : (
+                        <span className="flex items-center">
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Resend Code
+                        </span>
+                      )}
+                    </Button>
+                  ) : (
+                    <p className="text-gray-400">
+                      Didn't receive the code? You can resend it when the timer
+                      expires.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Back Button */}
+              <Button
+                onClick={() => router.back()}
+                className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-base transition-all duration-300"
+              >
+                Back to Login
+              </Button>
 
               {/* Help Text */}
               <div className="text-center text-sm text-gray-400 space-y-2">
-                <p>Check your email and enter the code above.</p>
+                {useBackupCode ? (
+                  <p>
+                    Enter one of your saved backup codes from when you enabled
+                    2FA.
+                  </p>
+                ) : (
+                  <p>Check your email and enter the code above.</p>
+                )}
                 <p>
                   Having trouble?{" "}
                   <Link
@@ -354,58 +415,6 @@ function OTPContent() {
               </div>
             </div>
           </motion.div>
-        </div>
-
-        {/* Right Side - Security Info */}
-        <div className="hidden lg:flex lg:flex-1 items-center justify-center p-12 relative">
-          <div className="max-w-md text-white space-y-8">
-            <div className="space-y-4">
-              <h2 className="text-3xl font-bold bg-gradient-to-b from-neutral-200 to-neutral-500 bg-clip-text text-transparent">
-                Enhanced Security
-              </h2>
-              <p className="text-blue-100 text-lg">
-                Two-factor authentication adds an extra layer of security to
-                your account.
-              </p>
-            </div>
-
-            {/* Security Features */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 space-y-4">
-              <div className="flex items-center space-x-3">
-                <Shield className="w-6 h-6 text-blue-400" />
-                <div>
-                  <div className="font-medium">Secure Login</div>
-                  <div className="text-sm text-white/70">
-                    Protected by encryption
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-6 h-6 text-green-400" />
-                <div>
-                  <div className="font-medium">Email Verified</div>
-                  <div className="text-sm text-white/70">
-                    Code sent to {email}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Clock className="w-6 h-6 text-orange-400" />
-                <div>
-                  <div className="font-medium">Time Limited</div>
-                  <div className="text-sm text-white/70">
-                    Code expires for security
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-blue-200 text-sm text-center">
-              Copyright © 2025 Enquiro Enterprises LTD.
-            </div>
-          </div>
         </div>
       </div>
     </div>
